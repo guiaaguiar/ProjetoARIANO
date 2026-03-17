@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NoSQL: Arquiteturas, Fundamentos e Aplicações</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: '#0074D0',
+                        secondary: '#60a5fa',
+                        bglight: '#0f0f0f',
+                        textdark: '#e8eaed'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0f0f0f;
+            color: #e8eaed;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+
+        @media (max-width: 640px) {
+            .chart-container {
+                height: 250px;
+            }
+        }
+
+        .tab-btn.active {
+            border-bottom-width: 4px;
+            border-color: #0074D0;
+            color: #0074D0;
+            font-weight: 600;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        nav {
+            background: rgba(15, 15, 15, 0.92);
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+
+<body class="font-sans antialiased">
+
+    <!-- Chosen Palette: Warm Neutrals with Amber/Orange accent (Primary) and subtle Blue (Secondary for contrast). Background: Stone-50 (#fafaf9). -->
+    <!-- Application Structure Plan: The SPA is designed as a linear, scrolling interactive presentation (Dashboard/Slide hybrid) tailored for CS students. It begins with context (why NoSQL?), moves to definitions and core traits, then uses an interactive tabbed interface to explore the 4 types (avoiding a massive wall of text). A specific interactive Canvas element highlights Graph DBs as requested. It concludes with comparisons, pros/cons, and market trends. This structure allows students to digest complex architectural concepts section by section logically. -->
+    <!-- Visualization & Content Choices: 
+1. Intro: Chart.js Line Chart -> Goal: Show exponential data growth driving NoSQL adoption.
+2. Characteristics: Grid layout -> Goal: Easy scanning of core concepts.
+3. DB Types: Interactive Tabs -> Goal: Organize 4 distinct models cleanly.
+4. Graph DB Focus: HTML5 Canvas Diagram -> Goal: Visually explain "Index-Free Adjacency" and nodes/edges without using SVG/Mermaid.
+5. SQL vs NoSQL: Tailwind styled Table -> Goal: Direct comparative analysis.
+6. Market Trends: Chart.js Bar Chart -> Goal: Validate the career importance of NoSQL/AI skills. 
+CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <nav class="fixed w-full z-50 border-b border-stone-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-xl font-bold text-white">AR.<span class="text-primary">IA</span>.N.O.</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-6 text-sm font-medium text-stone-400">
+                    <a href="#intro" class="hover:text-primary transition">Introdução</a>
+                    <a href="#fundamentos" class="hover:text-primary transition">Fundamentos</a>
+                    <a href="#tipos" class="hover:text-primary transition">Tipos (Foco em Grafos)</a>
+                    <a href="#comparacao" class="hover:text-primary transition">SQL x NoSQL</a>
+                    <a href="#mercado" class="hover:text-primary transition">Mercado</a>
+                    <a href="#ariano" class="hover:text-primary transition">ARIANO</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-20 pb-16">
+
+        <header class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+            <div
+                class="inline-block bg-blue-900/40 text-blue-300 px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase mb-4">
+                Tópicos Integradores - 7º Período CC</div>
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">Banco de Dados Não Relacional <span
+                    class="text-primary">(NoSQL)</span></h1>
+            <p class="text-xl text-stone-400 max-w-3xl mx-auto">Arquiteturas, Fundamentos e Aplicações modernas para
+                sistemas distribuídos e Big Data.</p>
+        </header>
+
+        <section id="intro" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-stone-700">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold mb-4">1. O Contexto: Por que o NoSQL surgiu?</h2>
+                <p class="text-stone-300 leading-relaxed text-lg">
+                    Esta seção apresenta o cenário tecnológico que motivou a criação de novas arquiteturas de banco de
+                    dados. Compreender o contexto histórico e as limitações do SQL tradicional diante do Big Data é
+                    fundamental para entender o propósito do NoSQL.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <p class="text-stone-400 mb-6 leading-relaxed">
+                        Durante muitos anos, os bancos de dados relacionais (SQL) dominaram o mercado, armazenando
+                        informações em tabelas rigorosas. No entanto, o crescimento exponencial da internet, redes
+                        sociais e aplicações em tempo real gerou novas demandas críticas:
+                    </p>
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <span class="text-primary mr-3 text-xl">📈</span>
+                            <div>
+                                <strong class="block text-textdark">Grande volume de dados (Big Data)</strong>
+                                <span class="text-stone-400 text-sm">A capacidade de armazenar petabytes de dados
+                                    tornou-se uma necessidade básica.</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-primary mr-3 text-xl">⚡</span>
+                            <div>
+                                <strong class="block text-textdark">Alta velocidade de ingestão</strong>
+                                <span class="text-stone-400 text-sm">Aplicações modernas precisam escrever e ler
+                                    milhares de registros por segundo.</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-primary mr-3 text-xl">🧩</span>
+                            <div>
+                                <strong class="block text-textdark">Estrutura de dados variável</strong>
+                                <span class="text-stone-400 text-sm">Dados não estruturados ou semi-estruturados (JSON,
+                                    logs, textos soltos) não cabem em tabelas rígidas.</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="bg-[#1a1a1a] p-4 rounded-xl shadow-sm border border-stone-700">
+                    <h3 class="text-sm font-semibold text-center mb-2 text-stone-400 uppercase tracking-wider">A
+                        Explosão dos Dados (Contexto Histórico)</h3>
+                    <div class="chart-container">
+                        <canvas id="dataGrowthChart"></canvas>
+                    </div>
+                    <p class="text-xs text-center text-stone-500 mt-2">Crescimento exponencial de dados não estruturados
+                        requer novas arquiteturas.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="fundamentos" class="bg-[#1a1a1a] py-16 border-y border-stone-700">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="mb-12">
+                    <h2 class="text-2xl font-bold mb-4">2. O que é e Características Principais</h2>
+                    <p class="text-stone-300 leading-relaxed text-lg">
+                        Aqui exploramos a definição essencial de "Not Only SQL" e os pilares arquiteturais que
+                        diferenciam essas tecnologias, permitindo que elas escalem horizontalmente e operem com alta
+                        disponibilidade.
+                    </p>
+                </div>
+
+                <div class="bg-[#282828] border-l-4 border-primary p-6 rounded-r-lg mb-12">
+                    <h3 class="text-lg font-bold text-textdark mb-2">A Definição Crítica</h3>
+                    <p class="text-stone-400">
+                        Banco de dados não relacional é aquele que não utiliza o modelo tradicional de tabelas
+                        interligadas por chaves.
+                        <strong>NoSQL significa: Not Only SQL (Não apenas SQL).</strong> O SQL não está obsoleto, mas
+                        existem modelos muito melhores para aplicações específicas, escaláveis e distribuídas.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                    <div
+                        class="bg-[#282828] p-6 rounded-xl text-center border border-stone-700 hover:shadow-md hover:shadow-stone-900 transition">
+                        <div class="text-3xl mb-3">🛠️</div>
+                        <h4 class="font-bold text-sm mb-2">Esquema Flexível</h4>
+                        <p class="text-xs text-stone-400">Schema-less ou schema-optional. Não exige definição prévia de
+                            colunas.</p>
+                    </div>
+                    <div
+                        class="bg-[#282828] p-6 rounded-xl text-center border border-stone-700 hover:shadow-md hover:shadow-stone-900 transition">
+                        <div class="text-3xl mb-3">↔️</div>
+                        <h4 class="font-bold text-sm mb-2">Escalabilidade Horizontal</h4>
+                        <p class="text-xs text-stone-400">Expansão adicionando mais servidores (nós) comuns, barateando
+                            custos.</p>
+                    </div>
+                    <div
+                        class="bg-[#282828] p-6 rounded-xl text-center border border-stone-700 hover:shadow-md hover:shadow-stone-900 transition">
+                        <div class="text-3xl mb-3">🚀</div>
+                        <h4 class="font-bold text-sm mb-2">Alta Performance</h4>
+                        <p class="text-xs text-stone-400">Otimizado para leituras e escritas ultra-rápidas,
+                            frequentemente em memória.</p>
+                    </div>
+                    <div
+                        class="bg-[#282828] p-6 rounded-xl text-center border border-stone-700 hover:shadow-md hover:shadow-stone-900 transition">
+                        <div class="text-3xl mb-3">🌍</div>
+                        <h4 class="font-bold text-sm mb-2">Distribuição de Dados</h4>
+                        <p class="text-xs text-stone-400">Dados particionados e espalhados globalmente em vários
+                            servidores.</p>
+                    </div>
+                    <div
+                        class="bg-[#282828] p-6 rounded-xl text-center border border-stone-700 hover:shadow-md hover:shadow-stone-900 transition">
+                        <div class="text-3xl mb-3">🛡️</div>
+                        <h4 class="font-bold text-sm mb-2">Alta Disponibilidade</h4>
+                        <p class="text-xs text-stone-400">Replicação garante o funcionamento mesmo se um servidor
+                            falhar.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tipos" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div class="mb-10">
+                <h2 class="text-2xl font-bold mb-4">3. Tipos de Bancos Não Relacionais</h2>
+                <p class="text-stone-300 leading-relaxed text-lg">
+                    O ecossistema NoSQL é dividido em quatro famílias principais. Interaja com as abas abaixo para
+                    descobrir como cada modelo armazena dados, com um foco especial e visual na arquitetura orientada a
+                    Grafos.
+                </p>
+            </div>
+
+            <div class="border-b border-stone-700 mb-6">
+                <nav class="flex space-x-8 overflow-x-auto" aria-label="Tabs">
+                    <button
+                        class="tab-btn active whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-stone-400 hover:text-stone-200 hover:border-stone-500"
+                        onclick="switchTab(event, 'doc-tab')">
+                        📄 Documentos
+                    </button>
+                    <button
+                        class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-stone-400 hover:text-stone-200 hover:border-stone-500"
+                        onclick="switchTab(event, 'kv-tab')">
+                        🔑 Chave-Valor
+                    </button>
+                    <button
+                        class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-stone-400 hover:text-stone-200 hover:border-stone-500"
+                        onclick="switchTab(event, 'col-tab')">
+                        📊 Colunas
+                    </button>
+                    <button
+                        class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-stone-400 hover:text-stone-200 hover:border-stone-500"
+                        onclick="switchTab(event, 'graph-tab')">
+                        🧠 Grafos
+                    </button>
+                </nav>
+            </div>
+
+            <div id="doc-tab" class="tab-content active bg-[#1a1a1a] p-8 rounded-xl shadow-sm border border-stone-700">
+                <div class="flex flex-col md:flex-row gap-8">
+                    <div class="flex-1">
+                        <h3 class="text-xl font-bold text-primary mb-3">Banco de Documentos</h3>
+                        <p class="text-stone-400 mb-4">Armazena dados em formatos flexíveis e aninhados como JSON ou
+                            BSON. Cada registro (documento) pode ter uma estrutura interna completamente diferente do
+                            outro, eliminando campos vazios.</p>
+                        <div class="bg-[#282828] p-4 rounded text-sm font-mono text-stone-300">
+                            {<br>
+                            &nbsp;&nbsp;"id": "101",<br>
+                            &nbsp;&nbsp;"nome": "João",<br>
+                            &nbsp;&nbsp;"skills": ["Java", "SQL"],<br>
+                            &nbsp;&nbsp;"endereco": { "cidade": "Recife" }<br>
+                            }
+                        </div>
+                    </div>
+                    <div class="flex-1 bg-[#282828] p-6 rounded-lg border border-stone-700">
+                        <p class="mb-2"><strong>📌 Exemplo de Mercado:</strong> MongoDB</p>
+                        <p><strong>💡 Casos de Uso Ideais:</strong></p>
+                        <ul class="list-disc list-inside text-stone-400 text-sm space-y-2 mt-2">
+                            <li>Aplicações Web e APIs RESTful</li>
+                            <li>Catálogos de produtos de E-commerce (atributos variáveis)</li>
+                            <li>Gerenciamento de conteúdo (CMS)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div id="kv-tab" class="tab-content bg-[#1a1a1a] p-8 rounded-xl shadow-sm border border-stone-700">
+                <div class="flex flex-col md:flex-row gap-8">
+                    <div class="flex-1">
+                        <h3 class="text-xl font-bold text-primary mb-3">Banco Chave-Valor</h3>
+                        <p class="text-stone-400 mb-4">A arquitetura mais simples. Funciona como um dicionário. Cada
+                            dado possui uma chave única atrelada a um valor opaco (o banco não se importa com o que está
+                            dentro do valor). É focado puramente em velocidade.</p>
+                        <table class="w-full text-left text-sm text-stone-400">
+                            <thead class="bg-[#282828]">
+                                <tr>
+                                    <th class="p-2 border border-stone-600">Chave (Key)</th>
+                                    <th class="p-2 border border-stone-600">Valor (Value)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="p-2 border border-stone-600 font-mono">user:123:session</td>
+                                    <td class="p-2 border border-stone-600">"token_abc123"</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border border-stone-600 font-mono">config:theme</td>
+                                    <td class="p-2 border border-stone-600">"dark_mode"</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="flex-1 bg-[#282828] p-6 rounded-lg border border-stone-700">
+                        <p class="mb-2"><strong>📌 Exemplo de Mercado:</strong> Redis, DynamoDB</p>
+                        <p><strong>💡 Casos de Uso Ideais:</strong></p>
+                        <ul class="list-disc list-inside text-stone-400 text-sm space-y-2 mt-2">
+                            <li>Cache de altíssima velocidade (opera em memória RAM)</li>
+                            <li>Armazenamento de sessões de usuários web</li>
+                            <li>Placares de jogos online (Leaderboards) em tempo real</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div id="col-tab" class="tab-content bg-[#1a1a1a] p-8 rounded-xl shadow-sm border border-stone-700">
+                <div class="flex flex-col md:flex-row gap-8">
+                    <div class="flex-1">
+                        <h3 class="text-xl font-bold text-primary mb-3">Banco Orientado a Colunas</h3>
+                        <p class="text-stone-400 mb-4">Dados são armazenados em 'famílias de colunas' em vez de linhas
+                            contíguas. É altamente eficiente para ler agrupamentos de dados específicos e lidar com
+                            dados esparsos (onde muitos campos podem ser nulos sem desperdiçar disco).</p>
+                    </div>
+                    <div class="flex-1 bg-[#282828] p-6 rounded-lg border border-stone-700">
+                        <p class="mb-2"><strong>📌 Exemplo de Mercado:</strong> Apache Cassandra, HBase</p>
+                        <p><strong>💡 Casos de Uso Ideais:</strong></p>
+                        <ul class="list-disc list-inside text-stone-400 text-sm space-y-2 mt-2">
+                            <li>Análises de Big Data e Data Warehousing</li>
+                            <li>Telemetria de IoT (Internet das Coisas) massiva</li>
+                            <li>Registros de eventos em séries temporais</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div id="graph-tab"
+                class="tab-content bg-[#1a1a1a] p-8 rounded-xl shadow-sm border border-primary ring-1 ring-primary/20">
+                <div class="flex flex-col lg:flex-row gap-8">
+                    <div class="flex-1">
+                        <h3 class="text-2xl font-bold text-primary mb-3">🧠 Banco Orientado a Grafos</h3>
+                        <p class="text-stone-300 mb-4 font-medium">Os relacionamentos são cidadãos de primeira classe.
+                        </p>
+                        <p class="text-stone-400 text-sm mb-4 leading-relaxed">
+                            Armazena dados estritamente como <strong>Nós</strong> (entidades) e <strong>Arestas</strong>
+                            (os relacionamentos). Em vez de fragmentar dados em tabelas e usar lentos JOINs de SQL no
+                            momento da consulta, os bancos de grafos mantêm as conexões <strong>materializadas
+                                fisicamente no disco</strong>.
+                        </p>
+
+                        <div class="bg-blue-900/30 p-4 rounded border border-blue-700 mb-4">
+                            <h4 class="font-bold text-blue-300 text-sm mb-1">Adjacência Livre de Índice</h4>
+                            <p class="text-blue-200 text-xs">As conexões (ponteiros) já estão salvas. Navegar por uma
+                                rede profunda de relacionamentos é dezenas de vezes mais rápido que no SQL tradicional.
+                            </p>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4 text-sm mt-4">
+                            <div class="bg-[#282828] p-3 rounded">
+                                <strong>📌 Exemplo:</strong> Neo4j
+                            </div>
+                            <div class="bg-[#282828] p-3 rounded">
+                                <strong>💡 Uso:</strong> GraphRAG (IA), Detecção Fraudes
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-1 flex items-center justify-center">
+                        <img src="https://i.postimg.cc/wjnX1kkK/575d93dd-8180-42d6-82d7-317d08491d2a.jpg"
+                            alt="Visualização de Grafo" class="w-full rounded-xl" />
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="comparacao" class="bg-[#1a1a1a] py-16 border-y border-stone-700">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="mb-10 text-center max-w-3xl mx-auto">
+                    <h2 class="text-2xl font-bold mb-4">4. Batalha de Arquiteturas: SQL vs NoSQL</h2>
+                    <p class="text-stone-300 leading-relaxed text-lg">
+                        Comparativo direto entre os modelos. Entenda as vantagens, desvantagens e o conceito crítico de
+                        transações ACID que dita quando NÃO utilizar tecnologias NoSQL.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                    <div class="border border-stone-700 rounded-xl overflow-hidden">
+                        <div
+                            class="bg-[#282828] py-3 px-4 border-b border-stone-700 font-bold text-stone-200 flex items-center">
+                            <span class="text-green-600 mr-2">✅</span> Vantagens do NoSQL
+                        </div>
+                        <ul class="p-6 space-y-3 text-sm text-stone-400">
+                            <li>Alta escalabilidade horizontal barata e nativa.</li>
+                            <li>Flexibilidade extrema de modelagem (mude a estrutura sem parar o sistema).</li>
+                            <li>Desempenho superior em volumes colossais de ingestão contínua.</li>
+                            <li>Essencial para arquiteturas modernas de microsserviços.</li>
+                        </ul>
+                    </div>
+                    <div class="border border-stone-700 rounded-xl overflow-hidden">
+                        <div
+                            class="bg-[#282828] py-3 px-4 border-b border-stone-700 font-bold text-stone-200 flex items-center">
+                            <span class="text-red-500 mr-2">❌</span> Desvantagens do NoSQL
+                        </div>
+                        <ul class="p-6 space-y-3 text-sm text-stone-400">
+                            <li>Menor padronização: não existe um idioma universal como o SQL.</li>
+                            <li><strong>Consistência Eventual:</strong> Pode causar atrasos de milissegundos na
+                                sincronização de leituras em sistemas distribuídos.</li>
+                            <li>Dificuldade natural em executar agregações e JOINs complexos não planejados.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto rounded-lg border border-stone-700 shadow-sm mb-12">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-[#282828] text-stone-300 text-sm">
+                                <th class="p-4 border-b border-stone-600">Característica</th>
+                                <th class="p-4 border-b border-stone-600 bg-blue-900/20 text-secondary">Bancos
+                                    Relacionais (SQL)</th>
+                                <th class="p-4 border-b border-stone-600 bg-amber-900/20 text-[#d97706]">Bancos Não
+                                    Relacionais (NoSQL)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm">
+                            <tr class="hover:bg-[#282828]">
+                                <td class="p-4 border-b border-stone-700 font-medium">Estrutura de Dados</td>
+                                <td class="p-4 border-b border-stone-700">Tabelas Rígidas (Linhas/Colunas)</td>
+                                <td class="p-4 border-b border-stone-700">Flexível (Docs, Chaves, Grafos)</td>
+                            </tr>
+                            <tr class="hover:bg-[#282828]">
+                                <td class="p-4 border-b border-stone-700 font-medium">Escalabilidade</td>
+                                <td class="p-4 border-b border-stone-700">Vertical (Melhorar o servidor atual)</td>
+                                <td class="p-4 border-b border-stone-700">Horizontal (Adicionar mais servidores)</td>
+                            </tr>
+                            <tr class="hover:bg-[#282828]">
+                                <td class="p-4 border-b border-stone-700 font-medium">Esquema (Schema)</td>
+                                <td class="p-4 border-b border-stone-700">Fixo (Predefinido)</td>
+                                <td class="p-4 border-b border-stone-700">Dinâmico (Schema-less)</td>
+                            </tr>
+                            <tr class="hover:bg-[#282828]">
+                                <td class="p-4 border-b border-stone-700 font-medium">Relacionamentos</td>
+                                <td class="p-4 border-b border-stone-700">Complexos (Foreign Keys, JOINs lentos)</td>
+                                <td class="p-4 border-b border-stone-700">Desnormalizados ou Nativos (Grafos)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="bg-red-900/30 border-l-4 border-red-500 p-6 rounded text-red-200">
+                    <div class="flex items-center mb-2">
+                        <span class="text-2xl mr-2">🚨</span>
+                        <h3 class="font-bold text-lg">Onde NÃO USAR NoSQL (A Regra ACID)</h3>
+                    </div>
+                    <p class="text-sm leading-relaxed mb-3">
+                        Não utilize NoSQL como banco principal em sistemas que exigem <strong>rigor absoluto nas
+                            garantias ACID (Atomicidade, Consistência, Isolamento, Durabilidade)</strong> em transações
+                        que alteram várias entidades simultaneamente.
+                    </p>
+                    <p class="text-sm font-semibold">Exemplos onde o SQL Tradicional é OBRIGATÓRIO:</p>
+                    <ul class="list-disc list-inside text-sm ml-2 mt-1">
+                        <li>Sistemas Centrais Bancários (operações de transferência).</li>
+                        <li>Sistemas Contábeis e ERPs tradicionais.</li>
+                        <li>Cenários onde a integridade rígida da informação vale mais do que a velocidade extrema.</li>
+                    </ul>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="mercado" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div class="mb-10 text-center">
+                <h2 class="text-2xl font-bold mb-4">5. Conclusão e Tendências de Mercado (2025/2026)</h2>
+                <p class="text-stone-300 leading-relaxed text-lg max-w-4xl mx-auto">
+                    O mercado de engenharia de software evoluiu para a <strong>Persistência Poliglota</strong>: usar a
+                    ferramenta certa para o microserviço certo. Descubra como o boom da IA está redefinindo as
+                    contratações na área de dados.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div class="space-y-6">
+                    <div class="bg-[#1a1a1a] p-5 rounded-lg border border-stone-700">
+                        <h4 class="font-bold text-primary mb-2">A Nova Realidade: IA e NoSQL</h4>
+                        <p class="text-sm text-stone-400">O uso de bancos NoSQL está sendo fortemente tracionado pela
+                            Inteligência Artificial. Plataformas modernas exigem absorção de dados não estruturados
+                            massivos gerados por usuários.</p>
+                    </div>
+                    <div class="bg-[#1a1a1a] p-5 rounded-lg border border-stone-700">
+                        <h4 class="font-bold text-primary mb-2">Bancos Vetoriais &amp; Agentes</h4>
+                        <p class="text-sm text-stone-400">A febre atual do mercado são os Bancos de Dados Vetoriais (uma
+                            evolução do NoSQL) para gerenciar memória e contexto de <em>Agentes Autônomos de IA</em>
+                            (GraphRAG).</p>
+                    </div>
+                    <div class="bg-[#1a1a1a] p-5 rounded-lg border border-stone-700">
+                        <h4 class="font-bold text-secondary mb-2">Por que estudar isso agora?</h4>
+                        <p class="text-sm text-stone-400">Enquanto o desenvolvimento tradicional sofreu ajustes, vagas
+                            exigindo conhecimento profundo na camada de dados distribuídos e integração com IA saltaram
+                            drasticamente. Estudar essas arquiteturas coloca o aluno na vanguarda da Ciência da
+                            Computação.</p>
+                    </div>
+                </div>
+
+                <div class="bg-[#1a1a1a] p-6 rounded-xl shadow-sm border border-stone-700">
+                    <h3 class="text-center font-bold text-stone-300 mb-1">Crescimento de Demanda em Vagas de TI (Índice
+                        Base)</h3>
+                    <p class="text-center text-xs text-stone-500 mb-4">Projeção ilustrativa baseada em tendências de RH
+                        (+130% menções a IA/Data)</p>
+                    <div class="chart-container">
+                        <canvas id="marketTrendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="ariano" class="bg-[#1a1a1a] py-16 border-y border-stone-700">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="mb-12 text-center">
+                    <div
+                        class="inline-block bg-blue-900/40 text-blue-300 px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase mb-4">
+                        Integração com o Projeto</div>
+                    <h2 class="text-2xl font-bold mb-2">6. AR.<span class="text-primary">IA</span>.N.O.</h2>
+                    <p class="text-lg text-stone-300 max-w-3xl mx-auto">Arquitetura de <strong
+                            class="text-primary">Inteligência Artificial</strong> Naturalmente Ordenada</p>
+                    <p class="text-stone-400 mt-3 max-w-2xl mx-auto text-sm">Como o NoSQL orientado a Grafos se integra
+                        ao nosso projeto de multi-agentes — uma demanda real do mercado de trabalho e uma oportunidade
+                        prática para entender o que se vê na indústria.</p>
+                </div>
+
+                <!-- O que é o ARIANO -->
+                <div class="bg-blue-900/20 border-l-4 border-primary p-6 rounded-r-lg mb-12">
+                    <h3 class="text-lg font-bold text-textdark mb-3">🤖 O que é o ARIANO?</h3>
+                    <p class="text-stone-300 leading-relaxed">
+                        O ARIANO é o <strong class="text-primary">Orquestrador Inteligente de Matches</strong> entre
+                        <strong>oportunidades</strong>, <strong>solucionadores</strong> e <strong>donos de
+                            problemas</strong>. Ele é a grande inteligência por trás da <strong
+                            class="text-secondary">CORETO</strong> — uma plataforma de matchmaking que conecta toda a
+                        <em>quádrupla hélice do ecossistema de inovação</em> (academia, governo, indústria e sociedade
+                        civil).
+                    </p>
+                    <p class="text-stone-400 mt-3 text-sm leading-relaxed">
+                        Imagine uma plataforma onde problemas reais de empresas são conectados automaticamente aos
+                        melhores solucionadores (pesquisadores, startups, estudantes), enquanto oportunidades de
+                        financiamento e parceria surgem de forma orgânica. É exatamente isso que o ARIANO faz — e ele
+                        precisa de um banco de dados orientado a Grafos para funcionar.
+                    </p>
+                </div>
+
+                <!-- Como Funciona -->
+                <div class="mb-12">
+                    <h3 class="text-xl font-bold mb-6 text-center">⚙️ Como o ARIANO Funciona?</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div
+                            class="bg-[#282828] p-6 rounded-xl border border-stone-700 hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/5">
+                            <div class="text-3xl mb-3">🧠</div>
+                            <h4 class="font-bold text-sm mb-2 text-textdark">Múltiplos Agentes de IA</h4>
+                            <p class="text-xs text-stone-400 leading-relaxed">O sistema é composto por múltiplos agentes
+                                inteligentes que trabalham em conjunto. Cada agente é especialista em um aspecto
+                                diferente do matchmaking: análise de perfil, detecção de compatibilidade, priorização de
+                                oportunidades, entre outros.</p>
+                        </div>
+                        <div
+                            class="bg-[#282828] p-6 rounded-xl border border-stone-700 hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/5">
+                            <div class="text-3xl mb-3">🔀</div>
+                            <h4 class="font-bold text-sm mb-2 text-textdark">Ordenação por Contexto</h4>
+                            <p class="text-xs text-stone-400 leading-relaxed">Os agentes são ordenados pela decisão do
+                                contexto abordado. Isso significa que, dependendo da necessidade do usuário, diferentes
+                                agentes são ativados em diferentes ordens, gerando <strong
+                                    class="text-stone-300">contextos adaptados</strong> e personalizados.</p>
+                        </div>
+                        <div
+                            class="bg-[#282828] p-6 rounded-xl border border-stone-700 hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/5">
+                            <div class="text-3xl mb-3">🕸️</div>
+                            <h4 class="font-bold text-sm mb-2 text-textdark">Grafo como Cérebro</h4>
+                            <p class="text-xs text-stone-400 leading-relaxed">Tudo isso é alimentado por um banco de
+                                dados orientado a Grafos. Os múltiplos agentes interpretam os nós e arestas do grafo
+                                para compreender o contexto profundo de cada match, tornando o banco de dados um <strong
+                                    class="text-stone-300">grande cérebro relacional</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fluxo Visual do ARIANO -->
+                <div class="mb-12">
+                    <h3 class="text-xl font-bold mb-6 text-center">🔄 Fluxo de Operação do ARIANO</h3>
+                    <div class="flex justify-center">
+                        <img src="https://i.postimg.cc/pV0PQc5y/Design-sem-nome.gif" alt="Fluxo Multi-Agente do ARIANO"
+                            class="w-full max-w-3xl rounded-xl" />
+                    </div>
+                </div>
+
+                <!-- Grafo como Cérebro -->
+                <div class="mb-12">
+                    <h3 class="text-xl font-bold mb-6 text-center">🧬 O Banco de Dados Orientado a Grafos como Cérebro
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="space-y-4">
+                            <div class="bg-[#282828] p-5 rounded-lg border border-stone-700">
+                                <h4 class="font-bold text-primary mb-2 text-sm">📌 Assimilação de Padrões</h4>
+                                <p class="text-xs text-stone-400 leading-relaxed">O banco de dados em Grafos permite que
+                                    os agentes identifiquem padrões ocultos nas conexões entre entidades. Por exemplo:
+                                    se muitas startups de IA bem-sucedidas possuem conexão com determinado mentor, o
+                                    grafo revela esse padrão para futuros matches.</p>
+                            </div>
+                            <div class="bg-[#282828] p-5 rounded-lg border border-stone-700">
+                                <h4 class="font-bold text-primary mb-2 text-sm">🏘️ Comunidades como Conjuntos</h4>
+                                <p class="text-xs text-stone-400 leading-relaxed">O grafo permite a detecção automática
+                                    de <strong class="text-stone-300">comunidades</strong> — agrupamentos naturais de
+                                    nós com conexões densas entre si. Essas comunidades funcionam como conjuntos
+                                    temáticos (ex.: "Cluster de BioTech Nordeste"), permitindo que os agentes
+                                    compreendam ecossistemas inteiros de uma vez.</p>
+                            </div>
+                            <div class="bg-[#282828] p-5 rounded-lg border border-stone-700">
+                                <h4 class="font-bold text-primary mb-2 text-sm">🔍 Contexto Profundo por Match</h4>
+                                <p class="text-xs text-stone-400 leading-relaxed">Cada vez que um match é realizado, os
+                                    agentes percorrem as arestas do grafo para entender <strong
+                                        class="text-stone-300">quem é quem</strong>, quais competências existem, quais
+                                    problemas estão pendentes e quais oportunidades estão disponíveis — tudo em tempo
+                                    real e com complexidade O(1) graças à adjacência livre de índice.</p>
+                            </div>
+                        </div>
+                        <div class="bg-[#282828] p-6 rounded-xl border border-stone-700">
+                            <h4 class="font-bold text-stone-200 mb-4 text-center text-sm">A Quádrupla Hélice no Grafo
+                            </h4>
+                            <div class="space-y-3">
+                                <div class="flex items-center p-3 bg-blue-900/20 rounded-lg border border-blue-800/30">
+                                    <span class="text-2xl mr-3">🎓</span>
+                                    <div>
+                                        <strong class="text-blue-300 text-sm">Academia</strong>
+                                        <p class="text-xs text-stone-400">Pesquisadores, universidades e grupos de
+                                            pesquisa conectados como nós especializados.</p>
+                                    </div>
+                                </div>
+                                <div
+                                    class="flex items-center p-3 bg-green-900/20 rounded-lg border border-green-800/30">
+                                    <span class="text-2xl mr-3">🏛️</span>
+                                    <div>
+                                        <strong class="text-green-300 text-sm">Governo</strong>
+                                        <p class="text-xs text-stone-400">Órgãos e políticas públicas de fomento à
+                                            inovação representados como nós de oportunidade.</p>
+                                    </div>
+                                </div>
+                                <div
+                                    class="flex items-center p-3 bg-purple-900/20 rounded-lg border border-purple-800/30">
+                                    <span class="text-2xl mr-3">🏭</span>
+                                    <div>
+                                        <strong class="text-purple-300 text-sm">Indústria</strong>
+                                        <p class="text-xs text-stone-400">Empresas com problemas reais que precisam de
+                                            soluções inovadoras — os "Donos de Problemas".</p>
+                                    </div>
+                                </div>
+                                <div
+                                    class="flex items-center p-3 bg-amber-900/20 rounded-lg border border-amber-800/30">
+                                    <span class="text-2xl mr-3">👥</span>
+                                    <div>
+                                        <strong class="text-amber-300 text-sm">Sociedade Civil</strong>
+                                        <p class="text-xs text-stone-400">Comunidades, ONGs e cidadãos que participam e
+                                            se beneficiam das inovações geradas.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resumo do ARIANO -->
+                <div
+                    class="bg-gradient-to-r from-blue-900/30 to-purple-900/30 border border-blue-700/40 rounded-xl p-8 text-center">
+                    <h3 class="text-lg font-bold text-textdark mb-3">💡 Por que isso importa para vocês?</h3>
+                    <p class="text-stone-300 text-sm leading-relaxed max-w-3xl mx-auto">
+                        O ARIANO e a plataforma CORETO não são conceitos acadêmicos abstratos — são uma <strong
+                            class="text-primary">demanda real do mercado de trabalho</strong>. Participar deste projeto
+                        permite que vocês, como alunos, vivenciem na prática como sistemas multi-agentes, bancos de
+                        dados orientados a grafos e inteligência artificial se conectam para resolver problemas
+                        complexos do ecossistema de inovação. Esse é o tipo de experiência que diferencia um
+                        desenvolvedor no mercado atual.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-[#0a0a0a] text-stone-400 py-8 text-center text-sm border-t border-stone-800">
+        <p>Apresentação Interativa - Disciplina: Tópicos Integradores (Ciência da Computação)</p>
+        <p class="mt-2 text-stone-500">Desenvolvido com abordagens de Information Architecture e SPA Vanilla JS.</p>
+    </footer>
+
+    <script>
+        // Tab Logic
+        function switchTab(event, tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active', 'text-primary', 'border-primary'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            event.currentTarget.classList.add('active', 'text-primary', 'border-primary');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // Initialize Charts when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            initGrowthChart();
+            initMarketChart();
+            initGraphSimulation();
+            initArianoFlow();
+        });
+
+        function initGrowthChart() {
+            const ctx = document.getElementById('dataGrowthChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['2010', '2015', '2020', '2022', '2025 (Proj)'],
+                    datasets: [{
+                        label: 'Volume Global de Dados (Zettabytes)',
+                        data: [2, 15, 64, 97, 181],
+                        borderColor: '#0074D0',
+                        backgroundColor: 'rgba(0, 116, 208, 0.15)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#0074D0',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { mode: 'index', intersect: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#333333' }, ticks: { color: '#9ca3af' } },
+                        x: { grid: { display: false }, ticks: { color: '#9ca3af' } }
+                    }
+                }
+            });
+        }
+
+        function initMarketChart() {
+            const ctx = document.getElementById('marketTrendChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['CRUD/Web Tradicional', 'Administração SQL Pura', 'NoSQL Distribuído', 'Integração DBs Vetoriais/IA'],
+                    datasets: [{
+                        label: 'Índice de Crescimento de Vagas',
+                        data: [1.1, 1.2, 2.5, 4.2],
+                        backgroundColor: [
+                            '#44403c',
+                            '#57534e',
+                            '#49a3e8',
+                            '#0074D0'
+                        ],
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, display: false },
+                        x: { ticks: { color: '#9ca3af' } }
+                    }
+                }
+            });
+        }
+
+        // Interactive Graph Database Simulation using HTML5 Canvas (No SVG)
+        function initGraphSimulation() {
+            const canvas = document.getElementById('graphCanvas');
+            const ctx = canvas.getContext('2d');
+            const tooltip = document.getElementById('graphTooltip');
+
+            // Internal coordinate system
+            const width = canvas.width;
+            const height = canvas.height;
+
+            // Define Nodes (Entities)
+            const nodes = [
+                { id: 1, label: 'Usuário (Ana)', x: width * 0.2, y: height * 0.3, color: '#3b82f6', radius: 20 },
+                { id: 2, label: 'Produto (Livro IA)', x: width * 0.8, y: height * 0.3, color: '#10b981', radius: 25 },
+                { id: 3, label: 'Categoria (Tech)', x: width * 0.8, y: height * 0.8, color: '#8b5cf6', radius: 20 },
+                { id: 4, label: 'Usuário (Carlos)', x: width * 0.2, y: height * 0.8, color: '#3b82f6', radius: 20 },
+                { id: 5, label: 'Recomendação', x: width * 0.5, y: height * 0.55, color: '#0074D0', radius: 15 }
+            ];
+
+            // Define Edges (Relationships)
+            const edges = [
+                { source: 0, target: 1, label: 'COMPROU' },
+                { source: 1, target: 2, label: 'PERTENCE_A' },
+                { source: 3, target: 1, label: 'AVALIOU (5★)' },
+                { source: 0, target: 4, label: 'AMIGO_DE' },
+                { source: 4, target: 5, label: 'GEROU' },
+                { source: 5, target: 1, label: 'SUGERE' }
+            ];
+
+            let hoveredNodeIndex = -1;
+
+            function draw() {
+                ctx.clearRect(0, 0, width, height);
+
+                // Draw Edges
+                edges.forEach(edge => {
+                    const src = nodes[edge.source];
+                    const tgt = nodes[edge.target];
+
+                    // Highlight logic
+                    const isHighlighted = (hoveredNodeIndex === edge.source || hoveredNodeIndex === edge.target);
+
+                    ctx.beginPath();
+                    ctx.moveTo(src.x, src.y);
+                    ctx.lineTo(tgt.x, tgt.y);
+                    ctx.strokeStyle = isHighlighted ? '#60a5fa' : '#57534e';
+                    ctx.lineWidth = isHighlighted ? 3 : 1;
+                    ctx.stroke();
+
+                    // Edge labels
+                    if (isHighlighted || hoveredNodeIndex === -1) {
+                        const midX = (src.x + tgt.x) / 2;
+                        const midY = (src.y + tgt.y) / 2;
+                        ctx.fillStyle = isHighlighted ? '#60a5fa' : '#78716c';
+                        ctx.font = '10px Inter';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(edge.label, midX, midY - 5);
+                    }
+                });
+
+                // Draw Nodes
+                nodes.forEach((node, index) => {
+                    const isHovered = index === hoveredNodeIndex;
+                    ctx.beginPath();
+                    ctx.arc(node.x, node.y, isHovered ? node.radius + 3 : node.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = node.color;
+                    ctx.fill();
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = isHovered ? '#ffffff' : '#292524';
+                    ctx.stroke();
+
+                    // Node Labels
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 12px Inter';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(node.label.substring(0, 2), node.x, node.y); // Abbreviation inside
+
+                    // Full label outside
+                    ctx.fillStyle = '#a8a29e';
+                    ctx.font = '11px Inter';
+                    ctx.fillText(node.label, node.x, node.y + node.radius + 12);
+                });
+            }
+
+            // Interaction Event Listeners
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                // Adjust for canvas scale to DOM
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const mouseX = (e.clientX - rect.left) * scaleX;
+                const mouseY = (e.clientY - rect.top) * scaleY;
+
+                hoveredNodeIndex = -1;
+                for (let i = 0; i < nodes.length; i++) {
+                    const node = nodes[i];
+                    const dx = mouseX - node.x;
+                    const dy = mouseY - node.y;
+                    if (dx * dx + dy * dy <= node.radius * node.radius) {
+                        hoveredNodeIndex = i;
+                        break;
+                    }
+                }
+
+                if (hoveredNodeIndex !== -1) {
+                    canvas.style.cursor = 'pointer';
+                    tooltip.style.opacity = '1';
+                    tooltip.innerText = "Nó: " + nodes[hoveredNodeIndex].label + " | Conexões físicas lidas em O(1)";
+                } else {
+                    canvas.style.cursor = 'crosshair';
+                    tooltip.style.opacity = '0';
+                }
+                draw();
+            });
+
+            canvas.addEventListener('mouseout', () => {
+                hoveredNodeIndex = -1;
+                tooltip.style.opacity = '0';
+                draw();
+            });
+
+            // Initial draw
+            draw();
+        }
+
+        // ARIANO Multi-Agent Flow Visualization
+        function initArianoFlow() {
+            const canvas = document.getElementById('arianoFlowCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const tooltip = document.getElementById('arianoTooltip');
+            const W = canvas.width;
+            const H = canvas.height;
+
+            // Flow nodes representing ARIANO architecture
+            const flowNodes = [
+                { id: 0, label: 'Usuário', sub: 'Dono de Problema / Solucionador', x: W * 0.08, y: H * 0.5, color: '#3b82f6', r: 28 },
+                { id: 1, label: 'ARIANO', sub: 'Orquestrador IA', x: W * 0.32, y: H * 0.5, color: '#0074D0', r: 38 },
+                { id: 2, label: 'Agente Perfil', sub: 'Analisa competências', x: W * 0.56, y: H * 0.18, color: '#8b5cf6', r: 22 },
+                { id: 3, label: 'Agente Match', sub: 'Encontra pares ideais', x: W * 0.56, y: H * 0.5, color: '#10b981', r: 22 },
+                { id: 4, label: 'Agente Contexto', sub: 'Adapta ao cenário', x: W * 0.56, y: H * 0.82, color: '#f59e0b', r: 22 },
+                { id: 5, label: 'Banco Grafo', sub: 'Cérebro Relacional', x: W * 0.80, y: H * 0.5, color: '#ef4444', r: 32 },
+            ];
+
+            const flowEdges = [
+                { s: 0, t: 1, label: 'Requisição' },
+                { s: 1, t: 2, label: 'Ativa' },
+                { s: 1, t: 3, label: 'Ordena' },
+                { s: 1, t: 4, label: 'Adapta' },
+                { s: 2, t: 5, label: 'Consulta' },
+                { s: 3, t: 5, label: 'Consulta' },
+                { s: 4, t: 5, label: 'Consulta' },
+            ];
+
+            let hovered = -1;
+            let pulse = 0;
+
+            function drawFlow() {
+                ctx.clearRect(0, 0, W, H);
+                pulse += 0.03;
+
+                // Draw edges
+                flowEdges.forEach(e => {
+                    const src = flowNodes[e.s];
+                    const tgt = flowNodes[e.t];
+                    const hl = (hovered === e.s || hovered === e.t);
+
+                    // Arrow line
+                    ctx.beginPath();
+                    const angle = Math.atan2(tgt.y - src.y, tgt.x - src.x);
+                    const startX = src.x + Math.cos(angle) * src.r;
+                    const startY = src.y + Math.sin(angle) * src.r;
+                    const endX = tgt.x - Math.cos(angle) * tgt.r;
+                    const endY = tgt.y - Math.sin(angle) * tgt.r;
+
+                    ctx.moveTo(startX, startY);
+                    ctx.lineTo(endX, endY);
+                    ctx.strokeStyle = hl ? '#60a5fa' : '#4a4a4a';
+                    ctx.lineWidth = hl ? 2.5 : 1.2;
+                    ctx.stroke();
+
+                    // Arrowhead
+                    const arrLen = 8;
+                    ctx.beginPath();
+                    ctx.moveTo(endX, endY);
+                    ctx.lineTo(endX - arrLen * Math.cos(angle - 0.4), endY - arrLen * Math.sin(angle - 0.4));
+                    ctx.lineTo(endX - arrLen * Math.cos(angle + 0.4), endY - arrLen * Math.sin(angle + 0.4));
+                    ctx.closePath();
+                    ctx.fillStyle = hl ? '#60a5fa' : '#4a4a4a';
+                    ctx.fill();
+
+                    // Edge label
+                    if (hl || hovered === -1) {
+                        const mx = (startX + endX) / 2;
+                        const my = (startY + endY) / 2 - 8;
+                        ctx.fillStyle = hl ? '#93c5fd' : '#6b6b6b';
+                        ctx.font = '9px Inter';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(e.label, mx, my);
+                    }
+                });
+
+                // Draw nodes
+                flowNodes.forEach((n, i) => {
+                    const isH = i === hovered;
+                    const r = isH ? n.r + 4 : n.r;
+
+                    // Glow for ARIANO node
+                    if (n.id === 1) {
+                        const glowR = r + 6 + Math.sin(pulse) * 3;
+                        ctx.beginPath();
+                        ctx.arc(n.x, n.y, glowR, 0, Math.PI * 2);
+                        ctx.fillStyle = 'rgba(0, 116, 208, 0.12)';
+                        ctx.fill();
+                    }
+
+                    // Glow for Graph DB node
+                    if (n.id === 5) {
+                        const glowR = r + 5 + Math.sin(pulse + 1) * 3;
+                        ctx.beginPath();
+                        ctx.arc(n.x, n.y, glowR, 0, Math.PI * 2);
+                        ctx.fillStyle = 'rgba(239, 68, 68, 0.1)';
+                        ctx.fill();
+                    }
+
+                    ctx.beginPath();
+                    ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
+                    ctx.fillStyle = n.color;
+                    ctx.fill();
+                    ctx.lineWidth = isH ? 3 : 1.5;
+                    ctx.strokeStyle = isH ? '#ffffff' : '#222';
+                    ctx.stroke();
+
+                    // Icon text inside
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold ' + (n.r > 25 ? '11' : '9') + 'px Inter';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    const shortLabel = n.label.length > 8 ? n.label.substring(0, 7) + '.' : n.label;
+                    ctx.fillText(shortLabel, n.x, n.y);
+
+                    // Full label below
+                    ctx.fillStyle = '#a8a29e';
+                    ctx.font = '10px Inter';
+                    ctx.fillText(n.label, n.x, n.y + r + 14);
+                });
+
+                requestAnimationFrame(drawFlow);
+            }
+
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const sx = W / rect.width;
+                const sy = H / rect.height;
+                const mx = (e.clientX - rect.left) * sx;
+                const my = (e.clientY - rect.top) * sy;
+
+                hovered = -1;
+                for (let i = 0; i < flowNodes.length; i++) {
+                    const dx = mx - flowNodes[i].x;
+                    const dy = my - flowNodes[i].y;
+                    if (dx * dx + dy * dy <= flowNodes[i].r * flowNodes[i].r) {
+                        hovered = i;
+                        break;
+                    }
+                }
+
+                if (hovered !== -1) {
+                    canvas.style.cursor = 'pointer';
+                    tooltip.style.opacity = '1';
+                    tooltip.innerText = flowNodes[hovered].label + ' — ' + flowNodes[hovered].sub;
+                } else {
+                    canvas.style.cursor = 'default';
+                    tooltip.style.opacity = '0';
+                }
+            });
+
+            canvas.addEventListener('mouseout', () => {
+                hovered = -1;
+                tooltip.style.opacity = '0';
+            });
+
+            drawFlow();
+        }
+    </script>
+</body>
+
+</html>
