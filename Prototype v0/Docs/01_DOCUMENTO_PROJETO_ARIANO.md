@@ -21,7 +21,11 @@
 
 | Nome | Matrícula | Papel |
 |------|-----------|-------|
-| Guilherme Andrade de Aguiar | 01606498 | Product Owner / Tech Lead |
+| Guilherme Andrade de Aguiar | 01606498 | Product Owner / Tech Lead / Product Manager |
+| Pedro Miranda | 01607408 | DevOps / Developer Back-End |
+| Ricardo Cezar O. A. de Almeida | 01606498 | Data Architect |
+| Marcio Maycom | 01607574 | UX UI Designer / Developer Front-End |
+| Thiago José Falcão de Freitas | 01597267 | Scrum Master / QA |
 
 ---
 
