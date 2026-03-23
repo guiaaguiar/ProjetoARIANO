@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import type { Edital } from '../types';
 import * as api from '../lib/api';
 import { NODE_COLORS } from '../types';
+import { MOCK_EDITAIS } from '../lib/mockData';
 
 export default function EditaisPage() {
   const [editais, setEditais] = useState<Edital[]>([]);
@@ -20,7 +21,7 @@ export default function EditaisPage() {
     setLoading(true);
     api.getEditais()
       .then(setEditais)
-      .catch(() => toast.error('Erro ao carregar editais'))
+      .catch(() => setEditais(MOCK_EDITAIS))
       .finally(() => setLoading(false));
   };
 
@@ -61,14 +62,14 @@ export default function EditaisPage() {
           <motion.h1 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="text-3xl font-bold text-text-primary">
             Editais
           </motion.h1>
-          <p className="text-text-secondary mt-1">Chamadas públicas e oportunidades de financiamento</p>
+          <p className="text-text-secondary mt-1.5">Chamadas públicas e oportunidades de financiamento</p>
         </div>
         <button onClick={() => setShowForm(true)} className="btn-primary flex items-center gap-2">
           <Plus className="w-4 h-4" /> Novo Edital
         </button>
       </div>
 
-      <motion.div layout className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <motion.div layout className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <AnimatePresence mode="popLayout">
           {loading ? (
             Array.from({ length: 4 }).map((_, i) => (

@@ -114,8 +114,8 @@ export interface DashboardStats {
 export type EntityType = 'student' | 'researcher' | 'professor' | 'edital' | 'skill' | 'area';
 
 export const NODE_COLORS: Record<EntityType, string> = {
-  edital: '#0ea5e9',
-  student: '#06b6d4',
+  edital: '#2563eb',
+  student: '#00e5ff',
   researcher: '#10b981',
   professor: '#f59e0b',
   skill: '#8b5cf6',

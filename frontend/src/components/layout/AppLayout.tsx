@@ -4,10 +4,10 @@ import { Toaster } from 'sonner';
 
 export default function AppLayout() {
   return (
-    <div className="min-h-screen bg-void">
+    <div className="min-h-screen bg-void flex">
       <Sidebar />
-      <main className="ml-[260px] min-h-screen">
-        <div className="p-8">
+      <main className="flex-1 min-h-screen min-w-0">
+        <div className="pt-16 pb-6 px-6 sm:px-10 sm:pb-8 lg:pt-10 lg:pb-10 lg:px-12">
           <Outlet />
         </div>
       </main>
@@ -26,4 +26,3 @@ export default function AppLayout() {
     </div>
   );
 }
-

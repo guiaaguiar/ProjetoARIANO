@@ -137,7 +137,7 @@ body {
   background: linear-gradient(135deg, var(--color-surface), var(--color-surface-light));
   border: 1px solid var(--color-border);
   border-radius: 12px;
-  padding: 20px;
+  padding: 24px;
   transition: all 0.3s ease;
 }
 .kpi-card:hover {

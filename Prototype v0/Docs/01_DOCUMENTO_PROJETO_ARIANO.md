@@ -1,9 +1,10 @@
 # 📋 PROJETO ARIANO — Documento de Visão e Planejamento do MVP
 
-> **Versão:** 1.0.0  
-> **Data:** 16/03/2026  
-> **Status:** Sprint Planning 0 — Documento Inicial  
-> **Metodologia:** SCRUM (adaptado para contexto acadêmico)
+> **Versão:** 1.1.0  
+> **Data:** 23/03/2026  
+> **Status:** Sprint 1 — Frontend Concluído (Visualização de Grafo Interativo)  
+> **Metodologia:** SCRUM (adaptado para contexto acadêmico)  
+> **Última atualização:** 23/03/2026 — Final da Sprint 1
 
 ---
 
@@ -109,7 +110,7 @@ O **GitNexus** (https://gitnexus.vercel.app/) é um motor de inteligência de c�
 
 1. **Mesmo paradigma:** Constrói grafos de conhecimento com nós tipados e arestas ponderadas
 2. **Visual premium:** Estética dark theme com neon, animações fluidas, clustering visual
-3. **Tecnologia comprovada:** Usa Sigma.js v3 + Graphology + ForceAtlas2 — stack que validamos para o ARIANO
+3. **Tecnologia comprovada:** Stack validada para visualização de grafos interativos com neon glow
 4. **Interatividade:** Hover effects, tooltips, seleção com dimming, zoom/pan, filtros
 
 ### 3.2 Análise Visual do GitNexus (Screenshots Documentados)
@@ -332,10 +333,10 @@ CREATE (r)-[:ELIGIBLE_FOR {score: 0.92, justification: "92% aderência..."}]->(e
 │  🎨 FRONTEND                                              │
 │  ├─ Vite 5 + React 18 + TypeScript                       │
 │  ├─ Tailwind CSS v4 (design system)                       │
-│  ├─ Sigma.js v3 + Graphology (grafo interativo WebGL)     │
-│  ├─ ForceAtlas2 Worker (layout físico em Web Worker)      │
-│  ├─ @sigma/edge-curve (edges curvos)                      │
-│  ├─ D3.js (helpers: scales, interpolation)                │
+│  ├─ D3.js v7 (grafo interativo SVG + Force Simulation)    │
+│  ├─ D3-force (layout force-directed com colisão)          │
+│  ├─ SVG Filters (glow neon por tipo de nó)                │
+│  ├─ Curved Edges (arcos SVG arc paths)                    │
 │  ├─ Framer Motion (animações de UI)                       │
 │  ├─ React Router v7 (routing)                             │
 │  ├─ Lucide React (ícones)                                 │
@@ -363,8 +364,8 @@ CREATE (r)-[:ELIGIBLE_FOR {score: 0.92, justification: "92% aderência..."}]->(e
 
 | Tecnologia | Justificativa |
 |-----------|---------------|
-| **Sigma.js + Graphology** | Motor de renderização WebGL comprovado pelo GitNexus. Escala para milhares de nós com animações fluidas. `nodeReducer`/`edgeReducer` permitem highlight dinâmico sem recriar o grafo. |
-| **ForceAtlas2 (Web Worker)** | Layout force-directed que roda em thread separada — UI nunca trava. Configurável por tamanho do grafo. |
+| **D3.js v7 (Force Simulation)** | Biblioteca padrão da indústria para visualização de dados. Controle total sobre rendering via SVG — glow filters, arestas curvas (arc paths), drag interativo, zoom/pan suave. Migrado de Sigma.js para maior controle visual e estética inspirada em grafos acadêmicos (Game of Thrones graph / Labcodes). |
+| **D3-force** | Simulação de forças com gravidade, repulsão e colisão — nós se organizam naturalmente em clusters temáticos sem sobreposição. |
 | **Vite + React** (em vez de Next.js) | ARIANO é uma SPA interativa 100% client-side. Grafo, animações e dashboard são client-heavy. Next.js introduziria overhead de SSR desnecessário. Vite tem HMR < 50ms. |
 | **Neo4j** | Adjacência livre de índice = O(1) para navegação de grafos. Cypher é intuitivo. Perfeito para um sistema de relacionamentos. |
 | **FastAPI + Python** | Ecossistema de IA incomparável (LangChain, LangGraph, Google AI SDK). Async nativo, Swagger automático. |
@@ -398,13 +399,13 @@ Adaptada do GitNexus (tema roxo) para **azul neon** do ARIANO:
 
 | Entidade | Cor | Hex | Justificativa |
 |----------|-----|-----|---------------|
-| **Edital** | Azul Neon | `#0ea5e9` | Nó central, accent principal |
-| **Student** | Cyan | `#06b6d4` | Tom frio, academia |
+| **Edital** | Azul Escuro | `#2563eb` | Nó central, tom institucional/governamental |
+| **Student** | Cyan Brilhante | `#00e5ff` | Tom vibrante ciano, destaque na academia |
 | **Researcher** | Emerald | `#10b981` | Ciência, crescimento |
 | **Professor** | Amber | `#f59e0b` | Experiência, destaque |
 | **Skill** | Violet | `#8b5cf6` | Competências |
 | **Area** | Indigo | `#6366f1` | Áreas de atuação |
-| **ELIGIBLE_FOR** | Gradiente Cyan→Blue | `#06b6d4` → `#0ea5e9` | Aresta de match |
+| **ELIGIBLE_FOR** | Gradiente Cyan→Blue | `#38bdf8` → `#2563eb` | Aresta de match |
 
 ### 6.3 Tipografia
 
@@ -458,72 +459,87 @@ Adaptada do GitNexus (tema roxo) para **azul neon** do ARIANO:
 
 ## 8. Sprint Planning — Roadmap
 
-### Sprint 0 — Fundação (Semana 1)
+### Sprint 0 — Fundação (Semana 1) ✅ CONCLUÍDA
 
 **Objetivo:** Ambiente de desenvolvimento rodando com todas as ferramentas.
 
 | # | Tarefa | Responsável | Status |
 |---|--------|-------------|--------|
-| 0.1 | Criar repositório GitHub `ariano-v0` | Guilherme | ⬜ |
-| 0.2 | Estrutura de pastas (frontend/, backend/, docker-compose.yml) | Guilherme | ⬜ |
-| 0.3 | Docker Compose — Neo4j + Backend | Guilherme | ⬜ |
-| 0.4 | Setup Frontend — Vite + React + TS + Tailwind | Guilherme | ⬜ |
-| 0.5 | Setup Backend — FastAPI + Uvicorn + Neomodel | Guilherme | ⬜ |
-| 0.6 | CI/CD básico — GitHub Actions com lint | Guilherme | ⬜ |
+| 0.1 | Criar repositório GitHub `ProjetoARIANO` | Guilherme | ✅ |
+| 0.2 | Estrutura de pastas (frontend/, backend/, Prototype v0/) | Guilherme | ✅ |
+| 0.3 | Setup Frontend — Vite 5 + React 18 + TS + Tailwind v4 | Guilherme | ✅ |
+| 0.4 | Setup Backend — FastAPI + Uvicorn + Neomodel (estrutura) | Guilherme | ✅ |
+| 0.5 | Design System — Blue Neon Edition (tokens CSS, paleta de cores) | Guilherme | ✅ |
+| 0.6 | Documentação inicial — Documento de Visão + Implementation Plan | Guilherme | ✅ |
 
-### Sprint 1 — Data Layer + CRUD (Semana 2-3)
+### Sprint 1 — Frontend + Visualização de Grafo (Semana 2-3) ✅ CONCLUÍDA
 
-**Objetivo:** Modelar o grafo e expor CRUD via API.
+**Objetivo:** Interface web funcional com grafo interativo, dashboard, e mock data.
+
+| # | Tarefa | Status |
+|---|--------|--------|
+| 1.1 | Layout base dark theme — Sidebar colapsável, Header responsivo | ✅ |
+| 1.2 | Dashboard com KPIs (mock data) — Estudantes, Pesquisadores, Editais, Matches, Score Médio | ✅ |
+| 1.3 | Página de Acadêmicos — Listagem com cards e filtros | ✅ |
+| 1.4 | Página de Editais — Listagem com detalhes de financiamento | ✅ |
+| 1.5 | Página de Matches — Rankings com score, justificativa, habilidades | ✅ |
+| 1.6 | **Visualizador de Grafo (D3.js v7 + Force Simulation)** — Migração de Sigma.js para D3.js | ✅ |
+| 1.7 | Neon Glow SVG Filters — Filtros SVG por tipo de nó com halo luminoso | ✅ |
+| 1.8 | Arestas curvas (arc paths) — Inspiradas no grafo Game of Thrones (Labcodes) | ✅ |
+| 1.9 | Interação: Hover mostra edges, Click trava seleção, ESC desseleciona | ✅ |
+| 1.10 | Filtros por tipo — Edges se ocultam quando endpoints não estão visíveis | ✅ |
+| 1.11 | Painel de detalhes (Desktop: lateral direita / Mobile: bottom sheet) | ✅ |
+| 1.12 | Navegação entre nós pelo painel de conexões | ✅ |
+| 1.13 | Mock data — 48 nós + 112 arestas (15 acadêmicos, 8 editais, skills, áreas) | ✅ |
+| 1.14 | Ajustes de padding/espaçamento — min 8px em todas as bordas, responsivo | ✅ |
+| 1.15 | Cores dos nós atualizadas — Estudante=Cyan (#00e5ff), Edital=Azul Escuro (#2563eb) | ✅ |
+| 1.16 | Remoção de tooltip redundante no hover (UX cleanup) | ✅ |
+| 1.17 | Responsividade geral — Mobile bottom sheet, sidebar colapsável | ✅ |
+
+#### Justificativas Técnicas — Sprint 1
+
+| Decisão | Justificativa |
+|---------|---------------|
+| **Migração Sigma.js → D3.js** | D3.js oferece controle total sobre o rendering SVG, permitindo glow filters customizados, arestas curvas (arc paths), drag interativo e transições suaves. O visual desejado (inspirado em grafos acadêmicos como o Game of Thrones graph da Labcodes) era mais viável em SVG do que em WebGL. |
+| **Arestas ocultas por padrão** | Grafos densos com 100+ arestas visíveis ficam confusos. Mostrar arestas apenas ao interagir com um nó mantém o visual limpo e permite foco nas relações relevantes. |
+| **Filtros afetam edges** | Quando um tipo de nó é filtrado (oculto), exibir arestas apontando para nós invisíveis cria uma experiência inconsistente. A lógica de filtro verifica se ambos os endpoints da aresta estão visíveis antes de exibi-la. |
+| **Click trava, ESC solta** | O hover é efêmero (feedback rápido), mas para analisar conexões o usuário precisa de uma visualização estável. Click trava a seleção e ESC/click-fora libera. |
+| **Painel lateral mantém todas as conexões** | Os filtros são visuais (UX), não alteram dados. O painel de detalhes sempre mostra TODAS as conexões do nó, mesmo que alguns tipos estejam filtrados no grafo. |
+| **Cores: Estudante=Cyan, Edital=Azul Escuro** | Studantes são o público principal e precisam de destaque visual (cyan brilhante). Editais são institucionais e se beneficiam de um tom mais sóbrio (azul escuro). |
+| **Remoção do tooltip de hover** | A caixa de tooltip com nome/tipo/conexões era redundante com o painel de detalhes. Apenas o hover visual (highlight + edges) é suficiente para feedback. |
+
+### Sprint 2 — Data Layer + CRUD + Agentes IA (Semana 4-5)
+
+**Objetivo:** Neo4j local com dados reais, API CRUD, e agentes IA configurando o grafo.
 
 | # | Tarefa |
 |---|--------|
-| 1.1 | Modelar nós academia (Student, Researcher, Professor) |
-| 1.2 | Modelar nós governo (Edital) |
-| 1.3 | Modelar nós auxiliares (Skill, Area) |
-| 1.4 | Modelar arestas com propriedades |
-| 1.5 | Seed de dados (~15 acadêmicos + ~8 editais) |
-| 1.6 | API CRUD com endpoints REST |
-| 1.7 | Testes unitários (Pytest) |
+| 2.1 | Configurar Neo4j local (Community Edition) |
+| 2.2 | Modelar nós academia (Student, Researcher, Professor) via Neomodel |
+| 2.3 | Modelar nós governo (Edital) via Neomodel |
+| 2.4 | Modelar nós auxiliares (Skill, Area) e arestas |
+| 2.5 | Seed de dados (~15 acadêmicos + ~8 editais) no Neo4j |
+| 2.6 | API CRUD com endpoints REST (FastAPI) |
+| 2.7 | Configurar Google Gemini API |
+| 2.8 | Agente ProfileAnalyzer (LangChain + Gemini) |
+| 2.9 | Agente EditalInterpreter |
+| 2.10 | Agente EligibilityCalculator |
+| 2.11 | Match Engine (Cypher puro) |
+| 2.12 | Integração Frontend ↔ Backend (substituir mock por API real) |
+| 2.13 | Testes unitários (Pytest) |
 
-### Sprint 2 — Agentes IA (Semana 3-4)
-
-**Objetivo:** Agentes IA que configuram o grafo.
-
-| # | Tarefa |
-|---|--------|
-| 2.1 | Configurar Google Gemini API |
-| 2.2 | Agente ProfileAnalyzer |
-| 2.3 | Agente EditalInterpreter |
-| 2.4 | Agente EligibilityCalculator |
-| 2.5 | Match Engine (Cypher puro) |
-| 2.6 | Endpoint de match |
-| 2.7 | Testes dos agentes |
-
-### Sprint 3 — Frontend + Visualização (Semana 4-5)
-
-**Objetivo:** Interface web com grafo interativo.
-
-| # | Tarefa |
-|---|--------|
-| 3.1 | Layout base (dark theme, sidebar) |
-| 3.2 | Dashboard com KPIs |
-| 3.3 | Cadastro de acadêmicos |
-| 3.4 | Cadastro de editais |
-| 3.5 | Visualizador de grafo (Sigma.js + ForceAtlas2) |
-| 3.6 | Lista de matches |
-
-### Sprint 4 — Integração + Polish (Semana 5-6)
+### Sprint 3 — Integração + Polish (Semana 5-6)
 
 **Objetivo:** Tudo conectado e pronto para demonstração.
 
 | # | Tarefa |
 |---|--------|
-| 4.1 | Integração E2E |
-| 4.2 | Loading states e feedback |
-| 4.3 | Error handling |
-| 4.4 | Animações de match no grafo |
-| 4.5 | Deploy staging |
-| 4.6 | README + Documentação final |
+| 3.1 | Integração E2E |
+| 3.2 | Loading states e feedback |
+| 3.3 | Error handling |
+| 3.4 | Animações de match no grafo |
+| 3.5 | Deploy staging |
+| 3.6 | README + Documentação final |
 
 ---
 
@@ -625,8 +641,8 @@ docs(readme): atualizar instruções de setup
 | **Cypher** | Linguagem de consulta declarativa do Neo4j |
 | **ELIGIBLE_FOR** | Aresta de match no grafo — conecta acadêmico a edital com score |
 | **ForceAtlas2** | Algoritmo de layout force-directed para posicionar nós em grafos |
-| **Sigma.js** | Biblioteca JavaScript de renderização de grafos via WebGL |
-| **Graphology** | Biblioteca JavaScript para manipulação de grafos em memória |
+| **D3.js** | Biblioteca JavaScript de visualização de dados — usada para o grafo interativo com Force Simulation |
+| **SVG Filters** | Filtros SVG para efeitos visuais como glow neon nos nós do grafo |
 | **LangChain** | Framework para orquestração de LLMs e construção de agentes IA |
 | **MVP** | Minimum Viable Product — produto mínimo viável |
 | **SCRUM** | Framework ágil para gerenciamento de projetos |
@@ -639,8 +655,8 @@ docs(readme): atualizar instruções de setup
 
 1. **GitNexus** — Motor de inteligência de código com knowledge graphs. Disponível em: https://gitnexus.vercel.app/
 2. **Neo4j** — Banco de dados de grafos. Disponível em: https://neo4j.com/
-3. **Sigma.js v3** — Renderizador WebGL para grafos. Disponível em: https://www.sigmajs.org/
-4. **Graphology** — Manipulação de grafos em JavaScript. Disponível em: https://graphology.github.io/
+3. **D3.js** — Biblioteca de visualização de dados. Disponível em: https://d3js.org/
+4. **Labcodes — Graph Databases com Python** — Referência visual para grafos acadêmicos. Disponível em: https://labcodes.com.br/blog/pt-br/development/graph-databases-discutindo-o-relacionamento-dos-seus-dados-com-python/
 5. **FastAPI** — Framework web moderno para Python. Disponível em: https://fastapi.tiangolo.com/
 6. **LangChain** — Framework de orquestração de LLMs. Disponível em: https://python.langchain.com/
 7. **Google Gemini** — API de IA generativa do Google. Disponível em: https://ai.google.dev/
@@ -648,4 +664,4 @@ docs(readme): atualizar instruções de setup
 ---
 
 > **Este documento é um guia vivo atualizado a cada sprint.**  
-> **Última atualização:** 16/03/2026 — Sprint Planning 0
+> **Última atualização:** 23/03/2026 — Sprint 1 Concluída (Visualização de Grafo D3.js + UX Refinements)

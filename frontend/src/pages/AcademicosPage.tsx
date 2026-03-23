@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import type { Student, Researcher, Professor } from '../types';
 import * as api from '../lib/api';
 import { NODE_COLORS } from '../types';
+import { MOCK_STUDENTS, MOCK_RESEARCHERS, MOCK_PROFESSORS } from '../lib/mockData';
 
 type Tab = 'students' | 'researchers' | 'professors';
 
@@ -21,7 +22,7 @@ export default function AcademicosPage() {
     setLoading(true);
     Promise.all([api.getStudents(), api.getResearchers(), api.getProfessors()])
       .then(([s, r, p]) => { setStudents(s); setResearchers(r); setProfessors(p); })
-      .catch(() => toast.error('Erro ao carregar dados'))
+      .catch(() => { setStudents(MOCK_STUDENTS); setResearchers(MOCK_RESEARCHERS); setProfessors(MOCK_PROFESSORS); })
       .finally(() => setLoading(false));
   };
 
@@ -66,7 +67,7 @@ export default function AcademicosPage() {
           <motion.h1 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="text-3xl font-bold text-text-primary">
             Acadêmicos
           </motion.h1>
-          <p className="text-text-secondary mt-1">Gerencie estudantes, pesquisadores e professores</p>
+          <p className="text-text-secondary mt-1.5">Gerencie estudantes, pesquisadores e professores</p>
         </div>
         <button onClick={() => setShowForm(true)} className="btn-primary flex items-center gap-2">
           <Plus className="w-4 h-4" /> Cadastrar
@@ -74,7 +75,7 @@ export default function AcademicosPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-6">
+      <div className="flex gap-2 mb-8">
         {(Object.entries(tabConfig) as [Tab, typeof currentTab][]).map(([key, cfg]) => (
           <button
             key={key}
@@ -93,7 +94,7 @@ export default function AcademicosPage() {
       </div>
 
       {/* Cards */}
-      <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         <AnimatePresence mode="popLayout">
           {loading ? (
             Array.from({ length: 6 }).map((_, i) => (
