@@ -397,36 +397,29 @@ Neste marco do projeto fechamos o front-end assegurando alta fidelidade e arquit
 
 ### Sprint 2 — Data Layer + CRUD + Agentes IA (Semana 4-5)
 
-**Objetivo:** Neo4j local com dados reais, API CRUD, e agentes IA configurando o grafo.
+**Objetivo:** Implementar a lógica do Agente IA principal (Core Engine) e iniciar a conexão entre os sub-sistemas (Backend, DB em grafos e Frontend).
 
-| # | Tarefa |
-|---|--------|
-| 2.1 | Configurar Neo4j local (Community Edition) |
-| 2.2 | Modelar nós academia (Student, Researcher, Professor) via Neomodel |
-| 2.3 | Modelar nós governo (Edital) via Neomodel |
-| 2.4 | Modelar nós auxiliares (Skill, Area) e arestas |
-| 2.5 | Seed de dados (~15 acadêmicos + ~8 editais) no Neo4j |
-| 2.6 | API CRUD com endpoints REST (FastAPI) |
-| 2.7 | Configurar Google Gemini API |
-| 2.8 | Agente ProfileAnalyzer (LangChain + Gemini) |
-| 2.9 | Agente EditalInterpreter |
-| 2.10 | Agente EligibilityCalculator |
-| 2.11 | Match Engine (Cypher puro) |
-| 2.12 | Integração Frontend ↔ Backend (substituir mock por API real) |
-| 2.13 | Testes unitários (Pytest) |
+| # | Tarefa | Responsável | Status |
+|---|--------|-------------|--------|
+| 2.1 | Implementar Agente Principal com LangChain (Core Engine) | Ricardo | Em Desenvolvimento |
+| 2.2 | Configurar Prompts do Gemini para Interpretação Semântica | Ricardo | Backlog |
+| 2.3 | Criar Endpoints no FastAPI para Inserção no Neo4j | Pedro | Backlog |
+| 2.4 | Conectar Interface D3.js aos Endpoints de Grafo | Marcio | Backlog |
+| 2.5 | Refinamento de Funcionalidades para Sprint 2 (Foco IA) | Guilherme | Em Desenvolvimento |
+| 2.6 | Criação de Cenários de Teste para o Agente de Recomendação | Thiago | Backlog |
+| 2.7 | Acompanhamento da Integração IA com o Pipeline de Casos de Uso | Guilherme | Backlog |
 
 ### Sprint 3 — Integração + Polish (Semana 5-6)
 
-**Objetivo:** Tudo conectado e pronto para demonstração.
+**Objetivo:** Tudo conectado e pronto para demonstração, com docker e polimentos de animações finais.
 
-| # | Tarefa |
-|---|--------|
-| 3.1 | Integração E2E |
-| 3.2 | Loading states e feedback |
-| 3.3 | Error handling |
-| 3.4 | Animações de match no grafo |
-| 3.5 | Deploy staging |
-| 3.6 | README + Documentação final |
+| # | Tarefa | Responsável | Status |
+|---|--------|-------------|--------|
+| 3.1 | Setup de Docker orchestration (Docker Compose) | Pedro | Backlog |
+| 3.2 | Ajustes de Timeout e Otimização nas Consultas do Grafo (O(1)) | Ricardo | Backlog |
+| 3.3 | Refinamento Visual de Animações de Matches na Interface D3 | Marcio | Backlog |
+| 3.4 | QA Final E2E Integrado (Front + Back + Neo4j + Agente) | Thiago | Backlog |
+| 3.5 | Preparação para Demo do Produto | Guilherme | Backlog |
 
 ---
 
@@ -446,15 +439,15 @@ O MVP será considerado **Done** quando:
 
 ## 10. Estrutura do Repositório
 
-```
-ariano-v0/
+```text
+ProjetoARIANO/
 ├── .github/
 │   └── workflows/ci.yml          # CI/CD pipeline
 ├── frontend/
 │   ├── src/
 │   │   ├── app/                   # Páginas (Router)
 │   │   ├── components/            # Componentes React reutilizáveis
-│   │   │   ├── graph/             # Sigma.js graph components
+│   │   │   ├── graph/             # Componentes baseados em D3.js
 │   │   │   ├── forms/             # Formulários de cadastro
 │   │   │   └── ui/                # Design system components
 │   │   ├── hooks/                 # Custom React hooks
@@ -476,9 +469,16 @@ ariano-v0/
 │   ├── tests/
 │   ├── requirements.txt
 │   └── Dockerfile
-├── docs/                          # Documentação do projeto
+├── Prototype v0/
+│   ├── Docs/
+│   │   └── 01_DOCUMENTO_PROJETO_ARIANO.md    # 📋 Documento de referência base, visões e evolutivas
+│   └── implementation_plan.md                 # 🗺️ Plano de implementação
+├── trabalho faculdade/
+│   ├── apresentacao_TIdCC (1).html            # 📊 Apresentação da disciplina
+│   └── Banco-de-Dados-Nao-Relacional.pptx    # 📊 Slides sobre BD não-relacional
 ├── docker-compose.yml
 ├── .env.example
+├── .gitignore
 └── README.md
 ```
 

@@ -88,8 +88,36 @@ FASE 2 — Match (online, instantâneo)
 
 ## 📂 Estrutura do Repositório
 
-```
+```text
 ProjetoARIANO/
+├── .github/
+│   └── workflows/ci.yml          # CI/CD pipeline
+├── frontend/
+│   ├── src/
+│   │   ├── app/                   # Páginas (Router)
+│   │   ├── components/            # Componentes React reutilizáveis
+│   │   │   ├── graph/             # Componentes baseados em D3.js
+│   │   │   ├── forms/             # Formulários de cadastro
+│   │   │   └── ui/                # Design system components
+│   │   ├── hooks/                 # Custom React hooks
+│   │   ├── lib/                   # Utilitários, API client
+│   │   ├── styles/                # CSS global + design tokens
+│   │   └── types/                 # TypeScript types
+│   ├── package.json
+│   └── tsconfig.json
+├── backend/
+│   ├── app/
+│   │   ├── api/                   # Routers FastAPI
+│   │   ├── models/                # Neomodel (Nós e Arestas)
+│   │   ├── services/              # Lógica de negócio + Match Engine
+│   │   ├── agents/                # Agentes IA (Graph Configurators)
+│   │   │   ├── profile_analyzer.py
+│   │   │   ├── edital_interpreter.py
+│   │   │   └── eligibility_calculator.py
+│   │   └── core/                  # Config, dependências
+│   ├── tests/
+│   ├── requirements.txt
+│   └── Dockerfile
 ├── Prototype v0/
 │   ├── Docs/
 │   │   └── 01_DOCUMENTO_PROJETO_ARIANO.md    # 📋 Documento de referência base, visões e evolutivas
@@ -97,6 +125,9 @@ ProjetoARIANO/
 ├── trabalho faculdade/
 │   ├── apresentacao_TIdCC (1).html            # 📊 Apresentação da disciplina
 │   └── Banco-de-Dados-Nao-Relacional.pptx    # 📊 Slides sobre BD não-relacional
+├── docker-compose.yml
+├── .env.example
+├── .gitignore
 └── README.md                                  # 📖 Este arquivo
 ```
 
@@ -169,7 +200,11 @@ O design do ARIANO explora a complexidade orgânica e viva de grafos densos atra
 
 | Nome | Matrícula | Papel |
 |------|-----------|-------|
-| Guilherme Andrade de Aguiar | 01606498 | Product Owner / Tech Lead |
+| Guilherme Andrade de Aguiar | 01606498 | Product Owner / Tech Lead / Product Manager |
+| Pedro Miranda | 01607408 | DevOps / Back-End Developer |
+| Ricardo Cezar O. A. de Almeida | 01606498 | AI Agent Architect / Graph Data Engineer |
+| Marcio Maycom | 01607574 | UX UI Designer / Front-End Developer |
+| Thiago José Falcão de Freitas | 01597267 | Scrum Master / QA |
 
 ---
 
