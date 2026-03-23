@@ -28,8 +28,12 @@ build/
 # Neo4j
 neo4j_data/
 
-# Logs
-*.log
+# Python
+*.egg
+.eggs/
+.ruff_cache/
+.pytest_cache/
+htmlcov/
 
 # Temporary
 *.tmp

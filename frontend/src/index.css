@@ -1,0 +1,232 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════
+   ARIANO — Blue Neon Edition Design System
+   ═══════════════════════════════════════════ */
+
+@theme {
+  --color-void: #020810;
+  --color-void-light: #060e1a;
+  --color-surface: #0a1420;
+  --color-surface-light: #0f1d2e;
+  --color-surface-hover: #132438;
+  --color-border: #1e3a5f;
+  --color-border-light: #2a4a6b;
+  --color-text-primary: #e2e8f0;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: #64748b;
+  --color-accent: #0ea5e9;
+  --color-accent-glow: #38bdf8;
+  --color-accent-dim: #0284c7;
+  --color-node-edital: #0ea5e9;
+  --color-node-student: #06b6d4;
+  --color-node-researcher: #10b981;
+  --color-node-professor: #f59e0b;
+  --color-node-skill: #8b5cf6;
+  --color-node-area: #6366f1;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --font-outfit: 'Outfit', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+/* ═══ Global Reset ═══ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-outfit);
+  background-color: var(--color-void);
+  color: var(--color-text-primary);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ═══ Scrollbar Styling ═══ */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-void);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent-dim);
+}
+
+/* ═══ Glow Effects ═══ */
+.glow-accent {
+  box-shadow: 0 0 20px rgba(14, 165, 233, 0.15),
+              0 0 40px rgba(14, 165, 233, 0.05);
+}
+.glow-accent-strong {
+  box-shadow: 0 0 20px rgba(14, 165, 233, 0.3),
+              0 0 60px rgba(14, 165, 233, 0.1);
+}
+.glow-text {
+  text-shadow: 0 0 20px rgba(14, 165, 233, 0.5);
+}
+
+/* ═══ Card Glass Effect ═══ */
+.card-glass {
+  background: linear-gradient(135deg, rgba(10, 20, 32, 0.8), rgba(15, 29, 46, 0.6));
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+.card-glass:hover {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 20px rgba(14, 165, 233, 0.1);
+}
+
+/* ═══ Animated Gradient Background ═══ */
+.bg-gradient-animated {
+  background: linear-gradient(
+    135deg,
+    var(--color-void) 0%,
+    var(--color-void-light) 25%,
+    var(--color-surface) 50%,
+    var(--color-void-light) 75%,
+    var(--color-void) 100%
+  );
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* ═══ Pulse Animation ═══ */
+@keyframes pulse-neon {
+  0%, 100% { box-shadow: 0 0 5px rgba(14, 165, 233, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(14, 165, 233, 0.6), 0 0 40px rgba(14, 165, 233, 0.2); }
+}
+.pulse-neon {
+  animation: pulse-neon 2s ease-in-out infinite;
+}
+
+/* ═══ Graph Tooltip ═══ */
+.graph-tooltip {
+  background: rgba(10, 20, 32, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--color-text-primary);
+  pointer-events: none;
+  z-index: 1000;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+/* ═══ KPI Card ═══ */
+.kpi-card {
+  background: linear-gradient(135deg, var(--color-surface), var(--color-surface-light));
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+.kpi-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-accent);
+  box-shadow: 0 8px 30px rgba(14, 165, 233, 0.1);
+}
+
+/* ═══ Form Inputs ═══ */
+input, select, textarea {
+  background: var(--color-void-light);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--color-text-primary);
+  font-family: var(--font-outfit);
+  font-size: 14px;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+}
+input::placeholder, textarea::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* ═══ Button Styles ═══ */
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-dim));
+  color: white;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-outfit);
+  font-size: 14px;
+}
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(14, 165, 233, 0.3);
+}
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background: var(--color-surface-light);
+  color: var(--color-text-primary);
+  font-weight: 500;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-outfit);
+  font-size: 14px;
+}
+.btn-secondary:hover {
+  border-color: var(--color-accent);
+  background: var(--color-surface-hover);
+}
+
+.btn-danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--color-error);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-outfit);
+  font-size: 13px;
+}
+.btn-danger:hover {
+  background: rgba(239, 68, 68, 0.25);
+}
+
+/* ═══ Badge ═══ */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid;
+}

@@ -243,7 +243,7 @@ Request → API → Cypher: MATCH (a)-[r:ELIGIBLE_FOR]->(e) WHERE r.score >= 0.7
 
 ```powershell
 # 1. Clonar e subir infra
-git clone https://github.com/<user>/ariano-v0.git
+git clone https://github.com/guiaaguiar/ProjetoARIANO.git
 cd ariano-v0
 docker-compose up -d neo4j
 
