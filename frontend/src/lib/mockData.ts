@@ -26,7 +26,7 @@ const studentNames = [
   'Kevin Melo', 'Larissa Freitas', 'Matheus Alencar', 'Natália Costa', 'Otávio Rangel',
   'Priscila Dantas', 'Ricardo Neves', 'Samara Leite', 'Tainá Monteiro', 'Ulisses Brito',
   'Valeria Pacheco', 'Wesley Tavares', 'Ximena Cruz', 'Yago Figueiredo', 'Zara Nogueira',
-];
+].slice(0, 20);
 
 const researcherNames = [
   'Dr. Marcos Vasconcelos', 'Dra. Fernanda Albuquerque', 'MSc. Ricardo Barros', 'Dr. Paulo Monteiro', 'Dra. Lucia Campos',
@@ -39,7 +39,7 @@ const researcherNames = [
   'Dr. Marta Ventura', 'Dra. João Marcos Reis', 'MSc. Luiza Helena Castro', 'Dr. Victor Hugo Prado', 'Dra. Natasha Ferraz',
   'Dr. Otávio Mendes', 'MSc. Gabriela Rocha', 'Dr. Cláudio Vargas', 'Dra. Bianca Fontes', 'MSc. Eduardo Britto',
   'Dr. Paula Andrea Silva', 'Dra. Miguel Ângelo Torres', 'MSc. Raquel Duarte', 'Dr. Alex Sandro Melo', 'Dra. Flávia Montenegro',
-];
+].slice(0, 20);
 
 const professorNames = [
   'Prof. Antonio Guimarães', 'Prof. Maria Beatriz', 'Prof. Roberto Nascimento', 'Prof. Sandra Freitas', 'Prof. João Cavalcanti',
@@ -52,7 +52,7 @@ const professorNames = [
   'Prof. Vera Dantas', 'Prof. Flávio Xavier', 'Prof. Patrícia Bezerra', 'Prof. Álvaro Monteiro', 'Prof. Sueli Campos',
   'Prof. Geraldo Matos', 'Prof. Helena Cavalcanti', 'Prof. Rubens Araújo', 'Prof. Simone Rodrigues', 'Prof. Tarcísio Lins',
   'Prof. Iracema Borges', 'Prof. Valmir Carvalho', 'Prof. Joana Medeiros', 'Prof. Cássio Nogueira', 'Prof. Débora Fonseca',
-];
+].slice(0, 20);
 
 const editalNames = [
   'FACEPE - IC 2026', 'CNPq Universal 2026', 'FACEPE - Inovação Tech', 'CAPES - Mestrado 2026', 'Smart City Challenge',
@@ -65,7 +65,7 @@ const editalNames = [
   'FACEPE - Pós-Mestrado', 'CNPq - Universal Faixa C', 'CAPES - PROSUC', 'Gov Federal - BrazilAI', 'FACEPE - IC Inovação',
   'Samsung Ocean Grant', 'Google Research Latin', 'AWS EdStart Brasil', 'Microsoft AI 4 Good', 'Meta Research NE',
   'Motorola Innov. Fund', 'Intel AcadCloud', 'NVIDIA GPU Grant', 'Huawei Seeds', 'IBM Quantum Brasil',
-];
+].slice(0, 20);
 
 const agencies = ['FACEPE', 'CNPq', 'CAPES', 'Pref. Recife', 'FINEP', 'MCTI', 'SEBRAE', 'Embrapa', 'BNDES', 'RNP', 'FAPESP', 'Min. Saúde', 'ANP', 'Porto Digital', 'Gov PE', 'Gov Federal', 'Samsung', 'Google', 'AWS', 'Microsoft', 'Meta', 'Motorola', 'Intel', 'NVIDIA', 'Huawei', 'IBM'];
 
@@ -77,7 +77,7 @@ const skillNames = [
   'Rust', 'Go', 'Java', 'C++', 'Swift', 'Kotlin', 'Flutter', 'React Native',
   'GraphQL', 'REST API', 'WebSockets', 'MQTT', 'Blockchain', 'Smart Contracts',
   'Data Engineering', 'ETL', 'Power BI', 'Tableau', 'R', 'MATLAB', 'Julia', 'Scikit-learn',
-];
+].slice(0, 20);
 
 const areaNames = [
   'Inteligência Artificial', 'Ciência de Dados', 'Eng. de Software', 'Segurança da Informação',
@@ -88,7 +88,7 @@ const areaNames = [
   'Teoria da Computação', 'Otimização Combinatória', 'Processamento de Sinais',
   'Telecomunicações', 'Microeletrônica', 'Automação Industrial',
   'Saúde Digital', 'FinTech', 'EdTech', 'AgriTech', 'GovTech', 'LegalTech',
-];
+].slice(0, 20);
 
 // ═══════════════════════════════════════════
 // BUILD NODES
@@ -247,13 +247,13 @@ professorNames.forEach((_, i) => {
   if (i % 2 === 0) addEdge(`p${i + 1}`, `r${(i % researcherNames.length) + 1}`, 'colabora', 1, NODE_COLORS.professor);
 });
 
-// ELIGIBLE_FOR matches — students get 2-3 editais each, researchers 1-2, professors 1-2
-for (let i = 0; i < 50; i++) {
-  addEdge(`s${i + 1}`, `e${(i * 3) % editalNames.length + 1}`, 'elegível', 0.65 + (i % 4) * 0.09, '#0ea5e9');
-  addEdge(`s${i + 1}`, `e${(i * 7 + 5) % editalNames.length + 1}`, 'elegível', 0.60 + (i % 5) * 0.08, '#0ea5e9');
-  if (i % 3 === 0) addEdge(`s${i + 1}`, `e${(i * 11 + 2) % editalNames.length + 1}`, 'elegível', 0.55 + (i % 6) * 0.07, '#0ea5e9');
+// ELIGIBLE_FOR matches — students get ~10 editais each, researchers 1-2, professors 1-2
+for (let i = 0; i < 20; i++) {
+  for (let j = 0; j < 10; j++) {
+    addEdge(`s${i + 1}`, `e${((i + j * 3) % editalNames.length) + 1}`, 'elegível', 0.60 + ((i + j) % 4) * 0.1, '#0ea5e9');
+  }
 }
-for (let i = 0; i < 30; i++) {
+for (let i = 0; i < 20; i++) {
   addEdge(`r${i + 1}`, `e${(i * 2 + 1) % editalNames.length + 1}`, 'elegível', 0.75 + (i % 4) * 0.06, '#0ea5e9');
   if (i % 2 === 0) addEdge(`r${i + 1}`, `e${(i * 5 + 8) % editalNames.length + 1}`, 'elegível', 0.70 + (i % 3) * 0.08, '#0ea5e9');
 }

@@ -40,12 +40,11 @@ Este repositório contém o **MVP (Minimum Viable Product)** do ARIANO, focado e
 |------|--------|-----------|
 | 📐 Planejamento | ✅ Concluído | Visão do produto, arquitetura, stack, design system |
 | 📋 Levantamento de Requisitos | ✅ Concluído | User Stories, Product Backlog, DoD |
-| 🎨 Design Reference | ✅ Concluído | Análise visual do GitNexus, paleta Blue Neon |
-| 🛠️ Plano de Implementação | ✅ Concluído | Roadmap de 4 sprints, estrutura de pastas |
-| 💻 Sprint 0 — Fundação | ⬜ Pendente | Setup do repo, Docker, CI/CD |
-| 📊 Sprint 1 — Data Layer | ⬜ Pendente | Modelagem Neo4j, API CRUD |
-| 🤖 Sprint 2 — Agentes IA | ⬜ Pendente | ProfileAnalyzer, EditalInterpreter, EligibilityCalc |
-| 🖥️ Sprint 3 — Frontend | ⬜ Pendente | Dashboard, cadastro, visualizador de grafo |
+| 🎨 Design Reference | ✅ Concluído | Referência de Design e paletas Blue Neon ajustadas |
+| 🛠️ Plano de Implementação | ✅ Concluído | Roadmap de 4 sprints construído, modelo MVC escalonado |
+| 💻 Sprint 0 — Fundação | ✅ Concluído | Setup do repo e de ecossistema local configurado |
+| 📊 Sprint 1 — UI & Web Grafo| ✅ Concluído | Frontend consolidado (D3.js), Data Mock de nós refinada (ex: limites lógicos e balanceamento algorítmico) |
+| 🤖 Sprint 2 — Data & Agentes | ⬜ Pendente | Modelagem Neo4j, ProfileAnalyzer Backend Python, APIs CRUD |
 | ✨ Sprint 4 — Polish | ⬜ Pendente | Integração E2E, animações, deploy |
 
 ---
@@ -55,10 +54,10 @@ Este repositório contém o **MVP (Minimum Viable Product)** do ARIANO, focado e
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  🎨 FRONTEND — Vite 5 + React 18 + TypeScript               │
-│  ├─ Sigma.js v3 + Graphology (grafo interativo WebGL)        │
-│  ├─ ForceAtlas2 Worker (layout físico em Web Worker)         │
+│  ├─ D3.js v7 (Grafo interativo SVG + Force Simulation)       │
 │  ├─ Tailwind CSS v4 · Framer Motion · React Router v7       │
-│  └─ Lucide React · Outfit + JetBrains Mono                  │
+│  ├─ Clean Code / Components e Segurança Tipada via Zod      │
+│  └─ MockData Lógico balanceado (Nós dimensionados em 20/eq) │
 ├──────────────────────────┬──────────────────────────────────┤
 │  ⚙️ BACKEND              │  🤖 AGENTES IA                   │
 │  Python 3.12 + FastAPI   │  LangChain + LangGraph           │
@@ -93,11 +92,8 @@ FASE 2 — Match (online, instantâneo)
 ProjetoARIANO/
 ├── Prototype v0/
 │   ├── Docs/
-│   │   ├── 01_DOCUMENTO_PROJETO_ARIANO.md    # 📋 Documento completo do projeto
-│   │   └── assets/
-│   │       ├── screenshots/                   # 📸 19 screenshots de referência (GitNexus)
-│   │       └── recordings/                    # 🎥 Gravações de exploração do GitNexus
-│   └── implementation_plan.md                 # 🗺️ Plano de implementação (4 sprints)
+│   │   └── 01_DOCUMENTO_PROJETO_ARIANO.md    # 📋 Documento de referência base, visões e evolutivas
+│   └── implementation_plan.md                 # 🗺️ Plano de implementação
 ├── trabalho faculdade/
 │   ├── apresentacao_TIdCC (1).html            # 📊 Apresentação da disciplina
 │   └── Banco-de-Dados-Nao-Relacional.pptx    # 📊 Slides sobre BD não-relacional
@@ -108,7 +104,7 @@ ProjetoARIANO/
 
 ## 🎨 Design — Blue Neon Edition
 
-O design do ARIANO é inspirado no [GitNexus](https://gitnexus.vercel.app/), adaptado de roxo para **azul neon**.
+O design do ARIANO explora a complexidade orgânica e viva de grafos densos através de customizações da infraestrutura provida pelo **D3.js**. Baseamos nossa elegância analítica e visual moderno no repositório de excelência [GitNexus](https://github.com/abhigyanpatwari/GitNexus), transportando os tons para um ambiente tipicamente tecnológico ("Azul Neon").
 
 | Token | Cor | Uso |
 |-------|-----|-----|
@@ -134,26 +130,21 @@ O design do ARIANO é inspirado no [GitNexus](https://gitnexus.vercel.app/), ada
 
 | Documento | Descrição | Link |
 |-----------|-----------|------|
-| **Documento do Projeto** | Visão completa: contexto, arquitetura, backlog, sprints, DoD | [`Docs/01_DOCUMENTO_PROJETO_ARIANO.md`](Prototype%20v0/Docs/01_DOCUMENTO_PROJETO_ARIANO.md) |
-| **Plano de Implementação** | Stack final, roadmap por sprint, modelagem do grafo | [`implementation_plan.md`](Prototype%20v0/implementation_plan.md) |
-| **Screenshots de Referência** | 19 capturas do GitNexus para referência de design | [`Docs/assets/screenshots/`](Prototype%20v0/Docs/assets/screenshots/) |
+| **Documento do Projeto** | Histórico consolidado do MVP, arquitetura, design vision, Boas práticas detalhadas das Sprints. | [`Docs/01_DOCUMENTO_PROJETO_ARIANO.md`](Prototype%20v0/Docs/01_DOCUMENTO_PROJETO_ARIANO.md) |
+| **Plano de Implementação** | Stack final e roadmap iteracional de entrega de Features. | [`implementation_plan.md`](Prototype%20v0/implementation_plan.md) |
 
 ---
 
 ## 🛠️ Stack Tecnológica
 
 ### Frontend
-| Tecnologia | Versão | Papel |
+| Tecnologia | Versão | Papel e Justificativas/Boas Práticas |
 |-----------|--------|-------|
-| Vite | 5.x | Build tool + Dev server (HMR < 50ms) |
-| React | 18.x | UI framework |
-| TypeScript | 5.x | Type safety |
-| Sigma.js | 3.x | Motor de renderização de grafo (WebGL) |
-| Graphology | 0.26.x | Manipulação de grafos em memória |
-| ForceAtlas2 | Worker | Layout force-directed em Web Worker |
-| Tailwind CSS | 4.x | Design system |
-| Framer Motion | — | Animações de UI |
-| React Router | 7.x | Routing SPA |
+| Vite | 5.x | Build tool moderna capaz de providenciar Hot Reload extremamente veloz (HMR < 50ms) mantendo foco no workflow contínuo |
+| React | 18.x | Componentização Client-side para melhor orquestração de elementos UI, obedecendo ao Separation of Concerns e limitando dependências rígidas na apresentação |
+| TypeScript | 5.x | Tipagem profunda para diminuição de quebras acidentais de runtime provendo documentação estática dos Contratos de Dados (Interfaces/Tipos) |
+| D3.js | 7.x | Adoção desta biblioteca pela versatilidade crua de renderizar SVG em manipulação de DOM controlada |
+| Tailwind CSS | 4.x | Criação das variáveis customizadas para gerenciar uniformidade de UX no ecossistema (Zero css obsoleto) |
 
 ### Backend
 | Tecnologia | Versão | Papel |
