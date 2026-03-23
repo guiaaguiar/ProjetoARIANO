@@ -69,11 +69,11 @@ export default function EditaisPage() {
         </button>
       </div>
 
-      <motion.div layout className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <motion.div layout className="grid grid-cols-1 lg:grid-cols-2 gap-2">
         <AnimatePresence mode="popLayout">
           {loading ? (
             Array.from({ length: 4 }).map((_, i) => (
-              <motion.div key={`skel-${i}`} className="card-glass p-5 animate-pulse">
+              <motion.div key={`skel-${i}`} className="card-glass animate-pulse" style={{ padding: '4px' }}>
                 <div className="h-40 bg-surface-hover rounded" />
               </motion.div>
             ))
@@ -86,7 +86,8 @@ export default function EditaisPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
-                  className="card-glass p-5 group"
+                  className="card-glass group"
+                  style={{ padding: '4px' }}
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
@@ -126,7 +127,7 @@ export default function EditaisPage() {
                       min: {edital.min_level}
                     </span>
                   </div>
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="flex flex-wrap gap-1.5" style={{ paddingTop: '2px' }}>
                     {edital.required_skills.map(sk => (
                       <span key={sk.uid} className="badge text-[11px]"
                         style={{ backgroundColor: `${NODE_COLORS.skill}15`, borderColor: `${NODE_COLORS.skill}30`, color: NODE_COLORS.skill }}>

@@ -25,8 +25,8 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="p-4 border-b border-border flex items-center justify-between">
         <div className="flex items-center gap-2.5 overflow-hidden">
-          <div className="w-9 h-9 min-w-[36px] rounded-lg bg-gradient-to-br from-accent to-accent-dim flex items-center justify-center glow-accent">
-            <Network className="w-4 h-4 text-white" />
+          <div className="w-9 h-9 min-w-[36px] flex items-center justify-center">
+            <img src="/logo-coreto.png" alt="ARIANO Logo" className="w-full h-full object-contain" />
           </div>
           <AnimatePresence>
             {(!collapsed || isMobile) && (

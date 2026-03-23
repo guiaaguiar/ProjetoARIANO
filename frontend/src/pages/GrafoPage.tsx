@@ -539,7 +539,7 @@ export default function GrafoPage() {
   const nodeColor = (type: string) => NODE_COLORS[type as EntityType] || '#64748b';
 
   return (
-    <div className="h-[calc(100vh-88px)] lg:h-[calc(100vh-80px)] flex flex-col gap-4">
+    <div className="h-[calc(100vh-88px)] lg:h-[calc(100vh-56px)] flex flex-col gap-4">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
@@ -563,16 +563,16 @@ export default function GrafoPage() {
       <div className="flex gap-2.5 flex-wrap">
         {(Object.entries(NODE_COLORS) as [EntityType, string][]).map(([type, color]) => (
           <button key={type} onClick={() => toggleFilter(type)}
-            className={`badge text-xs cursor-pointer transition-all px-3 py-1.5 ${activeFilters.has(type) ? '' : 'opacity-20'}`}
-            style={{ backgroundColor: `${color}15`, borderColor: `${color}40`, color }}>
+            className={`badge text-xs cursor-pointer transition-all py-1.5 ${activeFilters.has(type) ? '' : 'opacity-20'}`}
+            style={{ backgroundColor: `${color}15`, borderColor: `${color}40`, color, paddingLeft: '2px', paddingRight: '2px' }}>
             <span className="w-2.5 h-2.5 rounded-full mr-2 inline-block" style={{ backgroundColor: color, boxShadow: `0 0 8px ${color}80` }} />
-            {NODE_LABELS[type]}
+            <span style={{ paddingLeft: '2px' }}>{NODE_LABELS[type]}</span>
           </button>
         ))}
       </div>
 
       {/* Graph + Detail panel */}
-      <div className="flex-1 flex gap-5 min-h-0">
+      <div className="flex-1 flex gap-2 min-h-0">
         {/* Graph Container */}
         <div ref={containerRef} className="relative rounded-xl border border-border overflow-hidden flex-1"
           style={{ backgroundColor: '#020810' }}>
@@ -603,7 +603,7 @@ export default function GrafoPage() {
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               className="hidden lg:flex flex-col rounded-xl border border-border bg-surface overflow-hidden min-w-0"
             >
-              <div className="p-5 border-b border-border">
+              <div className="border-b border-border" style={{ padding: '4px' }}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-10 h-10 min-w-[40px] rounded-full flex items-center justify-center text-sm font-bold"
@@ -624,11 +624,11 @@ export default function GrafoPage() {
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-5 space-y-5">
+              <div className="flex-1 overflow-y-auto space-y-5" style={{ padding: '4px' }}>
                 {Object.entries(selectedNode.metadata).filter(([, v]) => v).length > 0 && (
                   <div>
-                    <p className="text-[10px] text-text-muted uppercase tracking-wider mb-2.5 font-semibold">Detalhes</p>
-                    <div className="space-y-2 bg-void-light rounded-lg p-3.5">
+                    <p className="text-[10px] text-text-muted uppercase tracking-wider mb-2.5 font-semibold" style={{ padding: '4px' }}>Detalhes</p>
+                    <div className="space-y-2 bg-void-light rounded-lg" style={{ padding: '4px' }}>
                       {Object.entries(selectedNode.metadata).filter(([, v]) => v).map(([key, val]) => (
                         <div key={key} className="flex justify-between text-xs gap-2">
                           <span className="text-text-muted capitalize">{key.replace(/_/g, ' ')}</span>
@@ -644,14 +644,15 @@ export default function GrafoPage() {
                 )}
 
                 <div>
-                  <p className="text-[10px] text-text-muted uppercase tracking-wider mb-2.5 font-semibold">
+                  <p className="text-[10px] text-text-muted uppercase tracking-wider font-semibold" style={{ paddingTop: '10px', paddingBottom: '10px' }}>
                     Conexões ({selectedNode.neighbors.length})
                   </p>
-                  <div className="space-y-1 max-h-[400px] overflow-y-auto">
+                  <div className="space-y-1">
                     {selectedNode.neighbors.map(n => (
                       <div key={n.id}
                         onClick={() => selectNodeFromPanel(n.id)}
-                        className="flex items-center gap-2.5 p-2.5 rounded-lg hover:bg-surface-hover cursor-pointer transition-all group"
+                        className="flex items-center gap-2.5 rounded-lg hover:bg-surface-hover cursor-pointer transition-all group"
+                        style={{ padding: '4px' }}
                       >
                         <span className="w-2.5 h-2.5 min-w-[10px] rounded-full" style={{ backgroundColor: nodeColor(n.type), boxShadow: `0 0 6px ${nodeColor(n.type)}60` }} />
                         <div className="min-w-0 flex-1">

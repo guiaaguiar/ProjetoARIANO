@@ -6,7 +6,7 @@ export default function AppLayout() {
   return (
     <div className="min-h-screen bg-void flex">
       <Sidebar />
-      <main className="flex-1 min-h-screen min-w-0">
+      <main className="flex-1 min-h-screen min-w-0" style={{ paddingLeft: '8px', paddingRight: '8px', paddingTop: '8px', paddingBottom: '8px' }}>
         <div className="pt-16 pb-6 px-6 sm:px-10 sm:pb-8 lg:pt-10 lg:pb-10 lg:px-12">
           <Outlet />
         </div>
@@ -20,6 +20,10 @@ export default function AppLayout() {
             border: '1px solid #1e3a5f',
             color: '#e2e8f0',
             fontFamily: "'Outfit', sans-serif",
+            paddingLeft: '8px',
+            paddingRight: '8px',
+            paddingTop: '8px',
+            paddingBottom: '8px',
           },
         }}
       />
