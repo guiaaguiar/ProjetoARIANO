@@ -156,24 +156,18 @@ Request → API → Cypher: MATCH (a)-[r:ELIGIBLE_FOR]->(e) WHERE r.score >= 0.7
 | Cores atualizadas | — | Student=#00e5ff (cyan), Edital=#2563eb (azul escuro) | ✅ |
 | UX/UI refinements | — | Padding 8px+, responsividade, tooltip removido | ✅ |
 
-### Sprint 2 — Data Layer + CRUD + Agentes IA (Semana 4-5)
+### Sprint 2 — Agente Inteligente de Grafos (Foco Atual / Semana 4-5)
+
+**Objetivo Central:** Construir de imediato o Agente de IA Principal especializado em interpretar o Neo4j e fazer conexões estratégicas de forma matemática (como projetado nos Mocks). Prioridade sobre CRUD e integrações completas do Front-end.
 
 | Tarefa | US | Detalhes |
 |--------|----|---------|
-| Config Neo4j local | US-04 | Community Edition, Bolt protocol |
-| Modelar nós academia | US-04 | Student, Researcher, Professor (Neomodel) |
-| Modelar nós governo | US-04 | Edital (Neomodel) |
-| Modelar nós auxiliares | US-05 | Skill, Area |
-| Seed de dados | US-07 | ~15 acadêmicos + ~8 editais FACEPE |
-| API CRUD | US-04 | FastAPI routers (POST/GET/PUT/DELETE) |
-| Config Google Gemini | US-08 | API key, SDK, LangChain wrapper |
-| ProfileAnalyzer | US-08 | Cadastro → extrai skills + classifica área → cria nós/arestas |
-| EditalInterpreter | US-09 | Edital → extrai requisitos + áreas → cria arestas |
-| EligibilityCalculator | US-10 | Percorre grafo → calcula score → cria ELIGIBLE_FOR |
-| Match Engine | US-11 | Cypher puro: `MATCH (a)-[r:ELIGIBLE_FOR]->(e)` |
-| Endpoint match | US-11 | `GET /api/matches?entity_id=X&threshold=0.7` |
-| Integração Frontend | — | Substituir mock data por API real |
-| Testes | US-04 | Pytest + Neo4j container |
+| **Implementar Agente Especialista Neo4j (MAIN)** | US-10 | Criar script AI que interage, raciocina e calcula scores de Matches via LangChain + Neo4j |
+| Configuração Neo4j (Data Layer) | US-04 | Community Edition, Bolt protocol, transcrever estruturação dos mocks (20x20) para o Banco |
+| Match Engine Concept (Cypher) | US-11 | Cypher puro com queries O(1): `MATCH (a)-[r:ELIGIBLE_FOR]->(e)` a partir da IA |
+| Agentes Auxiliares (Profile / Edital Interpret) | US-08 | Roteamento de classificação extração de features |
+| API Rest FastAPI (CRUD Base) | US-04 | Tarefa Secundária: Expor o Graph localmente (GET/POST endpoints rasos) |
+| Integração Frontend Progressiva | — | Substituição do mock (Apenas quando o Data Layer consolidar com a IA primeiro) |
 
 ### Sprint 3 — Integração + Polish (Semana 5-6)
 
