@@ -236,7 +236,3 @@ O design do ARIANO explora a complexidade orgânica e viva de grafos densos atra
 Este projeto é desenvolvido no contexto acadêmico da UNINASSAU Graças.
 
 ---
-
-<p align="center">
-  <sub>Feito com 🧠 por <strong>Guilherme Aguiar</strong> — UNINASSAU Graças, 2026</sub>
-</p>
