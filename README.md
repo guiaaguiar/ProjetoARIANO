@@ -32,6 +32,81 @@ Este repositório contém o **MVP (Minimum Viable Product)** do ARIANO, focado e
 
 > **Filosofia-chave:** Os agentes de IA **não fazem** o match diretamente. Eles **preparam o grafo** — o match é apenas uma query sobre adjacência livre de índice.
 
+<div align="center">
+  <img src="https://img.shields.io/badge/STACK_ARIANO-v0-E91E63?style=for-the-badge&logo=rocket" alt="Stack Ariano v0">
+</div>
+
+<br />
+
+<table width="100%">
+  <tr>
+    <td width="50%" valign="top">
+      <h3>🎨 Frontend</h3>
+      <img src="https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white" />
+      <img src="https://img.shields.io/badge/React_18-61DAFB?style=flat-square&logo=react&logoColor=black" />
+      <img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white" />
+      <img src="https://img.shields.io/badge/Tailwind_v4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" />
+      <br />
+      <img src="https://img.shields.io/badge/D3.js_v7-F9A03C?style=flat-square&logo=d3.js&logoColor=white" />
+      <img src="https://img.shields.io/badge/Framer_Motion-0055FF?style=flat-square&logo=framer&logoColor=white" />
+      <img src="https://img.shields.io/badge/React_Router_7-CA4245?style=flat-square&logo=react-router&logoColor=white" />
+      <ul>
+        <li><b>Visualização:</b> Grafo Interativo (SVG + Force Simulation)</li>
+        <li><b>UI:</b> SVG Filters (Neon Glow) & Curved Edges</li>
+        <li><b>Tipografia:</b> Outfit + JetBrains Mono</li>
+        <li><b>Forms:</b> React Hook Form + Zod</li>
+      </ul>
+    </td>
+    <td width="50%" valign="top">
+      <h3>⚙️ Backend</h3>
+      <img src="https://img.shields.io/badge/Python_3.12-3776AB?style=flat-square&logo=python&logoColor=white" />
+      <img src="https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white" />
+      <br />
+      <img src="https://img.shields.io/badge/LangChain-1C3C3C?style=flat-square&logo=langchain&logoColor=white" />
+      <img src="https://img.shields.io/badge/Google_Gemini-8E75C2?style=flat-square&logo=googlegemini&logoColor=white" />
+      <ul>
+        <li><b>Orquestração:</b> LangGraph (Agentes IA)</li>
+        <li><b>LLM:</b> Gemini 2.0 Flash</li>
+        <li><b>OGM:</b> Neomodel</li>
+        <li><b>Servidor:</b> Uvicorn (ASGI)</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>🗄️ Banco de Dados</h3>
+      <img src="https://img.shields.io/badge/Neo4j_5.x-4581C3?style=flat-square&logo=neo4j&logoColor=white" />
+      <ul>
+        <li>Graph Database (Community)</li>
+        <li>Relacionamentos complexos em tempo real</li>
+      </ul>
+    </td>
+    <td width="50%" valign="top">
+      <h3>🔧 DevOps</h3>
+      <img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white" />
+      <img src="https://img.shields.io/badge/GitHub_Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white" />
+      <ul>
+        <li>Docker Compose (Orquestração local)</li>
+        <li>CI/CD Automatizado</li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+---
+
+
+
+### Fluxo de Dados
+
+```
+FASE 1 — Configuração (offline, assíncrono)
+  Cadastro → API → Agente IA → Interpreta/Classifica → Cria nós+arestas no Neo4j
+
+FASE 2 — Match (online, instantâneo)
+  Request → Cypher: MATCH (a)-[r:ELIGIBLE_FOR]->(e) WHERE r.score >= 0.7 → Resultado O(1)
+```
+
 ---
 
 ## 🏗️ Status Atual
@@ -46,55 +121,6 @@ Este repositório contém o **MVP (Minimum Viable Product)** do ARIANO, focado e
 | 📊 Sprint 1 — UI & Web Grafo| ✅ Concluído | Frontend consolidado (D3.js), Data Mock de nós refinada (ex: limites lógicos e balanceamento algorítmico) |
 | 🤖 Sprint 2 — Data & Agentes | ⬜ Pendente | Modelagem Neo4j, ProfileAnalyzer Backend Python, APIs CRUD |
 | ✨ Sprint 4 — Polish | ⬜ Pendente | Integração E2E, animações, deploy |
-
----
-
-## 🏛️ Arquitetura
-
-```
-┌──────────────────────────────────────────────────────────┐
-│                   STACK ARIANO v0                         │
-├──────────────────────────────────────────────────────────┤
-│                                                           │
-│  🎨 FRONTEND                                              │
-│  ├─ Vite 5 + React 18 + TypeScript                       │
-│  ├─ Tailwind CSS v4 (design system)                       │
-│  ├─ D3.js v7 (grafo interativo SVG + Force Simulation)    │
-│  ├─ D3-force (layout force-directed com colisão)          │
-│  ├─ SVG Filters (glow neon por tipo de nó)                │
-│  ├─ Curved Edges (arcos SVG arc paths)                    │
-│  ├─ Framer Motion (animações de UI)                       │
-│  ├─ React Router v7 (routing)                             │
-│  ├─ Lucide React (ícones)                                 │
-│  ├─ Outfit + JetBrains Mono (tipografia)                  │
-│  └─ React Hook Form + Zod (formulários)                   │
-│                                                           │
-│  ⚙️ BACKEND                                               │
-│  ├─ Python 3.12 + FastAPI                                 │
-│  ├─ LangChain + LangGraph (agentes IA)                    │
-│  ├─ Google Gemini API (LLM — gemini-2.0-flash)            │
-│  ├─ Neomodel (OGM para Neo4j)                             │
-│  └─ Uvicorn (servidor ASGI)                               │
-│                                                           │
-│  🗄️ DADOS                                                 │
-│  └─ Neo4j 5.x Community (graph database)                  │
-│                                                           │
-│  🔧 DEVOPS                                                │
-│  ├─ Docker + Docker Compose                               │
-│  └─ GitHub Actions (CI/CD)                                │
-│                                                           │
-└──────────────────────────────────────────────────────────┘
-```
-
-### Fluxo de Dados
-
-```
-FASE 1 — Configuração (offline, assíncrono)
-  Cadastro → API → Agente IA → Interpreta/Classifica → Cria nós+arestas no Neo4j
-
-FASE 2 — Match (online, instantâneo)
-  Request → Cypher: MATCH (a)-[r:ELIGIBLE_FOR]->(e) WHERE r.score >= 0.7 → Resultado O(1)
-```
 
 ---
 
@@ -175,36 +201,6 @@ O design do ARIANO explora a complexidade orgânica e viva de grafos densos atra
 |-----------|-----------|------|
 | **Documento do Projeto** | Histórico consolidado do MVP, arquitetura, design vision, Boas práticas detalhadas das Sprints. | [`Docs/01_DOCUMENTO_PROJETO_ARIANO.md`](Prototype%20v0/Docs/01_DOCUMENTO_PROJETO_ARIANO.md) |
 | **Plano de Implementação** | Stack final e roadmap iteracional de entrega de Features. | [`implementation_plan.md`](Prototype%20v0/implementation_plan.md) |
-
----
-
-## 🛠️ Stack Tecnológica
-
-### Frontend
-| Tecnologia | Versão | Papel e Justificativas/Boas Práticas |
-|-----------|--------|-------|
-| Vite | 5.x | Build tool moderna capaz de providenciar Hot Reload extremamente veloz (HMR < 50ms) mantendo foco no workflow contínuo |
-| React | 18.x | Componentização Client-side para melhor orquestração de elementos UI, obedecendo ao Separation of Concerns e limitando dependências rígidas na apresentação |
-| TypeScript | 5.x | Tipagem profunda para diminuição de quebras acidentais de runtime provendo documentação estática dos Contratos de Dados (Interfaces/Tipos) |
-| D3.js | 7.x | Adoção desta biblioteca pela versatilidade crua de renderizar SVG em manipulação de DOM controlada |
-| Tailwind CSS | 4.x | Criação das variáveis customizadas para gerenciar uniformidade de UX no ecossistema (Zero css obsoleto) |
-
-### Backend
-| Tecnologia | Versão | Papel |
-|-----------|--------|-------|
-| Python | 3.12 | Linguagem principal |
-| FastAPI | — | Framework web async |
-| LangChain + LangGraph | — | Orquestração de agentes IA |
-| Google Gemini | 2.0-flash | LLM para classificação |
-| Neomodel | — | OGM para Neo4j |
-| Uvicorn | — | Servidor ASGI |
-
-### Dados & DevOps
-| Tecnologia | Papel |
-|-----------|-------|
-| Neo4j 5.x Community | Graph database (adjacência O(1)) |
-| Docker + Docker Compose | Containerização |
-| GitHub Actions | CI/CD |
 
 ---
 
