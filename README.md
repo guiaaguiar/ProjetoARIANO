@@ -4,11 +4,11 @@
   <img src="https://img.shields.io/badge/UNINASSAU-Tópicos_Integradores-purple?style=for-the-badge" alt="UNINASSAU" />
 </p>
 
-<h1 align="center">🧠 ARIANO</h1>
+<h1 align="center">AR.I.A.N.O</h1>
 
 <p align="center">
-  <strong>Arquitetura de Inteligência Artificial Naturalmente Ordenada</strong><br/>
-  Motor de Matchmaking Inteligente para a plataforma <strong>CORETO</strong>
+  <strong>**AR**quitetura de **I**nteligência **A**rtificial **N**aturalmente **O**rdenada</strong><br/>
+  O Core do Matchmaking Inteligente para a plataforma <strong>CORETO</strong>
 </p>
 
 <p align="center">
