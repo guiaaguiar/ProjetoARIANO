@@ -11,7 +11,7 @@ const api = axios.create({
 
 // Impede que o SPA fallback da Vercel (que converte 404s da API em index.html) quebre o app
 api.interceptors.response.use((response) => {
-  if (typeof response.data === 'string' && response.data.includes('<!doctype html>')) {
+  if (typeof response.data === 'string' && response.data.toLowerCase().includes('<!doctype html>')) {
     return Promise.reject(new Error('API indisponível, caiu no SPA fallback'));
   }
   return response;
