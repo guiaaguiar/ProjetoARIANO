@@ -32,6 +32,7 @@ Este repositório contém o **MVP (Minimum Viable Product)** do ARIANO, focado e
 
 > **Filosofia-chave:** Os agentes de IA **não fazem** o match diretamente. Eles **preparam o grafo** — o match é apenas uma query sobre adjacência livre de índice.
 
+
 <div align="center">
   <img src="https://img.shields.io/badge/STACK_ARIANO-v0-E91E63?style=for-the-badge&logo=rocket" alt="Stack Ariano v0">
 </div>
@@ -158,11 +159,11 @@ ProjetoARIANO/
 │   └── Dockerfile
 ├── Prototype v0/
 │   ├── Docs/
-│   │   └── 01_DOCUMENTO_PROJETO_ARIANO.md    # 📋 Documento de referência base, visões e evolutivas
-│   └── implementation_plan.md                 # 🗺️ Plano de implementação
-├── trabalho faculdade/
-│   ├── apresentacao_TIdCC (1).html            # 📊 Apresentação da disciplina
-│   └── Banco-de-Dados-Nao-Relacional.pptx    # 📊 Slides sobre BD não-relacional
+│   │   ├── arquivos apresentacao/          # 📊 Apresentação da disciplina
+│   │   │   └── apresentacao_TIdCC (1).html
+│   │   ├── assets/                         # Assets de documentação
+│   │   └── 01_DOCUMENTO_PROJETO_ARIANO.md  # 📋 Documento de referência base
+│   └── implementation_plan.md               # 🗺️ Plano de implementação
 ├── docker-compose.yml
 ├── .env.example
 ├── .gitignore
