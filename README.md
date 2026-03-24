@@ -1,6 +1,6 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/status-planejamento-blue?style=for-the-badge" alt="Status: Planejamento" />
-  <img src="https://img.shields.io/badge/versão-v0.0.0-informational?style=for-the-badge" alt="Versão: v0.0.0" />
+  <img src="https://img.shields.io/badge/status-Prototipagem-blue?style=for-the-badge" alt="Status: Prototipagem" />
+  <img src="https://img.shields.io/badge/versão-v0.1.2-informational?style=for-the-badge" alt="Versão: v0.1.2" />
   <img src="https://img.shields.io/badge/UNINASSAU-Tópicos_Integradores-purple?style=for-the-badge" alt="UNINASSAU" />
 </p>
 
