@@ -362,64 +362,31 @@ Adaptada do GitNexus (tema roxo) para **azul neon** do ARIANO:
 
 ---
 
-## 8. Sprint Planning — Roadmap
+## 8. Sprint Planning — Roadmap (Práticas Ágeis)
+
+A estratégia de desenvolvimento do projeto ARIANO é fortemente pautada nos princípios ágeis utilizando uma adaptação do **framework SCRUM** para o nosso contexto acadêmico. Todas as sprints contaram com sessões de *Sprint Planning* para refinar os requisitos em histórias do usuário, *Sprint Reviews* para garantir as entregas incrementais e *Retrospectives* para contínuos ajustes de rota e validação da equipe.
+
+> **💡 Acompanhamento Online (Kanban):** O detalhamento granular das tarefas, seus respectivos responsáveis (Team Assignees), Story Points e status de execução encontram-se ativamente geridos no nosso painel do **Notion**. Ele serve como fonte da verdade oficial para a entrega ao professor e materialização contínua das responsabilidades. As seções abaixo resumem os escopos gerais e o que foi realizado em cada iteração:
 
 ### Sprint 0 — Fundação (Semana 1) ✅ CONCLUÍDA
 
-**Objetivo:** Ambiente de desenvolvimento rodando com todas as ferramentas.
-
-| # | Tarefa | Responsável | Status |
-|---|--------|-------------|--------|
-| 0.1 | Criar repositório GitHub `ProjetoARIANO` | Guilherme | ✅ |
-| 0.2 | Estrutura de pastas (frontend/, backend/, Prototype v0/) | Guilherme | ✅ |
-| 0.3 | Setup Frontend — Vite 5 + React 18 + TS + Tailwind v4 | Guilherme | ✅ |
-| 0.4 | Setup Backend — FastAPI + Uvicorn + Neomodel (estrutura) | Guilherme | ✅ |
-| 0.5 | Design System — Blue Neon Edition (tokens CSS, paleta de cores) | Guilherme | ✅ |
-| 0.6 | Documentação inicial — Documento de Visão + Implementation Plan | Guilherme | ✅ |
+**Foco:** Planejamento arquitetural e setup do ambiente base.  
+Trabalhamos a estruturação institucional de repositórios, documentação e modelagens. Adotamos o SCRUM para fragmentar o entendimento inicial do ecossistema e conceber o conceito do motor ARIANO. Estabelecemos a versão inicial do Design System (Blue Neon), criamos documentos de visão, selecionamos nossa stack principal e nivelamos o ambiente para os times de Frontend, Backend e Infraestrutura trabalharem de modo assíncrono.
 
 ### Sprint 1 — Frontend + Visualização de Grafo (Semana 2-3) ✅ CONCLUÍDA
 
-**Objetivo:** Interface web completamente funcional com grafo interativo em SVG e dashboard consolidado com mock data denso e confiável.
+**Foco:** Interface de Usuário (UI) robusta e visualização fidedigna dos nós em simulação controlada.  
+O ciclo desta sprint validou nosso modelo abstrato num painel de visualização utilizável e analítico. Consolidando as dailies de alinhamento técnico, fechamos com sucesso a migração tecnológica para visualizadores em rede utilizando D3.js. Aplicamos também uma governança restrita de dados em Mock para limitação segura e previsível focando na performance de navegação dos sub-componentes visuais, garantindo os cenários de usabilidade planejados no Design Review.
 
-#### Evolução no Final da Sprint 1
+### Sprint 2 — Data Layer, APIs e Agentes IA (Semana 4-5) ⚙️ EM DESENVOLVIMENTO
 
-Neste marco do projeto fechamos o front-end assegurando alta fidelidade e arquitetura sólida do código:
-1. **Redução e Sintese de Mock Data:** Para manter nossa performance demonstrativa sem poluição descontrolada, adequamos todo o banco de simulação para conter exatos 20 registros fixos de cada modelo primário (20 Alunos, 20 Editais, 20 Pesquisadores, etc.).
-2. **Garantia Lógica de Elegibilidade (Symmetry Edges):** Desenvolvemos as arestas orientadas matematicamente para atestar cenários de aderência. Garantimos que na geração de simulação, **cada aluno receba elegibilidade assertiva para 10 editais (matches)**, resultando na contrapartida de **10 candidatos sempre vinculados por edital de fomento**.
-3. **Refino de Estado e Rendering:** Refinamento absoluto do framework renderizador do grafo Web migrando a força Sigma.js para visualizações com D3.js, consolidando a estabilidade de exibição de tooltips modulares.
+**Foco:** Construir a "Core Engine" implementando agentes de inteligência artificial (LangChain e Gemini) interligados com instâncias Neo4j.  
+O planejamento desta sprint engloba o nascimento do núcleo matemático do nosso Produto. As cerimônias se voltam para discutir e integrar o motor de inferência aos endpoints via FastAPI. Os agentes assumem a responsabilidade primária de interpretar os dados e arquitetarmos conexões lógicas e ponderadas sob comandos Cypher diretamente no Neo4j, conectando e ativando o banco de dados orientado a grafos.
 
-| Tópico | Realizado | Status |
-|---|--------|--------|
-| **Estruturação Visual** | Aplicação construída com base firme em React Router, Framer Motion e Tailwind, baseada em "Blue Neon Layout". | ✅ |
-| **Engine D3.js Interativa** | Grafo dinâmico, highlight isolation, arestas curvas arc paths responsivas renderizadas nativamente em vetor com svg elements. | ✅ |
-| **Integração Plena Mock-Data** | Otimização do Seed Data, limitação a conjuntos de amostra estáticos testáveis. Layout sem distorções no frontend dashboard. | ✅ |
-| **Branch Governance** | Finalização do milestone e migração/versionamento para branch focada `dev` preparatória para adoções do Back-End Real. | ✅ |
+### Sprint 3 — Integração, Deploy e Polish (Semana 5-6) 📋 BACKLOG
 
-### Sprint 2 — Data Layer + CRUD + Agentes IA (Semana 4-5)
-
-**Objetivo:** Implementar a lógica do Agente IA principal (Core Engine) e iniciar a conexão entre os sub-sistemas (Backend, DB em grafos e Frontend).
-
-| # | Tarefa | Responsável | Status |
-|---|--------|-------------|--------|
-| 2.1 | Implementar Agente Principal com LangChain (Core Engine) | Ricardo | Em Desenvolvimento |
-| 2.2 | Configurar Prompts do Gemini para Interpretação Semântica | Ricardo | Backlog |
-| 2.3 | Criar Endpoints no FastAPI para Inserção no Neo4j | Pedro | Backlog |
-| 2.4 | Conectar Interface D3.js aos Endpoints de Grafo | Marcio | Backlog |
-| 2.5 | Refinamento de Funcionalidades para Sprint 2 (Foco IA) | Guilherme | Em Desenvolvimento |
-| 2.6 | Criação de Cenários de Teste para o Agente de Recomendação | Thiago | Backlog |
-| 2.7 | Acompanhamento da Integração IA com o Pipeline de Casos de Uso | Guilherme | Backlog |
-
-### Sprint 3 — Integração + Polish (Semana 5-6)
-
-**Objetivo:** Tudo conectado e pronto para demonstração, com docker e polimentos de animações finais.
-
-| # | Tarefa | Responsável | Status |
-|---|--------|-------------|--------|
-| 3.1 | Setup de Docker orchestration (Docker Compose) | Pedro | Backlog |
-| 3.2 | Ajustes de Timeout e Otimização nas Consultas do Grafo (O(1)) | Ricardo | Backlog |
-| 3.3 | Refinamento Visual de Animações de Matches na Interface D3 | Marcio | Backlog |
-| 3.4 | QA Final E2E Integrado (Front + Back + Neo4j + Agente) | Thiago | Backlog |
-| 3.5 | Preparação para Demo do Produto | Guilherme | Backlog |
+**Foco:** Amarração completa do tráfego de dados, Quality Assurance (QA) E2E e apresentação consolidada do Demoday.  
+Esta será nossa Sprint de estabilização final. A documentação do orquestrador Docker Compose englobará os serviços enquanto o papel de validação foca primariamente em rodar testes no fluxo integrado (Front -> Back -> IA -> Banco) logrando certificar que as queries de adjacência cumpram o tempo algorítmico ideal (O(1)). Nosso entregável refinado empacotará toda a solução para defesa metodológica perante a disciplina.
 
 ---
 
