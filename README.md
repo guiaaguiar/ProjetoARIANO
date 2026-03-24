@@ -7,7 +7,7 @@
 <h1 align="center">AR.I.A.N.O</h1>
 
 <p align="center">
-  <strong>**AR**quitetura de **I**nteligência **A**rtificial **N**aturalmente **O**rdenada</strong><br/>
+  <strong><b>AR</b>quitetura de <b>I</b>nteligência <b>A</b>rtificial <b>N</b>aturalmente <b>O</b>rdenada</strong><br/>
   O Core do Matchmaking Inteligente para a plataforma <strong>CORETO</strong>
 </p>
 
@@ -52,26 +52,38 @@ Este repositório contém o **MVP (Minimum Viable Product)** do ARIANO, focado e
 ## 🏛️ Arquitetura
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│  🎨 FRONTEND — Vite 5 + React 18 + TypeScript               │
-│  ├─ D3.js v7 (Grafo interativo SVG + Force Simulation)       │
-│  ├─ Tailwind CSS v4 · Framer Motion · React Router v7       │
-│  ├─ Clean Code / Components e Segurança Tipada via Zod      │
-│  └─ MockData Lógico balanceado (Nós dimensionados em 20/eq) │
-├──────────────────────────┬──────────────────────────────────┤
-│  ⚙️ BACKEND              │  🤖 AGENTES IA                   │
-│  Python 3.12 + FastAPI   │  LangChain + LangGraph           │
-│  Neomodel (OGM)         │  Google Gemini (gemini-2.0-flash) │
-│  Uvicorn (ASGI)          │  ProfileAnalyzer                 │
-│                          │  EditalInterpreter               │
-│                          │  EligibilityCalculator           │
-├──────────────────────────┴──────────────────────────────────┤
-│  🗄️ DATA LAYER — Neo4j 5.x Community (Graph Database)       │
-│  Nós: Student, Researcher, Professor, Edital, Skill, Area   │
-│  Arestas: HAS_SKILL, ELIGIBLE_FOR, RESEARCHES_AREA, ...     │
-├─────────────────────────────────────────────────────────────┤
-│  🔧 DEVOPS — Docker + Docker Compose · GitHub Actions        │
-└─────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────┐
+│                   STACK ARIANO v0                         │
+├──────────────────────────────────────────────────────────┤
+│                                                           │
+│  🎨 FRONTEND                                              │
+│  ├─ Vite 5 + React 18 + TypeScript                       │
+│  ├─ Tailwind CSS v4 (design system)                       │
+│  ├─ D3.js v7 (grafo interativo SVG + Force Simulation)    │
+│  ├─ D3-force (layout force-directed com colisão)          │
+│  ├─ SVG Filters (glow neon por tipo de nó)                │
+│  ├─ Curved Edges (arcos SVG arc paths)                    │
+│  ├─ Framer Motion (animações de UI)                       │
+│  ├─ React Router v7 (routing)                             │
+│  ├─ Lucide React (ícones)                                 │
+│  ├─ Outfit + JetBrains Mono (tipografia)                  │
+│  └─ React Hook Form + Zod (formulários)                   │
+│                                                           │
+│  ⚙️ BACKEND                                               │
+│  ├─ Python 3.12 + FastAPI                                 │
+│  ├─ LangChain + LangGraph (agentes IA)                    │
+│  ├─ Google Gemini API (LLM — gemini-2.0-flash)            │
+│  ├─ Neomodel (OGM para Neo4j)                             │
+│  └─ Uvicorn (servidor ASGI)                               │
+│                                                           │
+│  🗄️ DADOS                                                 │
+│  └─ Neo4j 5.x Community (graph database)                  │
+│                                                           │
+│  🔧 DEVOPS                                                │
+│  ├─ Docker + Docker Compose                               │
+│  └─ GitHub Actions (CI/CD)                                │
+│                                                           │
+└──────────────────────────────────────────────────────────┘
 ```
 
 ### Fluxo de Dados
