@@ -263,7 +263,7 @@ CREATE (r)-[:ELIGIBLE_FOR {score: 0.92, justification: "92% aderência..."}]->(e
 └──────────────────────────────────────────────────────────┘
 ```
 
-### 5.2 Boas Práticas e Justificativas Tecnológicas
+### 5.2 Justificativas Tecnológicas
 
 A arquitetura do desenvolvimento atende rigorosos padrões de Boas Práticas, assegurando escalabilidade limpa e manutenibilidade na transição entre MVP Mockado e Serviço Completo:
 
