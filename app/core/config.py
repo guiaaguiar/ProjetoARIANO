@@ -6,10 +6,10 @@ from typing import List
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
 
-# Load .env from project root (one level up from backend/)
-env_path = os.path.join(os.path.dirname(__file__), "..", "..", "..", ".env")
+# Load .env from project root
+env_path = os.path.join(os.path.dirname(__file__), "..", "..", ".env")
 load_dotenv(env_path)
-# Also try loading from backend/.env if it exists
+# Also try loading from current dir
 load_dotenv()
 
 
@@ -37,10 +37,12 @@ class Settings(BaseSettings):
     app_name: str = "ARIANO API"
     app_version: str = "1.0.0"
     debug: bool = True
+    backend_url: str = "http://localhost:8000"
 
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
+        extra = "ignore"
 
 
 settings = Settings()
