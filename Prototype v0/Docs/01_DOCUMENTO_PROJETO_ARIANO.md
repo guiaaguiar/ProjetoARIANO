@@ -395,6 +395,13 @@ O planejamento desta sprint engloba o nascimento do núcleo matemático do nosso
 **Foco:** Garantir execução global e proteção de dados sensíveis.  
 Finalizamos a integração total E2E, removendo mocks e estabilizando a comunicação via Axios. O grande marco foi o **Deploy Fullstack no Vercel**, onde configuramos um monorepo que hospeda tanto a lógica de IA (Python) quanto a interface. Implementamos camadas de segurança via **Environment Variables (Secrets)** para proteger as chaves do NVIDIA Nemotron, e refatoramos a estrutura de pastas movendo o core do app para a raiz, garantindo que o backend seja nativamente descoberto pelos ambientes de nuvem.
 
+**Expectativas Cumpridas e Entregas (Sprint 3):**
+- **Integração Total:** Comunicação fluída entre interface React e motor FastAPI sem dependência de dados estáticos.
+- **Ambiente de Produção Vivo:** App acessível publicamente via Vercel com escalabilidade serverless.
+- **Segurança Blindada:** API Keys do OpenRouter/NVIDIA tratadas como segredos de infraestrutura, fora do versionamento.
+- **Robustez Pydantic:** Configurações de ambiente validadas e corrigidas para suporte a múltiplos contextos (Local vs Prod).
+- **Consolidação de Agentes:** Pipeline completo de análise → interpretação → matchmaking rodando em produção.
+
 ### Sprint 4 — Expansão e Refinamento Final (Semana 7-8) 🚀 EM ANDAMENTO
 
 **Foco:** Polimento visual extremo e expectativas de entrega final.

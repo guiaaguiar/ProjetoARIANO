@@ -199,6 +199,13 @@ Request → API → Cypher: MATCH (a)-[r:ELIGIBLE_FOR]->(e) WHERE r.score >= 0.7
 
 ### Sprint 3 — Integração, Deploy e Hardening ✅ CONCLUÍDA
 
+**Entregáveis Consolidados:**
+- **Fullstack E2E:** Frontend e Backend 100% integrados em monorepo.
+- **Deploy Vercel:** Sistema online com funções serverless estáveis.
+- **Security Hardening:** Proteção de chaves via Secrets/Env Vars.
+- **Arquitetura Nuvem:** Pasta `app/` na raiz para descoberta nativa.
+- **Correção Pydantic:** Configuração de ambientes Local/Prod validada.
+
 | Tarefa | US | Detalhes | Status |
 |--------|----|---------|--------|
 | Integração E2E (Remoção Mock) | — | Frontend ↔ Backend totalmente integrado sem mocks | ✅ |
