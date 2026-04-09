@@ -226,7 +226,8 @@ Request → API → Cypher: MATCH (a)-[r:ELIGIBLE_FOR]->(e) WHERE r.score >= 0.7
 
 | Tarefa | US | Detalhes | Status |
 |--------|----|---------|--------|
-| **Visualização de Processamento** | — | Mostrar feedback dos agentes IA trabalhando no backend | ⬜ |
+| **Simulador de Cadastro Coreto** | — | Nova sessão lateral para simular onboarding com tags e feedback imediato | ⬜ |
+| **Visualização de Processamento** | — | Mostrar feedback visual dos agentes IA trabalhando (logs/etapas) | ⬜ |
 | **Animações Fluidas** | — | Transições suaves de grafos e interações orgânicas | ⬜ |
 | Expansão de Grafos | — | Novos nós de Indústria e Sociedade Civil | ⬜ |
 | Lógica Zero-Filter | — | Inicialização limpa e progressiva do grafo | ⬜ |

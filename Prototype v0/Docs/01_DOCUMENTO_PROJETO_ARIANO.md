@@ -409,6 +409,7 @@ Finalizamos a integração total E2E, removendo mocks e estabilizando a comunica
 **Expectativas e Objetivos de Entrega:**
 - **Software 100% Polido e Funcional:** Estabilização total de todas as rotas e eliminação de pequenos bugs residuais.
 - **Transparência de Processamento:** Interface clara de visualização dos **Agentes IA trabalhando** em tempo real e do matchmaking sendo construído (logs visuais ou indicadores de progresso por etapa).
+- **Simulador de Cadastro Coreto:** Nova sessão no menu lateral para simular o fluxo de entrada de um usuário na plataforma Coreto, com uso de tags para filtragem assertiva e visualização imediata das conexões geradas pelo ARIANO.
 - **Fluidez e Desempenho:** Melhorar drasticamente o tempo de resposta do grafo e a performance de animações D3.js.
 - **Excelência em UX/UI:** Refinamento estético final (Neo-Glassmorphism), melhoria na legibilidade de detalhes e usabilidade mobile.
 - **Expansão do Grafo:** Inclusão de novos nós (Indústria/Sociedade Civil) e conexões transversais.
