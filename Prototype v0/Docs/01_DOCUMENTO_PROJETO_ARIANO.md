@@ -397,12 +397,15 @@ Finalizamos a integração total E2E, removendo mocks e estabilizando a comunica
 
 ### Sprint 4 — Expansão e Refinamento Final (Semana 7-8) 🚀 EM ANDAMENTO
 
-**Foco:** Polimento visual extremo e expansão de horizontes.  
-Estamos agora trabalhando no "efeito uau" final:
-- **Animações Fluidas:** Transições de nós e arestas com Framer Motion e D3 Transitions mais orgânicas.
-- **Filtros Aprimorados:** Lógica de busca mais assertiva começando com estado "zero-filter" para foco máximo.
-- **Expansão do Grafo:** Inclusão de novos nós (Indústria/Sociedade Civil) e conexões complexas entre editais, alunos e professores.
-- **Visualização Assertiva:** Componente de "Legenda" e tooltips informativos de alto contraste.
+**Foco:** Polimento visual extremo e expectativas de entrega final.
+
+**Expectativas e Objetivos de Entrega:**
+- **Software 100% Polido e Funcional:** Estabilização total de todas as rotas e eliminação de pequenos bugs residuais.
+- **Transparência de Processamento:** Interface clara de visualização dos **Agentes IA trabalhando** em tempo real e do matchmaking sendo construído (logs visuais ou indicadores de progresso por etapa).
+- **Fluidez e Desempenho:** Melhorar drasticamente o tempo de resposta do grafo e a performance de animações D3.js.
+- **Excelência em UX/UI:** Refinamento estético final (Neo-Glassmorphism), melhoria na legibilidade de detalhes e usabilidade mobile.
+- **Expansão do Grafo:** Inclusão de novos nós (Indústria/Sociedade Civil) e conexões transversais.
+- **Visualização Assertiva:** Implementação de legendas dinâmicas e tooltips informativos de alto contraste.
 
 ---
 

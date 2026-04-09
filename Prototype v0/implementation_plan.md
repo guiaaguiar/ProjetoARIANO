@@ -211,12 +211,19 @@ Request → API → Cypher: MATCH (a)-[r:ELIGIBLE_FOR]->(e) WHERE r.score >= 0.7
 
 ### Sprint 4 — Polimento e Expansão 🚀 EM ANDAMENTO
 
+**Expectativas de Entrega Final:**
+- **Software Polido:** Eliminação de bugs visuais e estabilização de performance.
+- **Visualização de Agentes:** Interface clara mostrando o **processamento dos agentes IA** e o matchmaking em tempo real.
+- **Desempenho Geral:** Otimização de tempo de resposta e fluidez do grafo D3.js.
+- **Excelência UX/UI:** Refinamentos de design system e usabilidade avançada.
+
 | Tarefa | US | Detalhes | Status |
 |--------|----|---------|--------|
+| **Visualização de Processamento** | — | Mostrar feedback dos agentes IA trabalhando no backend | ⬜ |
 | **Animações Fluidas** | — | Transições suaves de grafos e interações orgânicas | ⬜ |
 | Expansão de Grafos | — | Novos nós de Indústria e Sociedade Civil | ⬜ |
 | Lógica Zero-Filter | — | Inicialização limpa e progressiva do grafo | ⬜ |
-| Estabilização Final | — | Testes de carga e refinamento de UX | ⬜ |
+| Estabilização Final | — | Testes de carga e refinamentos de UI/UX | ⬜ |
 | Manual do Usuário | — | Vídeo demo e guia de instalação | ⬜ |
 
 ---
