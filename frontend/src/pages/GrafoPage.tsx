@@ -4,8 +4,8 @@ import * as d3 from 'd3';
 import { Maximize2, ZoomIn, ZoomOut, Loader2, X, ExternalLink, Info } from 'lucide-react';
 import type { GraphData } from '../types';
 import { NODE_COLORS, NODE_LABELS, type EntityType } from '../types';
+
 import * as api from '../lib/api';
-import { MOCK_GRAPH } from '../lib/mockData';
 
 const EDGE_LABEL_MAP: Record<string, string> = {
   HAS_SKILL: 'possui',
@@ -49,7 +49,7 @@ export default function GrafoPage() {
   const [loading, setLoading] = useState(true);
   const [selectedNode, setSelectedNode] = useState<NodeDetail | null>(null);
   const [graphInfo, setGraphInfo] = useState({ nodes: 0, edges: 0 });
-  const [activeFilters, setActiveFilters] = useState<Set<string>>(new Set(['student', 'researcher', 'professor', 'edital', 'skill', 'area']));
+  const [activeFilters, setActiveFilters] = useState<Set<string>>(new Set([]));
   const nodesRef = useRef<D3Node[]>([]);
   const edgesRef = useRef<D3Edge[]>([]);
   const simulationRef = useRef<d3.Simulation<D3Node, D3Edge> | null>(null);
@@ -283,6 +283,7 @@ export default function GrafoPage() {
       .append('g')
       .attr('class', 'node')
       .attr('cursor', 'pointer')
+      .attr('opacity', 0)
       .call(d3.drag<SVGGElement, D3Node>()
         .on('start', (event, d) => {
           if (!event.active) simulationRef.current?.alphaTarget(0.2).restart();
@@ -381,23 +382,23 @@ export default function GrafoPage() {
     };
     document.addEventListener('keydown', handleKeyDown);
 
-    // Force simulation
+    // Force simulation - Tweaked for more fluid and visual physics
     const simulation = d3.forceSimulation<D3Node>(nodes)
       .force('link', d3.forceLink<D3Node, D3Edge>(uniqueEdges)
         .id(d => d.id)
-        .distance(d => d.rawLabel === 'ELIGIBLE_FOR' ? 180 : 100)
-        .strength(0.4)
+        .distance(d => d.rawLabel === 'ELIGIBLE_FOR' ? 220 : 130)
+        .strength(0.3)
       )
       .force('charge', d3.forceManyBody<D3Node>()
-        .strength(d => -d.size * 25)
-        .distanceMax(400)
+        .strength(d => -d.size * 40) // Stronger repel for less clustering
+        .distanceMax(600)
       )
-      .force('center', d3.forceCenter(width / 2, height / 2).strength(0.05))
-      .force('collision', d3.forceCollide<D3Node>().radius(d => d.size * 2.5 + 10))
-      .force('x', d3.forceX(width / 2).strength(0.03))
-      .force('y', d3.forceY(height / 2).strength(0.03))
-      .alphaDecay(0.08)
-      .velocityDecay(0.6);
+      .force('center', d3.forceCenter(width / 2, height / 2).strength(0.08))
+      .force('collision', d3.forceCollide<D3Node>().radius(d => d.size * 3 + 15).iterations(2))
+      .force('x', d3.forceX(width / 2).strength(0.02))
+      .force('y', d3.forceY(height / 2).strength(0.02))
+      .alphaDecay(0.04) // Slower decay = longer, smoother animation 
+      .velocityDecay(0.5); // Less friction = more bouncy and fluid
 
     simulationRef.current = simulation;
 
@@ -437,6 +438,12 @@ export default function GrafoPage() {
     // Initial zoom
     svg.call(zoom.transform, d3.zoomIdentity.translate(0, 0).scale(0.9));
 
+    // Staggered Fade-in Animation
+    nodeElements.transition()
+      .duration(1000)
+      .delay((_d, i) => Math.min(i * 15, 800)) // smooth staggered effect
+      .attr('opacity', (n: D3Node) => activeFiltersRef.current.has(n.nodeType) ? 1 : 0);
+
     // Store refs for filter updates
     (svgRef.current as any).__nodeElements = nodeElements;
     (svgRef.current as any).__edgePaths = edgePaths;
@@ -451,7 +458,7 @@ export default function GrafoPage() {
     let cleanup: (() => void) | undefined;
     api.getGraphData()
       .then(data => { cleanup = initGraph(data); })
-      .catch(() => { cleanup = initGraph(MOCK_GRAPH); })
+      .catch(console.error)
       .finally(() => setLoading(false));
 
     return () => {

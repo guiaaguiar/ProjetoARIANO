@@ -6,7 +6,6 @@ import {
 } from 'lucide-react';
 import type { DashboardStats } from '../types';
 import { getStats } from '../lib/api';
-import { MOCK_STATS } from '../lib/mockData';
 
 const container = {
   hidden: { opacity: 0 },
@@ -24,7 +23,7 @@ export default function DashboardPage() {
   useEffect(() => {
     getStats()
       .then(setStats)
-      .catch(() => setStats(MOCK_STATS))
+      .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
 

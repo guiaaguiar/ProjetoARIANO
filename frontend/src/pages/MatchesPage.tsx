@@ -4,7 +4,6 @@ import { Zap, ArrowRight } from 'lucide-react';
 import type { Match } from '../types';
 import * as api from '../lib/api';
 import { NODE_COLORS, NODE_LABELS } from '../types';
-import { MOCK_MATCHES } from '../lib/mockData';
 
 export default function MatchesPage() {
   const [matches, setMatches] = useState<Match[]>([]);
@@ -14,7 +13,7 @@ export default function MatchesPage() {
   useEffect(() => {
     api.getMatches(undefined, threshold)
       .then(setMatches)
-      .catch(() => setMatches(MOCK_MATCHES.filter(m => m.score >= threshold)))
+      .catch(console.error)
       .finally(() => setLoading(false));
   }, [threshold]);
 

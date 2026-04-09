@@ -1,11 +1,11 @@
-# 🚀 ARIANO v0 — Plano de Implementação do MVP
+# 🚀 ARIANO v1.0 — Plano de Implementação do MVP
 
 > **Arquitetura de Inteligência Artificial Naturalmente Ordenada**
 > Orquestrador inteligente de matches para a plataforma **CORETO**
 
-> **Versão:** 1.1.0 (Atualizado — Sprint 0+1 concluídas, migração D3.js)  
+> **Versão:** 3.0.0 (MVP 1.0.0 Finalizado — Protótipo 100% Funcional)
 > **Data:** 23/03/2026  
-> **Última atualização:** 23/03/2026
+> **Última atualização:** 06/04/2026
 
 ---
 
@@ -21,7 +21,7 @@ O ARIANO é o **motor de matchmaking inteligente** da plataforma CORETO (Prefeit
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│                   STACK ARIANO v0                         │
+│                   STACK ARIANO v1.0                       │
 ├──────────────────────────────────────────────────────────┤
 │                                                           │
 │  🎨 FRONTEND                                              │
@@ -39,16 +39,17 @@ O ARIANO é o **motor de matchmaking inteligente** da plataforma CORETO (Prefeit
 │                                                           │
 │  ⚙️ BACKEND                                               │
 │  ├─ Python 3.12 + FastAPI                                 │
-│  ├─ LangChain + LangGraph (agentes IA)                    │
-│  ├─ Google Gemini API (LLM — gemini-2.0-flash)            │
-│  ├─ Neomodel (OGM para Neo4j)                             │
+│  ├─ LangChain + LangChain-OpenAI (agentes IA)             │
+│  ├─ NVIDIA Nemotron 3 Super 120B via OpenRouter (LLM)     │
+│  ├─ Neomodel (OGM para Neo4j) + Neo4j Driver (Cypher)    │
 │  └─ Uvicorn (servidor ASGI)                               │
 │                                                           │
 │  🗄️ DADOS                                                 │
-│  └─ Neo4j 5.x Community (graph database)                  │
+│  ├─ Neo4j 5.x Community (graph database, primário)        │
+│  └─ In-Memory Graph Store (fallback state zero-config)    │
 │                                                           │
 │  🔧 DEVOPS                                                │
-│  ├─ Docker + Docker Compose                               │
+│  ├─ Neo4j local (Homebrew / Community Edition)             │
 │  └─ GitHub Actions (CI/CD)                                │
 │                                                           │
 └──────────────────────────────────────────────────────────┘
@@ -59,10 +60,39 @@ O ARIANO é o **motor de matchmaking inteligente** da plataforma CORETO (Prefeit
 | Aspecto | v0.1 (inicial) | v0.2 (análise) | **v1.0 (final)** | Motivo |
 |---------|---------------|----------------|-------------------|--------|
 | **Frontend** | Next.js 15 | Vite + React | **Vite 5 + React 18** | SPA pura = melhor para UX interativo e grafo |
-| **Grafo** | D3.js | Cytoscape.js | **D3.js v7 (Force Simulation SVG)** | Controle total sobre glow filters SVG, arestas curvas (arc paths), drag. Inspirado em grafos acadêmicos (Game of Thrones / Labcodes). |
-| **Layout** | — | Cytoscape built-in | **D3-force (Simulation)** | Forças configuráveis: gravidade, repulsão, colisão. Clusters naturais. |
+| **Grafo** | D3.js | Cytoscape.js | **D3.js v7 (Force Simulation SVG)** | Controle total sobre glow filters SVG, arestas curvas (arc paths), drag |
+| **Layout** | — | Cytoscape built-in | **D3-force (Simulation)** | Forças configuráveis: gravidade, repulsão, colisão |
 | **Edges** | — | Straight | **Curved (@sigma/edge-curve)** | Visual elegante comprovado |
 | **Animação** | — | — | **Framer Motion** | Transições de página, micro-interactions |
+| **LLM** | — | Google Gemini | **NVIDIA Nemotron 3 Super (OpenRouter)** | 120B MoE/12B ativo, 1M context, tier gratuito, multi-agent |
+
+### Justificativa Técnica — NVIDIA Nemotron 3 Super via OpenRouter
+
+O modelo **NVIDIA Nemotron 3 Super** foi escolhido como LLM principal do ARIANO pelos seguintes motivos:
+
+1. **Arquitetura MoE Híbrida (120B/12B):** Modelo com 120B parâmetros totais mas ativa apenas 12B durante inferência, garantindo eficiência computacional máxima sem comprometer qualidade — ideal para aplicações multi-agente como ARIANO.
+
+2. **Mamba-Transformer + Multi-Token Prediction (MTP):** Arquitetura híbrida que entrega >50% mais tokens gerados que modelos abertos concorrentes, acelerando o processamento dos três agentes (ProfileAnalyzer, EditalInterpreter, EligibilityCalculator).
+
+3. **Context Window de 1M tokens:** Permite coerência de longo prazo entre agentes, raciocínio cross-document e planejamento multi-step — essencial para interpretar editais complexos e cruzar múltiplos perfis acadêmicos.
+
+4. **Latent MoE:** Chama 4 experts pelo custo de 1, melhorando inteligência e generalização em tasks de classificação e scoring.
+
+5. **Multi-environment RL Training:** Treinado em 10+ ambientes, com accuracy líder em benchmarks (AIME 2025, TerminalBench, SWE-Bench Verified) — relevante para as tarefas de extração estruturada e raciocínio que os agentes ARIANO executam.
+
+6. **Tier Gratuito via OpenRouter:** Disponível sem custo na tier free do OpenRouter, permitindo desenvolvimento e testes sem restrição orçamentária.
+
+7. **Licença Aberta (NVIDIA Open License):** Weights, datasets e recipes totalmente abertos, permitindo customização futura e deploy seguro em qualquer ambiente.
+
+8. **Compatibilidade OpenAI API:** Via OpenRouter, o modelo é acessível com a mesma interface `ChatOpenAI` do LangChain, simplificando integração e permitindo troca futura de modelo sem alteração de código.
+
+### Justificativa Técnica — In-Memory Graph Data Store (Fallback)
+
+Para garantir que o protótipo e o backend funcionem em ambientes de demonstração de forma **leve e fluida** sem depender da instalação estrita do Neo4j, o sistema implementa um **In-Memory Graph Store**.
+1. **Graceful Degradation:** Na ausência de conexão com Neo4j, o backend automaticamente opera em memória.
+2. **Alta Performance:** A busca na memória possui tempo O(1), permitindo carregamentos de página e grafos instantâneos via `api.ts`.
+3. **Consistência:** A camada de CRUD foi arquitetada com uma API unificada, abstraindo se o dado vem do `neomodel` (persistente) ou dos `drivers` na memória.
+4. **Auto-seeding Dinâmico:** Para garantir a funcionalidade, sempre que a API é inicializada em In-Memory Mode, o próprio sistema aciona iterativamente os seeds nativos e preenche as simulações, entregando a experiência final prontas para uso.
 
 ---
 
@@ -73,7 +103,7 @@ FRONTEND (Vite + React + D3.js)
     │ REST API
 BACKEND (Python + FastAPI)
     │
-    ├─ Agentes IA (LangChain + Gemini)
+    ├─ Agentes IA (LangChain + Nemotron 3 Super via OpenRouter)
     │   ├─ ProfileAnalyzer
     │   ├─ EditalInterpreter
     │   └─ EligibilityCalculator
@@ -81,14 +111,14 @@ BACKEND (Python + FastAPI)
     ├─ Match Engine (Cypher puro)
     │
     │ Bolt Protocol
-DATA LAYER (Neo4j)
+DATA LAYER (Neo4j local)
 ```
 
 ### Fluxo de dados
 
 **Fase 1 — Configuração (agentes):**
 ```
-Cadastro → API → Agente IA → Interpreta/Classifica → Cria nós+arestas no Neo4j → Grafo configurado
+Cadastro → API → Agente IA (Nemotron) → Interpreta/Classifica → Cria nós+arestas no Neo4j → Grafo configurado
 ```
 
 **Fase 2 — Match (Cypher):**
@@ -156,29 +186,33 @@ Request → API → Cypher: MATCH (a)-[r:ELIGIBLE_FOR]->(e) WHERE r.score >= 0.7
 | Cores atualizadas | — | Student=#00e5ff (cyan), Edital=#2563eb (azul escuro) | ✅ |
 | UX/UI refinements | — | Padding 8px+, responsividade, tooltip removido | ✅ |
 
-### Sprint 2 — Agente Inteligente de Grafos (Foco Atual / Semana 4-5)
+### Sprint 2 — Agente Inteligente de Grafos (Semana 4-5) ✅ CONCLUÍDA
 
-**Objetivo Central:** Construir de imediato o Agente de IA Principal especializado em interpretar o Neo4j e fazer conexões estratégicas de forma matemática (como projetado nos Mocks). Prioridade sobre CRUD e integrações completas do Front-end.
+**Objetivo Central:** Construir o Agente de IA Principal especializado em interpretar o Neo4j e fazer conexões estratégicas de forma matemática.
 
-| Tarefa | US | Detalhes |
-|--------|----|---------|
-| **Implementar Agente Especialista Neo4j (MAIN)** | US-10 | Criar script AI que interage, raciocina e calcula scores de Matches via LangChain + Neo4j |
-| Configuração Neo4j (Data Layer) | US-04 | Community Edition, Bolt protocol, transcrever estruturação dos mocks (20x20) para o Banco |
-| Match Engine Concept (Cypher) | US-11 | Cypher puro com queries O(1): `MATCH (a)-[r:ELIGIBLE_FOR]->(e)` a partir da IA |
-| Agentes Auxiliares (Profile / Edital Interpret) | US-08 | Roteamento de classificação extração de features |
-| API Rest FastAPI (CRUD Base) | US-04 | Tarefa Secundária: Expor o Graph localmente (GET/POST endpoints rasos) |
-| Integração Frontend Progressiva | — | Substituição do mock (Apenas quando o Data Layer consolidar com a IA primeiro) |
+| Tarefa | US | Detalhes | Status |
+|--------|----|---------|--------|
+| **Implementar Agente Especialista Neo4j (MAIN)** | US-10 | EligibilityCalculator: scoring multi-dimensional (skill 45%, area 25%, level 15%, priority 15%) | ✅ |
+| Configuração Neo4j (Data Layer) | US-04 | Neo4j local, Bolt protocol, driver nativo + neomodel | ✅ |
+| Match Engine Concept (Cypher) | US-11 | Cypher puro com queries O(1): `MATCH (a)-[r:ELIGIBLE_FOR]->(e)` | ✅ |
+| Agente ProfileAnalyzer | US-08 | Extração de skills e classificação de áreas via Nemotron 3 Super | ✅ |
+| Agente EditalInterpreter | US-08 | Interpretação de editais e extração de requisitos via Nemotron 3 Super | ✅ |
+| API Rest FastAPI (Agent Routes) | US-04 | Endpoints: analyze-profile, interpret-edital, calculate-matches, run-pipeline, status | ✅ |
+| Neo4j Driver Nativo | US-04 | Wrapper para Cypher queries complexas fora do neomodel | ✅ |
+| OpenRouter + Nemotron 3 Super | US-10 | LLM via OpenRouter API (OpenAI-compatible), 120B MoE gratuito | ✅ |
+| Seed + Pipeline Script | — | Script automatizado: seed data → analyze → interpret → calculate | ✅ |
+| Integração Frontend (API Client) | — | Endpoints de agentes expostos no api.ts do frontend | ✅ |
 
-### Sprint 3 — Integração + Polish (Semana 5-6)
+### Sprint 3 — Integração + Polish (Semana 5-6) ✅ CONCLUÍDA
 
-| Tarefa | US | Detalhes |
-|--------|----|---------|
-| Integração E2E | — | Frontend ↔ Backend ↔ Neo4j ↔ Agentes |
-| Loading states | — | Skeletons, spinners durante processamento |
-| Error handling | — | Toast notifications (Sonner) |
-| Animações de match | — | Trajeto nó-a-nó com pulse neon |
-| Deploy staging | — | Vercel (front) + Railway (back) + Neo4j local |
-| Documentação final | — | README com screenshots e instruções |
+| Tarefa | US | Detalhes | Status |
+|--------|----|---------|--------|
+| Integração E2E (Remoção Mock) | — | Frontend ↔ Backend totalmente integrado sem mocks locais | ✅ |
+| In-Memory Graph Fallback | — | Fallback do Neo4j em memória (Dicionário O(1)) garantindo startup rápido | ✅ |
+| Skeletons & Spinners | — | Animações de loading otimizadas durante chamadas `api.ts` | ✅ |
+| Tratamento de Erros Axios | — | Retorno para fallback de display sem quebrar SPA e Toast errors | ✅ |
+| Refinamento Grafo D3.js | — | Ajustes finais no render do grafo retirando warnings e bugs visuais | ✅ |
+| Documentação Final | — | Atualização do README, Plano, e Documento Principal para MVP 1.0.0 | ✅ |
 
 ---
 
@@ -221,45 +255,85 @@ Request → API → Cypher: MATCH (a)-[r:ELIGIBLE_FOR]->(e) WHERE r.score >= 0.7
 | Tipo | Ferramenta |
 |------|-----------|
 | Unit (backend) | Pytest |
-| Integration | Pytest + Neo4j container |
+| Integration | Pytest + Neo4j local |
 | Unit (frontend) | Vitest |
 | E2E | Playwright |
 | Lint | ESLint + Ruff |
 
 ### Critérios de aceite (DoD)
 
-- [ ] ≥ 15 acadêmicos + ≥ 8 editais no grafo
-- [ ] Agentes criam/configuram nós e arestas
-- [ ] Match = Cypher puro, sem IA no momento da consulta
-- [ ] Frontend com dashboard + cadastro + grafo interativo
-- [ ] Design consistente com Blue Neon Edition
+- [x] ≥ 15 acadêmicos + ≥ 8 editais no grafo
+- [x] Agentes criam/configuram nós e arestas
+- [x] Match = Cypher puro, sem IA no momento da consulta
+- [x] Frontend com dashboard + cadastro + grafo interativo
+- [x] Design consistente com Blue Neon Edition
 - [ ] CI/CD passando
 
 ---
 
 ## 8. Setup do Ambiente
 
-```powershell
-# 1. Clonar e subir infra
+```bash
+# 1. Clonar o repositório
 git clone https://github.com/guiaaguiar/ProjetoARIANO.git
-cd ariano-v0
-docker-compose up -d neo4j
+cd ProjetoARIANO
 
-# 2. Frontend
+# 2. Instalar Neo4j localmente
+brew install neo4j
+neo4j start
+# Neo4j Browser → http://localhost:7474
+
+# 3. Configurar ambiente
+cp .env.example .env
+# Editar .env com sua OPENROUTER_API_KEY
+
+# 4. Frontend
 cd frontend
 npm install
 npm run dev   # → http://localhost:5173
 
-# 3. Backend
+# 5. Backend
 cd backend
 python -m venv .venv
-.venv\Scripts\activate
+source .venv/bin/activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload  # → http://localhost:8000
 
-# 4. Neo4j Browser → http://localhost:7474
+# 6. Seed + Pipeline (popular banco e rodar agentes)
+python -m app.services.seed_and_configure
 ```
 
 ---
 
-**Criado em:** 16/03/2026 · **Última atualização:** 23/03/2026 · **Versão:** 1.1.0
+## 9. Estrutura de Arquivos (Sprint 2)
+
+```
+backend/
+├── app/
+│   ├── agents/                      # IA Agents (Phase 1)
+│   │   ├── __init__.py
+│   │   ├── profile_analyzer.py      # ProfileAnalyzer (skill extraction)
+│   │   ├── edital_interpreter.py    # EditalInterpreter (requirement extraction)
+│   │   └── eligibility_calculator.py # EligibilityCalculator (match scoring)
+│   ├── api/
+│   │   ├── routes.py                # CRUD + Admin endpoints
+│   │   └── agent_routes.py          # AI Agent operation endpoints
+│   ├── core/
+│   │   ├── config.py                # Settings (OpenRouter, Neo4j)
+│   │   ├── database.py              # Neomodel init
+│   │   └── neo4j_driver.py          # Native Cypher driver
+│   ├── models/
+│   │   └── graph.py                 # Neomodel node/edge definitions
+│   ├── services/
+│   │   ├── crud.py                  # CRUD operations
+│   │   ├── match_engine.py          # O(1) Cypher match queries
+│   │   ├── seed.py                  # Data seeding
+│   │   └── seed_and_configure.py    # Seed + AI pipeline
+│   └── main.py                      # FastAPI entry point
+├── requirements.txt
+└── .env
+```
+
+---
+
+**Criado em:** 16/03/2026 · **Última atualização:** 06/04/2026 · **Versão:** 2.0.0

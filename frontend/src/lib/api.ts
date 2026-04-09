@@ -75,4 +75,64 @@ export const getMatches = (entityUid?: string, threshold?: number) =>
 // ── Graph ──
 export const getGraphData = () => api.get<GraphData>('/graph').then(r => r.data);
 
+// ═══════════════════════════════════════════
+// AI AGENTS (Sprint 2)
+// ═══════════════════════════════════════════
+
+export interface AgentResponse {
+  status: string;
+  message: string;
+  data: Record<string, unknown>;
+}
+
+// Agent status
+export const getAgentStatus = () =>
+  api.get<AgentResponse>('/agents/status').then(r => r.data);
+
+// Profile analysis
+export const analyzeProfile = (data: {
+  entity_uid: string;
+  entity_type: string;
+  name?: string;
+  bio?: string;
+  institution?: string;
+  course?: string;
+  level?: string;
+  skills?: string[];
+}) => api.post<AgentResponse>('/agents/analyze-profile', data).then(r => r.data);
+
+// Edital interpretation
+export const interpretEdital = (data: {
+  edital_uid: string;
+  title?: string;
+  description?: string;
+  agency?: string;
+}) => api.post<AgentResponse>('/agents/interpret-edital', data).then(r => r.data);
+
+// Match calculation
+export const calculateMatches = (data?: {
+  entity_uid?: string;
+  edital_uid?: string;
+}) => api.post<AgentResponse>('/agents/calculate-matches', data || {}).then(r => r.data);
+
+// Recalculate all matches
+export const recalculateAllMatches = () =>
+  api.post<AgentResponse>('/agents/recalculate-all').then(r => r.data);
+
+// Run full pipeline
+export const runPipeline = () =>
+  api.post<AgentResponse>('/agents/run-pipeline').then(r => r.data);
+
+// Match statistics
+export const getMatchStats = () =>
+  api.get<AgentResponse>('/agents/match-stats').then(r => r.data);
+
+// Entity connections
+export const getEntityConnections = (uid: string) =>
+  api.get<AgentResponse>(`/agents/connections/${uid}`).then(r => r.data);
+
+// ── Admin ──
+export const seedDatabase = () => api.post('/seed').then(r => r.data);
+export const seedAndConfigure = () => api.post('/seed-and-configure').then(r => r.data);
+
 export default api;

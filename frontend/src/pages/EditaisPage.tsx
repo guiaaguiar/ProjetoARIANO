@@ -5,7 +5,6 @@ import { toast } from 'sonner';
 import type { Edital } from '../types';
 import * as api from '../lib/api';
 import { NODE_COLORS } from '../types';
-import { MOCK_EDITAIS } from '../lib/mockData';
 
 export default function EditaisPage() {
   const [editais, setEditais] = useState<Edital[]>([]);
@@ -21,7 +20,7 @@ export default function EditaisPage() {
     setLoading(true);
     api.getEditais()
       .then(setEditais)
-      .catch(() => setEditais(MOCK_EDITAIS))
+      .catch(console.error)
       .finally(() => setLoading(false));
   };
 

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """API Routes — CRUD + Match + Graph."""
 
 from fastapi import APIRouter, HTTPException
@@ -211,3 +213,43 @@ def get_matches(entity_uid: str | None = None, threshold: float = 0.0):
 @router.get("/graph", response_model=GraphData, tags=["Graph"])
 def get_graph():
     return crud.get_graph_data()
+
+
+# ═══════════════════════════════════════════
+# SEED & PIPELINE
+# ═══════════════════════════════════════════
+
+@router.post("/seed", tags=["Admin"])
+def seed_database():
+    """Seed the database with test data (~15 academics + ~8 editais)."""
+    from app.services.seed_native import seed_native
+    try:
+        seed_native()
+        return {"status": "ok", "message": "Database seeded successfully"}
+    except Exception as e:
+        raise HTTPException(500, f"Seed failed: {str(e)}")
+
+
+@router.post("/pipeline", tags=["Admin"])
+def run_pipeline():
+    """Run the full AI pipeline: analyze profiles → interpret editais → calculate matches."""
+    from app.services.seed_and_configure import run_pipeline as pipeline
+    try:
+        result = pipeline()
+        return {"status": "ok", "message": "Pipeline completed", "data": result}
+    except Exception as e:
+        raise HTTPException(500, f"Pipeline failed: {str(e)}")
+
+
+@router.post("/seed-and-configure", tags=["Admin"])
+def seed_and_run():
+    """Seed database + run full AI pipeline in one step."""
+    from app.services.seed_native import seed_native
+    from app.services.seed_and_configure import run_pipeline as pipeline
+    try:
+        seed_native()
+        result = pipeline()
+        return {"status": "ok", "message": "Seed + Pipeline completed", "data": result}
+    except Exception as e:
+        raise HTTPException(500, f"Seed+Pipeline failed: {str(e)}")
+

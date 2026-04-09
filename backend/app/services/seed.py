@@ -77,6 +77,16 @@ def seed():
          "semester": 3, "level": "mestrado",
          "bio": "Mestranda em NLP com foco em PLN para portugues",
          "skills": ["Python", "NLP", "Deep Learning", "TensorFlow"]},
+        {"name": "João Victor Mendes", "email": "joao.victor@uninassau.edu.br",
+         "institution": "UNINASSAU Gracas", "course": "Sistemas de Informacao",
+         "semester": 4, "level": "graduacao",
+         "bio": "Focado em inovacao com React e automacao de banco de dados",
+         "skills": ["React", "Neo4j", "Graph Databases", "TypeScript"]},
+        {"name": "Larissa Barros", "email": "larissa.b@unicap.edu.br",
+         "institution": "UNICAP", "course": "Ciencia da Computacao",
+         "semester": 6, "level": "graduacao",
+         "bio": "Pesquisadora iniciante em Data Science com interesse no SUS.",
+         "skills": ["Python", "Statistics", "Data Science"]},
     ]
     for sdata in students_data:
         sk_names = sdata.pop("skills")
@@ -166,6 +176,18 @@ def seed():
          "bio": "Especialista em IoT e sistemas embarcados para smart cities",
          "skills": ["IoT", "Embedded Systems", "Python"],
          "areas": ["Sistemas Embarcados", "Redes de Computadores"]},
+        {"name": "Prof. Dr. Lucas Nogueira", "email": "lucas.n@uninassau.edu.br",
+         "institution": "UNINASSAU Gracas", "department": "Redes de Computadores",
+         "research_group": "REDES-Lab",
+         "bio": "Focado e pioneiro em arquiteturas inovadoras Serverless e Cloud",
+         "skills": ["Cloud Computing", "Docker", "Python", "FastAPI"],
+         "areas": ["Computacao em Nuvem", "Redes de Computadores"]},
+        {"name": "Prof. Dra. Amanda Vieira", "email": "amanda.vieira@ufpe.edu.br",
+         "institution": "UFPE", "department": "Estatistica e Informatica",
+         "research_group": "InovaDados",
+         "bio": "Professora orientadora de mestrado em mineracao de grafos e data science",
+         "skills": ["Graph Databases", "Neo4j", "R", "Data Science"],
+         "areas": ["Ciencia de Dados", "Processamento de Linguagem Natural"]},
     ]
     for pdata in professors_data:
         sk_names = pdata.pop("skills")
@@ -230,6 +252,18 @@ def seed():
          "funding": 15000.0, "deadline": "2026-04-30", "min_level": "graduacao",
          "required_skills": ["React", "TypeScript", "FastAPI", "Docker"],
          "target_areas": ["Engenharia de Software"]},
+        {"title": "MCTI - Fomento a Startups e IA",
+         "description": "Subvencao economica para startups com forte embasamento em redes de P&D",
+         "agency": "MCTI", "edital_type": "inovacao",
+         "funding": 250000.0, "deadline": "2026-10-10", "min_level": "graduacao",
+         "required_skills": ["React", "TypeScript", "Python", "Docker"],
+         "target_areas": ["Engenharia de Software", "Inteligencia Artificial"]},
+        {"title": "FINEP - Pesquisa em Saúde e Dados",
+         "description": "Ciencia de dados aplicada em prontuarios e melhoria do sistema publico de saude",
+         "agency": "FINEP", "edital_type": "pesquisa",
+         "funding": 120000.0, "deadline": "2026-08-25", "min_level": "mestrado",
+         "required_skills": ["R", "Statistics", "Data Science", "Machine Learning"],
+         "target_areas": ["Ciencia de Dados"]},
     ]
     for edata in editais_data:
         sk_names = edata.pop("required_skills")

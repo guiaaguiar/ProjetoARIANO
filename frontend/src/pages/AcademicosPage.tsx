@@ -5,7 +5,6 @@ import { toast } from 'sonner';
 import type { Student, Researcher, Professor } from '../types';
 import * as api from '../lib/api';
 import { NODE_COLORS } from '../types';
-import { MOCK_STUDENTS, MOCK_RESEARCHERS, MOCK_PROFESSORS } from '../lib/mockData';
 
 type Tab = 'students' | 'researchers' | 'professors';
 
@@ -22,7 +21,7 @@ export default function AcademicosPage() {
     setLoading(true);
     Promise.all([api.getStudents(), api.getResearchers(), api.getProfessors()])
       .then(([s, r, p]) => { setStudents(s); setResearchers(r); setProfessors(p); })
-      .catch(() => { setStudents(MOCK_STUDENTS); setResearchers(MOCK_RESEARCHERS); setProfessors(MOCK_PROFESSORS); })
+      .catch(console.error)
       .finally(() => setLoading(false));
   };
 
