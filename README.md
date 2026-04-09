@@ -1,6 +1,6 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/status-Prototipagem-blue?style=for-the-badge" alt="Status: Prototipagem" />
-  <img src="https://img.shields.io/badge/versão-v0.1.2-informational?style=for-the-badge" alt="Versão: v0.1.2" />
+  <img src="https://img.shields.io/badge/status-MVP_v1_Online-green?style=for-the-badge" alt="Status: MVP v1 Online" />
+  <img src="https://img.shields.io/badge/versão-v1.0.0-informational?style=for-the-badge" alt="Versão: v1.0.0" />
   <img src="https://img.shields.io/badge/UNINASSAU-Tópicos_Integradores-purple?style=for-the-badge" alt="UNINASSAU" />
 </p>
 
@@ -64,12 +64,13 @@ Este repositório contém o **MVP (Minimum Viable Product)** do ARIANO, focado e
       <img src="https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white" />
       <br />
       <img src="https://img.shields.io/badge/LangChain-1C3C3C?style=flat-square&logo=langchain&logoColor=white" />
-      <img src="https://img.shields.io/badge/Google_Gemini-8E75C2?style=flat-square&logo=googlegemini&logoColor=white" />
+      <img src="https://img.shields.io/badge/NVIDIA_Nemotron-76B900?style=flat-square&logo=nvidia&logoColor=white" />
+      <img src="https://img.shields.io/badge/OpenRouter-6562F5?style=flat-square&logo=openrouter&logoColor=white" />
       <ul>
         <li><b>Orquestração:</b> LangGraph (Agentes IA)</li>
-        <li><b>LLM:</b> Gemini 2.0 Flash</li>
-        <li><b>OGM:</b> Neomodel</li>
-        <li><b>Servidor:</b> Uvicorn (ASGI)</li>
+        <li><b>LLM:</b> NVIDIA Nemotron 3 Super (via OpenRouter)</li>
+        <li><b>Integração:</b> FastAPI + Neomodel</li>
+        <li><b>Deploy:</b> Vercel Fullstack (Monorepo)</li>
       </ul>
     </td>
   </tr>
@@ -119,55 +120,23 @@ FASE 2 — Match (online, instantâneo)
 | 🎨 Design Reference | ✅ Concluído | Referência de Design e paletas Blue Neon ajustadas |
 | 🛠️ Plano de Implementação | ✅ Concluído | Roadmap de 4 sprints construído, modelo MVC escalonado |
 | 💻 Sprint 0 — Fundação | ✅ Concluído | Setup do repo e de ecossistema local configurado |
-| 📊 Sprint 1 — UI & Web Grafo| ✅ Concluído | Frontend consolidado (D3.js), Data Mock de nós refinada (ex: limites lógicos e balanceamento algorítmico) |
-| 🤖 Sprint 2 — Data & Agentes | ⬜ Pendente | Modelagem Neo4j, ProfileAnalyzer Backend Python, APIs CRUD |
-| ✨ Sprint 4 — Polish | ⬜ Pendente | Integração E2E, animações, deploy |
+| 📊 Sprint 1 — UI & Web Grafo| ✅ Concluído | Frontend consolidado (D3.js), Data Mock de nós refinada |
+| 🤖 Sprint 2 — Data & Agentes | ✅ Concluído | Modelagem Neo4j, Agentes IA Python, APIs CRUD |
+| 🚀 Sprint 3 — Deploy & Prod | ✅ Concluído | Deploy Fullstack Vercel, Security Hardening, Refactor |
+| ✨ Sprint 4 — Expansão | ⬜ Pendente | Novos eixos (Indústria), animações fluidas, polimento |
 
 ---
 
 ## 📂 Estrutura do Repositório
 
 ```text
-ProjetoARIANO/
-├── .github/
-│   └── workflows/ci.yml          # CI/CD pipeline
-├── frontend/
-│   ├── src/
-│   │   ├── app/                   # Páginas (Router)
-│   │   ├── components/            # Componentes React reutilizáveis
-│   │   │   ├── graph/             # Componentes baseados em D3.js
-│   │   │   ├── forms/             # Formulários de cadastro
-│   │   │   └── ui/                # Design system components
-│   │   ├── hooks/                 # Custom React hooks
-│   │   ├── lib/                   # Utilitários, API client
-│   │   ├── styles/                # CSS global + design tokens
-│   │   └── types/                 # TypeScript types
-│   ├── package.json
-│   └── tsconfig.json
-├── backend/
-│   ├── app/
-│   │   ├── api/                   # Routers FastAPI
-│   │   ├── models/                # Neomodel (Nós e Arestas)
-│   │   ├── services/              # Lógica de negócio + Match Engine
-│   │   ├── agents/                # Agentes IA (Graph Configurators)
-│   │   │   ├── profile_analyzer.py
-│   │   │   ├── edital_interpreter.py
-│   │   │   └── eligibility_calculator.py
-│   │   └── core/                  # Config, dependências
-│   ├── tests/
-│   ├── requirements.txt
-│   └── Dockerfile
-├── Prototype v0/
-│   ├── Docs/
-│   │   ├── arquivos apresentacao/          # 📊 Apresentação da disciplina
-│   │   │   └── apresentacao_TIdCC (1).html
-│   │   ├── assets/                         # Assets de documentação
-│   │   └── 01_DOCUMENTO_PROJETO_ARIANO.md  # 📋 Documento de referência base
-│   └── implementation_plan.md               # 🗺️ Plano de implementação
-├── docker-compose.yml
-├── .env.example
-├── .gitignore
-└── README.md                                  # 📖 Este arquivo
+├── app/                   # ⚙️ Código do Backend (IA Agents + Logic)
+├── api/                   # 🚀 Entrypoint Vercel (Production)
+├── frontend/              # 🎨 Código do Frontend (React)
+├── requirements.txt       # Dependências GLOBAIS
+├── vercel.json            # Configuração de Deploy Fullstack
+├── Prototype v0/          # 📋 Documentação e Histórico
+└── README.md              # 📖 Este arquivo
 ```
 
 ---

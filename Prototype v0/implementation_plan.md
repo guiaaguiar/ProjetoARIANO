@@ -3,9 +3,9 @@
 > **Arquitetura de Inteligência Artificial Naturalmente Ordenada**
 > Orquestrador inteligente de matches para a plataforma **CORETO**
 
-> **Versão:** 3.0.0 (MVP 1.0.0 Finalizado — Protótipo 100% Funcional)
-> **Data:** 23/03/2026  
-> **Última atualização:** 06/04/2026
+> **Versão:** 4.0.0 (MVP 1.0.0 Finalizado — Fullstack Vercel)
+> **Data:** 09/04/2026  
+> **Última atualização:** 09/04/2026
 
 ---
 
@@ -28,28 +28,22 @@ O ARIANO é o **motor de matchmaking inteligente** da plataforma CORETO (Prefeit
 │  ├─ Vite 5 + React 18 + TypeScript                       │
 │  ├─ Tailwind CSS v4 (design system)                       │
 │  ├─ D3.js v7 (grafo interativo SVG + Force Simulation)    │
-│  ├─ D3-force (layout force-directed com colisão)          │
-│  ├─ SVG Filters (glow neon por tipo de nó)                │
-│  ├─ Curved Edges (arcos SVG arc paths)                    │
-│  ├─ Framer Motion (animações de UI)                       │
-│  ├─ React Router v7 (routing)                             │
-│  ├─ Lucide React (ícones)                                 │
-│  ├─ Outfit + JetBrains Mono (tipografia)                  │
-│  └─ React Hook Form + Zod (formulários)                   │
+│  ├─ Framer Motion (animações e transições)                │
+│  └─ D3-force (layout force-directed com colisão)          │
 │                                                           │
 │  ⚙️ BACKEND                                               │
 │  ├─ Python 3.12 + FastAPI                                 │
 │  ├─ LangChain + LangChain-OpenAI (agentes IA)             │
 │  ├─ NVIDIA Nemotron 3 Super 120B via OpenRouter (LLM)     │
-│  ├─ Neomodel (OGM para Neo4j) + Neo4j Driver (Cypher)    │
-│  └─ Uvicorn (servidor ASGI)                               │
+│  └─ Neomodel (OGM para Neo4j) + Neo4j Driver (Cypher)    │
 │                                                           │
 │  🗄️ DADOS                                                 │
 │  ├─ Neo4j 5.x Community (graph database, primário)        │
 │  └─ In-Memory Graph Store (fallback state zero-config)    │
 │                                                           │
-│  🔧 DEVOPS                                                │
-│  ├─ Neo4j local (Homebrew / Community Edition)             │
+│  🔧 DEVOPS & DEPLOY                                       │
+│  ├─ Vercel Fullstack (Monorepo)                           │
+│  ├─ Vercel Secrets / Environment Variables                │
 │  └─ GitHub Actions (CI/CD)                                │
 │                                                           │
 └──────────────────────────────────────────────────────────┘
@@ -203,16 +197,27 @@ Request → API → Cypher: MATCH (a)-[r:ELIGIBLE_FOR]->(e) WHERE r.score >= 0.7
 | Seed + Pipeline Script | — | Script automatizado: seed data → analyze → interpret → calculate | ✅ |
 | Integração Frontend (API Client) | — | Endpoints de agentes expostos no api.ts do frontend | ✅ |
 
-### Sprint 3 — Integração + Polish (Semana 5-6) ✅ CONCLUÍDA
+### Sprint 3 — Integração, Deploy e Hardening ✅ CONCLUÍDA
 
 | Tarefa | US | Detalhes | Status |
 |--------|----|---------|--------|
-| Integração E2E (Remoção Mock) | — | Frontend ↔ Backend totalmente integrado sem mocks locais | ✅ |
-| In-Memory Graph Fallback | — | Fallback do Neo4j em memória (Dicionário O(1)) garantindo startup rápido | ✅ |
-| Skeletons & Spinners | — | Animações de loading otimizadas durante chamadas `api.ts` | ✅ |
-| Tratamento de Erros Axios | — | Retorno para fallback de display sem quebrar SPA e Toast errors | ✅ |
-| Refinamento Grafo D3.js | — | Ajustes finais no render do grafo retirando warnings e bugs visuais | ✅ |
-| Documentação Final | — | Atualização do README, Plano, e Documento Principal para MVP 1.0.0 | ✅ |
+| Integração E2E (Remoção Mock) | — | Frontend ↔ Backend totalmente integrado sem mocks | ✅ |
+| Deploy Fullstack Vercel | — | Monorepo configurado com FastAPI (Serverless) + Vite | ✅ |
+| Segurança de Credenciais | — | Gestão de chaves via Vercel Secrets / Env Vars | ✅ |
+| Refatoração de Estrutura | — | Pasta `app/` na raiz para descoberta nativa | ✅ |
+| Correção Pydantic Prod | — | Ajuste de validação para variáveis de ambiente Vercel | ✅ |
+| In-Memory Graph Fallback | — | Fallback do Neo4j em memória (Dicionário O(1)) | ✅ |
+| Skeletons & Spinners | — | Animações de loading otimizadas durante chamadas | ✅ |
+
+### Sprint 4 — Polimento e Expansão 🚀 EM ANDAMENTO
+
+| Tarefa | US | Detalhes | Status |
+|--------|----|---------|--------|
+| **Animações Fluidas** | — | Transições suaves de grafos e interações orgânicas | ⬜ |
+| Expansão de Grafos | — | Novos nós de Indústria e Sociedade Civil | ⬜ |
+| Lógica Zero-Filter | — | Inicialização limpa e progressiva do grafo | ⬜ |
+| Estabilização Final | — | Testes de carga e refinamento de UX | ⬜ |
+| Manual do Usuário | — | Vídeo demo e guia de instalação | ⬜ |
 
 ---
 
@@ -267,7 +272,9 @@ Request → API → Cypher: MATCH (a)-[r:ELIGIBLE_FOR]->(e) WHERE r.score >= 0.7
 - [x] Match = Cypher puro, sem IA no momento da consulta
 - [x] Frontend com dashboard + cadastro + grafo interativo
 - [x] Design consistente com Blue Neon Edition
-- [ ] CI/CD passando
+- [x] Deploy Fullstack funcional (Vercel)
+- [x] Segurança de credenciais via Secrets
+- [x] CI/CD passando
 
 ---
 
@@ -308,32 +315,19 @@ python -m app.services.seed_and_configure
 ## 9. Estrutura de Arquivos (Sprint 2)
 
 ```
-backend/
-├── app/
-│   ├── agents/                      # IA Agents (Phase 1)
-│   │   ├── __init__.py
-│   │   ├── profile_analyzer.py      # ProfileAnalyzer (skill extraction)
-│   │   ├── edital_interpreter.py    # EditalInterpreter (requirement extraction)
-│   │   └── eligibility_calculator.py # EligibilityCalculator (match scoring)
-│   ├── api/
-│   │   ├── routes.py                # CRUD + Admin endpoints
-│   │   └── agent_routes.py          # AI Agent operation endpoints
-│   ├── core/
-│   │   ├── config.py                # Settings (OpenRouter, Neo4j)
-│   │   ├── database.py              # Neomodel init
-│   │   └── neo4j_driver.py          # Native Cypher driver
-│   ├── models/
-│   │   └── graph.py                 # Neomodel node/edge definitions
-│   ├── services/
-│   │   ├── crud.py                  # CRUD operations
-│   │   ├── match_engine.py          # O(1) Cypher match queries
-│   │   ├── seed.py                  # Data seeding
-│   │   └── seed_and_configure.py    # Seed + AI pipeline
-│   └── main.py                      # FastAPI entry point
-├── requirements.txt
-└── .env
+├── app/                   # ⚙️ BACKEND CODE
+│   ├── agents/            # IA Agents
+│   ├── api/               # FastAPI Routers
+│   ├── core/              # Config & Security
+│   ├── models/            # Graph Models
+│   └── services/          # Business Logic
+├── api/                   # 🚀 Vercel functions
+├── frontend/              # 🎨 Frontend React
+├── vercel.json            # Monorepo config
+├── requirements.txt       # Global dependencies
+└── .env                   # Secret variables (GitIgnored)
 ```
 
 ---
 
-**Criado em:** 16/03/2026 · **Última atualização:** 06/04/2026 · **Versão:** 2.0.0
+**Criado em:** 16/03/2026 · **Última atualização:** 09/04/2026 · **Versão:** 4.0.0

@@ -1,10 +1,10 @@
 # 📋 PROJETO ARIANO — Documento de Visão e Planejamento do MVP
 
-> **Versão:** 2.0.0  
-> **Data:** 23/03/2026  
-> **Status:** MVP 1.0.0 Finalizado — Integrado Frontend + Backend
+> **Versão:** 3.5.0  
+> **Data:** 09/04/2026  
+> **Status:** MVP 1.0.0 Finalizado — Fullstack Deploy (Vercel)
 > **Metodologia:** SCRUM (adaptado para contexto acadêmico)  
-> **Última atualização:** 06/04/2026 — Protótipo 100% Funcional e Entregue
+> **Última atualização:** 09/04/2026 — Sprint 3 Concluída (Integração E2E + Deploy Vercel)
 
 ---
 
@@ -64,7 +64,9 @@ O **ARIANO** (**A**rquitetura de **I**nteligência **A**rtificial **N**aturalmen
 - ✅ Match via **Cypher query pura** ou O(1) de Busca em Memória sobre o grafo instanciado.
 - ✅ Interface web robusta e otimizada (Vite, React, D3.js) consumindo os endpoints backend diretamente via REST Axios
 - ✅ Zero-config Execution garantida com in-memory database nativo e transparente ao usuário
-- ❌ NÃO inclui: eixos Indústria/Sociedade Civil, RAG avançado, deploy unificado restrito (produção complexa)
+- ✅ **Deploy Fullstack (Vercel):** Backend FastAPI (Serverless) e Frontend Vite integrados em monorepo
+- ✅ **Segurança de Credenciais:** Gestão de chaves via Environment Variables (Secrets) ocultas em produção
+- ❌ Fluxos de Indústria/Sociedade Civil (Sprint 4)
 
 ---
 
@@ -231,34 +233,29 @@ CREATE (r)-[:ELIGIBLE_FOR {score: 0.92, justification: "92% aderência..."}]->(e
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│                   STACK ARIANO v0                         │
+│                   STACK ARIANO v1.0                       │
 ├──────────────────────────────────────────────────────────┤
 │                                                           │
 │  🎨 FRONTEND                                              │
 │  ├─ Vite 5 + React 18 + TypeScript                       │
 │  ├─ Tailwind CSS v4 (design system)                       │
 │  ├─ D3.js v7 (grafo interativo SVG + Force Simulation)    │
-│  ├─ D3-force (layout force-directed com colisão)          │
-│  ├─ SVG Filters (glow neon por tipo de nó)                │
-│  ├─ Curved Edges (arcos SVG arc paths)                    │
-│  ├─ Framer Motion (animações de UI)                       │
-│  ├─ React Router v7 (routing)                             │
-│  ├─ Lucide React (ícones)                                 │
-│  ├─ Outfit + JetBrains Mono (tipografia)                  │
-│  └─ React Hook Form + Zod (formulários)                   │
+│  ├─ Framer Motion (animações e transições fluídas)          │
+│  └─ D3-force (layout force-directed com colisão)          │
 │                                                           │
 │  ⚙️ BACKEND                                               │
 │  ├─ Python 3.12 + FastAPI                                 │
 │  ├─ LangChain + LangChain-OpenAI (agentes IA)             │
 │  ├─ NVIDIA Nemotron 3 Super 120B via OpenRouter (LLM)     │
-│  ├─ Neomodel (OGM) + Neo4j Driver (Cypher nativo)         │
-│  └─ Uvicorn (servidor ASGI)                               │
+│  └─ Neomodel (OGM) + Neo4j Driver (Cypher nativo)         │
 │                                                           │
 │  🗄️ DADOS                                                 │
-│  └─ Neo4j 5.x Community (graph database)                  │
+│  ├─ Neo4j 5.x Community (graph database)                  │
+│  └─ Memory Graph Engine (Fallback O(1) nativo)            │
 │                                                           │
-│  🔧 DEVOPS                                                │
-│  ├─ Neo4j local (Homebrew / Community Edition)             │
+│  🔧 DEVOPS & DEPLOY                                       │
+│  ├─ **Vercel Fullstack Deployment** (Monorepo)            │
+│  ├─ **Vercel Secrets / Env Vars** (Gestão Segura)           │
 │  └─ GitHub Actions (CI/CD)                                │
 │                                                           │
 └──────────────────────────────────────────────────────────┘
@@ -268,8 +265,8 @@ CREATE (r)-[:ELIGIBLE_FOR {score: 0.92, justification: "92% aderência..."}]->(e
 
 A arquitetura do desenvolvimento atende rigorosos padrões de Boas Práticas, assegurando escalabilidade limpa e manutenibilidade na transição entre MVP Mockado e Serviço Completo:
 
-| Tecnologia e Prática | Justificativas e Normas Atendidas |
-|-----------|---------------|
+| **Vercel Fullstack Deploy** | **Escalabilidade & Agilidade:** O uso do Vercel para hospedar o backend FastAPI (via Serverless Functions) e o frontend Vite em um único repositório garante sincronia total de deploy e latência reduzida nas chamadas de API. |
+| **Secrets Management** | **Segurança Pró-Ativa:** Implementação de variáveis de ambiente restritas para chaves LLM (OpenRouter), garantindo que credenciais sensíveis nunca vazem no repositório público. |
 | **D3.js v7 (Gráficos Customizados SVG)** | **Manipulação Clara e Modular:** Tivemos controle absoluto do render engine via subcomponentes, abstraindo logicas de colisão e densidade (ForceAtlas2 equivalente) para dar um ar estético elegante de grafos acadêmicos. |
 | **Arquitetura Vite + React (SPA)** | **Separação de Preocupações (SoC):** Por ser 100% Client-Side focado, eliminamos a complexidade misturada do padrão SSR (como o NextJS traria). Com Vite o desenvolvimento tem Hot Reload menor que 50ms, facilitando UI iterativas robustas como Visualizadores Force Directed. |
 | **Banco Mock Matemático Restrito** | **Testabilidade Previsível:** Ao criarmos um Mock com exatas 20 entidades para todos os grupos, testamos nossa interface em bounds de uso claros. Além disso, as atribuições de arestas (`edges`) seguiram permutações predeterminadas garantidas (Ex: 1 aluno para 10 editais precisos), refletindo comportamento em ambiente real previsível. |
@@ -393,10 +390,19 @@ O planejamento desta sprint engloba o nascimento do núcleo matemático do nosso
 - **Agent API Routes:** Endpoints REST completos para operações dos agentes
 - **Seed + Pipeline:** Script automatizado para popular banco e executar pipeline de agentes
 
-### Sprint 3 — Integração, Deploy e Polish (Semana 5-6) ✅ CONCLUÍDA
+### Sprint 3 — Integração, Deploy e Security Hardening (Semana 5-6) ✅ CONCLUÍDA
 
-**Foco:** Garantir execução e interação instantânea entre Front e Back-End.  
-Esta foi nossa Sprint de estabilização final. Removemos todos os mocks locais e integramos o Frontend puramente via API REST consumindo dados diretamente do engine de backend (com Fallback em In-Memory Database O(1) para instâncias sem Neo4j). O código foi refinado, erros silenciados para garantir compatibilidade UI sem travamentos e todas conexões estabilizadas para apresentação consolidada do protótipo totalmente funcional, em tempo recorde.
+**Foco:** Garantir execução global e proteção de dados sensíveis.  
+Finalizamos a integração total E2E, removendo mocks e estabilizando a comunicação via Axios. O grande marco foi o **Deploy Fullstack no Vercel**, onde configuramos um monorepo que hospeda tanto a lógica de IA (Python) quanto a interface. Implementamos camadas de segurança via **Environment Variables (Secrets)** para proteger as chaves do NVIDIA Nemotron, e refatoramos a estrutura de pastas movendo o core do app para a raiz, garantindo que o backend seja nativamente descoberto pelos ambientes de nuvem.
+
+### Sprint 4 — Expansão e Refinamento Final (Semana 7-8) 🚀 EM ANDAMENTO
+
+**Foco:** Polimento visual extremo e expansão de horizontes.  
+Estamos agora trabalhando no "efeito uau" final:
+- **Animações Fluidas:** Transições de nós e arestas com Framer Motion e D3 Transitions mais orgânicas.
+- **Filtros Aprimorados:** Lógica de busca mais assertiva começando com estado "zero-filter" para foco máximo.
+- **Expansão do Grafo:** Inclusão de novos nós (Indústria/Sociedade Civil) e conexões complexas entre editais, alunos e professores.
+- **Visualização Assertiva:** Componente de "Legenda" e tooltips informativos de alto contraste.
 
 ---
 
@@ -407,8 +413,10 @@ O MVP será considerado **Done** quando:
 - [x] Grafo populado com ≥ 15 acadêmicos + ≥ 8 editais + arestas configuradas por agentes
 - [x] Agentes IA (NVIDIA Nemotron 3 via OpenRouter) criam e configuram o grafo (nós, arestas, pesos) antes do match
 - [x] Match instantâneo e robusto com endpoints de backend integrados com Frontend
-- [x] Execução nativa zero-config (A API e Grafo executam no Memory Database O(1) sem necessidade de container ou daemon)
-- [x] Frontend otimizado com dashboard, cadastro e visualizador de grafo interativo 100% dinâmicos consumindo dados API
+- [x] Execução nativa zero-config (A API e Grafo executam no Memory Database O(1))
+- [x] Deploy Fullstack funcional em URL pública (Vercel)
+- [x] Gestão de Segredos (API Keys) via Environment Variables segura
+- [x] Frontend otimizado com dashboard, cadastro e visualizador de grafo interativo 100% dinâmicos
 - [x] CI/CD testado
 - [x] Design consistente com tema azul neon (Blue Neon Edition)
 
@@ -433,19 +441,18 @@ ProjetoARIANO/
 │   │   └── types/                 # TypeScript types
 │   ├── package.json
 │   └── tsconfig.json
-├── backend/
-│   ├── app/
-│   │   ├── api/                   # Routers FastAPI
-│   │   ├── models/                # Neomodel (Nós e Arestas)
-│   │   ├── services/              # Lógica de negócio + Match Engine
-│   │   ├── agents/                # Agentes IA (Graph Configurators)
-│   │   │   ├── profile_analyzer.py
-│   │   │   ├── edital_interpreter.py
-│   │   │   └── eligibility_calculator.py
-│   │   └── core/                  # Config, dependências
-│   ├── tests/
-│   ├── requirements.txt
-│   └── Dockerfile
+├── app/                   # ⚙️ BACKEND CODE (Coração do Sistema)
+│   ├── api/               # Routers FastAPI
+│   ├── models/            # Grafos (Nodes/Edges)
+│   ├── services/          # Lógica de Match & Seed
+│   ├── agents/            # Agentes IA (NVIDIA Nemotron)
+│   └── core/              # Config (Pydantic / Security)
+├── api/                   # 🚀 VERCEL SERVERLESS FUNCTIONS
+│   └── index.py           # Entry point de produção
+├── frontend/              # 🎨 FRONTEND CODE (React + D3.js)
+├── backend/               # Legado e scripts de suporte (Dockerfile)
+├── requirements.txt       # Dependências globais
+├── vercel.json            # Configuração de Deploy Monorepo
 ├── Prototype v0/
 │   ├── Docs/
 │   │   ├── arquivos apresentacao/          # 📊 Apresentação da disciplina
@@ -529,4 +536,4 @@ docs(readme): atualizar instruções de setup
 ---
 
 > **Este documento é um guia vivo atualizado a cada sprint.**  
-> **Última atualização:** 06/04/2026 — Sprint 2 Concluída (Agentes IA + Neo4j + OpenRouter/Nemotron)
+> **Última atualização:** 09/04/2026 — Sprint 3 Concluída (Fullstack Deploy + Security + Monorepo)
