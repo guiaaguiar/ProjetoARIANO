@@ -1,8 +1,10 @@
 import os
 import sys
 
-# Agora que o código do backend foi copiado para dentro da pasta 'api',
-# o módulo 'app' pode ser importado diretamente.
-# Isso garante compatibilidade total com o Vercel Serverless.
+# Define o caminho para a pasta 'api' onde o bundle do backend foi colocado
+current_dir = os.path.dirname(os.path.abspath(__file__))
+if current_dir not in sys.path:
+    sys.path.insert(0, current_dir)
 
+# Agora o import 'app' deve funcionar pois 'api/' está no path
 from app.main import app
