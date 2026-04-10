@@ -330,17 +330,15 @@ python -m app.services.seed_and_configure
 ## 9. Estrutura de Arquivos (Sprint 2)
 
 ```
-├── app/                   # ⚙️ BACKEND CODE
-│   ├── agents/            # IA Agents
-│   ├── api/               # FastAPI Routers
-│   ├── core/              # Config & Security
-│   ├── models/            # Graph Models
-│   └── services/          # Business Logic
+├── app/                   # ⚙️ BACKEND
 ├── api/                   # 🚀 Vercel functions
-├── frontend/              # 🎨 Frontend React
-├── vercel.json            # Monorepo config
-├── requirements.txt       # Global dependencies
-└── .env                   # Secret variables (GitIgnored)
+├── frontend/              # 🎨 Frontend
+├── Prototype v0/          # 📋 DOCUMENTAÇÃO
+│   ├── Docs/
+│   │   ├── assets/        # Relatórios (Analise QA Sprint 3.md)
+│   │   └── arquivos apresentacao/
+│   └── implementation_plan.md
+└── README.md
 ```
 
 ---

@@ -2,7 +2,7 @@
 
 > **Projeto:** ARIANO v3.5.0 (Fullstack Deploy)  
 > **Data:** 09/04/2026  
-> **Avaliador:** Antigravity Tech Lead  
+> **Avaliador:** Guilherme 
 > **Ambiente:** Vercel (Production) — https://projetoariano.vercel.app/
 
 ---
@@ -60,4 +60,4 @@ Apesar da estabilidade, mapeamos pontos de melhoria para atingir a maturidade co
 
 ---
 **Assinado:**  
-*ARIANO — Tech Lead (Antigravity)*
+*ARIANO — Tech Lead (Guilherme)*

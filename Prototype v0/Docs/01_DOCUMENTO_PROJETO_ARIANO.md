@@ -452,29 +452,14 @@ ProjetoARIANO/
 │   │   └── types/                 # TypeScript types
 │   ├── package.json
 │   └── tsconfig.json
-├── app/                   # ⚙️ BACKEND CODE (Coração do Sistema)
-│   ├── api/               # Routers FastAPI
-│   ├── models/            # Grafos (Nodes/Edges)
-│   ├── services/          # Lógica de Match & Seed
-│   ├── agents/            # Agentes IA (NVIDIA Nemotron)
-│   └── core/              # Config (Pydantic / Security)
+├── app/                   # ⚙️ BACKEND CODE
 ├── api/                   # 🚀 VERCEL SERVERLESS FUNCTIONS
-│   └── index.py           # Entry point de produção
-├── frontend/              # 🎨 FRONTEND CODE (React + D3.js)
-├── backend/               # Legado e scripts de suporte (Dockerfile)
-├── requirements.txt       # Dependências globais
-├── vercel.json            # Configuração de Deploy Monorepo
-├── Prototype v0/
+├── frontend/              # 🎨 FRONTEND CODE
+├── Prototype v0/          # 📋 DOCUMENTAÇÃO
 │   ├── Docs/
-│   │   ├── arquivos apresentacao/          # 📊 Apresentação da disciplina
-│   │   │   └── apresentacao_TIdCC (1).html
-│   │   ├── assets/                         # Assets de documentação
-│   │   └── 01_DOCUMENTO_PROJETO_ARIANO.md  # 📋 Documento de referência base
-│   └── implementation_plan.md               # 🗺️ Plano de implementação
-├── docker-compose.yml
-├── .env.example
-├── .gitignore
-└── README.md
+│   │   ├── assets/        # Relatórios e Assets (ex: Analise QA Sprint 3.md)
+│   │   └── arquivos apresentacao/
+│   └── implementation_plan.md
 ```
 
 ---

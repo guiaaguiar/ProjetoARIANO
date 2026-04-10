@@ -136,6 +136,10 @@ FASE 2 — Match (online, instantâneo)
 ├── requirements.txt       # Dependências GLOBAIS
 ├── vercel.json            # Configuração de Deploy Fullstack
 ├── Prototype v0/          # 📋 Documentação e Histórico
+│   ├── Docs/              # Documentos Detalhados
+│   │   ├── assets/        # Análises e Screenshots (ex: QA Sprint 3)
+│   │   └── arquivos apresentacao/ 
+│   └── implementation_plan.md
 └── README.md              # 📖 Este arquivo
 ```
 
@@ -169,8 +173,9 @@ O design do ARIANO explora a complexidade orgânica e viva de grafos densos atra
 
 | Documento | Descrição | Link |
 |-----------|-----------|------|
-| **Documento do Projeto** | Histórico consolidado do MVP, arquitetura, design vision, Boas práticas detalhadas das Sprints. | [`Docs/01_DOCUMENTO_PROJETO_ARIANO.md`](Prototype%20v0/Docs/01_DOCUMENTO_PROJETO_ARIANO.md) |
-| **Plano de Implementação** | Stack final e roadmap iteracional de entrega de Features. | [`implementation_plan.md`](Prototype%20v0/implementation_plan.md) |
+| **Documento do Projeto** | Histórico consolidado do MVP, arquitetura e design vision. | [`Docs/01_DOCUMENTO_PROJETO_ARIANO.md`](Prototype%20v0/Docs/01_DOCUMENTO_PROJETO_ARIANO.md) |
+| **Plano de Implementação** | Stack final e roadmap iteracional de entrega. | [`implementation_plan.md`](Prototype%20v0/implementation_plan.md) |
+| **Análise QA Sprint 3** | Relatório técnico de auditoria e performance. | [`Docs/assets/Analise QA Sprint 3.md`](Prototype%20v0/Docs/assets/Analise%20QA%20Sprint%203.md) |
 
 ---
 
