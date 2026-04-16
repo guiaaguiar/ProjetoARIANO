@@ -1,0 +1,57 @@
+Retrieving project…
+Deploying gui7ks-projects/ariano
+Uploading [--------------------] (0.0B/14KB)
+Uploading [=======-------------] (4.9KB/14KB)
+Uploading [==============------] (9.8KB/14KB)
+Uploading [====================] (14.0KB/14KB)
+Inspect: https://vercel.com/gui7ks-projects/ariano/5YndQ1dKDujtc5UV9kd8HM5cATic [3s]
+Production: https://ariano-qkvn0fhef-gui7ks-projects.vercel.app [3s]
+https://ariano-qkvn0fhef-gui7ks-projects.vercel.appBuilding...
+Building...
+Building: Running build in Washington, D.C., USA (East) – iad1
+Building: Build machine configuration: 2 cores, 8 GB
+Building: Retrieving list of deployment files...
+Building: Downloading 99 deployment files...
+Building: Restored build cache from previous deployment (FxiZ5DxGfbFqqZydqfR64JCwSpSH)
+Building: Running "vercel build"
+Building: Vercel CLI 51.2.1
+Building: Running "install" command: `cd frontend && npm install`...
+Building: up to date, audited 165 packages in 1s
+Building: 19 packages are looking for funding
+Building: run `npm fund` for details
+Building: 4 vulnerabilities (2 moderate, 2 high)
+Building: To address all issues, run:
+Building: npm audit fix
+Building: Run `npm audit` for details.
+Building: > frontend@0.0.0 build
+Building: > tsc && vite build
+Building: vite v8.0.1 building client environment for production...
+Building: transforming...✓ 2773 modules transformed.
+Building: rendering chunks...
+Building: computing gzip size...
+Building: dist/index.html                         0.63 kB │ gzip:   0.39 kB
+Building: dist/assets/wallpaper-CTPjKo0w.png  3,080.87 kB
+Building: dist/assets/index-S86a_T1N.css         54.03 kB │ gzip:  10.08 kB
+Building: dist/assets/index-D7uSUO-r.js         565.28 kB │ gzip: 178.59 kB
+Building: [plugin builtin:vite-reporter]
+Building: (!) Some chunks are larger than 500 kB after minification. Consider:
+Building: - Using dynamic import() to code-split the application
+Building: - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+Building: - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+Building: ✓ built in 1.33s
+Building: No Python version specified in .python-version, pyproject.toml, or Pipfile.lock. Using python version: 3.12
+Building: Creating virtual environment at "/vercel/path0/.vercel/python/.venv"...
+Building: Using uv 0.10.11
+Building: Installing required dependencies from requirements.txt...
+Building: Bundle size (269.40 MB) exceeds limit. Enabling runtime dependency installation.
+Building: Build Completed in /vercel/output [14s]
+Building: Deploying outputs...
+Building: Deployment completed
+Building: Creating build cache...
+[2K[1A[2K[GProduction: https://ariano-qkvn0fhef-gui7ks-projects.vercel.app [1m]
+Completing...
+Aliased: https://projetoariano.vercel.app [1m]
+
+Common next commands:
+- `vercel inspect ariano-qkvn0fhef-gui7ks-projects.vercel.app --logs`
+- `vercel redeploy ariano-qkvn0fhef-gui7ks-projects.vercel.app`

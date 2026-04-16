@@ -48,7 +48,7 @@ async def register_user(
                     logger.warning(f"Email {email} found in memory store (uid: {node_id})")
                     raise HTTPException(status_code=400, detail="Email já cadastrado")
     else:
-        results, _ = run_cypher("MATCH (u) WHERE u.email = $email RETURN u.uid", {"email": email})
+        results = run_cypher("MATCH (u) WHERE u.email = $email RETURN u.uid", {"email": email})
         if results:
             logger.warning(f"Email {email} found in Neo4j")
             raise HTTPException(status_code=400, detail="Email já cadastrado")

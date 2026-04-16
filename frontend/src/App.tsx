@@ -9,12 +9,13 @@ import GrafoPage from './pages/GrafoPage';
 import { LoginPage } from './pages/LoginPage';
 import { CadastroPage } from './pages/CadastroPage';
 import UserDashboard from './pages/UserDashboard';
+import UserLayout from './components/layout/UserLayout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { useAuthStore } from './store/authStore';
 import { useEffect } from 'react';
 
-function UserPlaceholder() {
-  return <div className="min-h-screen bg-gray-950 text-white p-8 pt-20">Portal do Usuário (CORETO) - Fase 2</div>;
+function UserPlaceholder({ title }: { title: string }) {
+  return <div className="text-white p-4"><h1>{title}</h1><p className="text-gray-400 mt-2 font-mono text-sm opacity-60 italic">> Agente Orchestrator preparando visualização...</p></div>;
 }
 
 export default function App() {
@@ -46,7 +47,12 @@ export default function App() {
 
         {/* User Portal */}
         <Route element={<ProtectedRoute allowedRoles={['student', 'researcher', 'professor']} />}>
-          <Route path="/user" element={<UserDashboard />} />
+          <Route path="/user" element={<UserLayout />}>
+            <Route index element={<UserDashboard />} />
+            <Route path="matches" element={<UserPlaceholder title="Meus Matches" />} />
+            <Route path="ecossistema" element={<UserPlaceholder title="Meu Ecossistema" />} />
+            <Route path="comunidades" element={<UserPlaceholder title="Comunidades de Pensamento" />} />
+          </Route>
         </Route>
 
         <Route path="/" element={<Navigate to="/login" replace />} />

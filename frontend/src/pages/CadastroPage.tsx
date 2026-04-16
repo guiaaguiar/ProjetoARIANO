@@ -3,10 +3,12 @@ import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, ArrowRight, UploadCloud, FileText, Settings, User } from 'lucide-react';
 import { toast } from 'sonner';
+import { CognitionExperience } from '../components/layout/CognitionExperience';
 
 export const CadastroPage: React.FC = () => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [showCognition, setShowCognition] = useState(false);
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -88,11 +90,10 @@ export const CadastroPage: React.FC = () => {
         throw new Error(result.detail || 'Falha ao realizar cadastro.');
       }
 
-      toast.success('Cadastro concluído com sucesso! A Inteligência já leu seu currículo.');
-      navigate('/login');
+      toast.success('Entidades cadastradas! Iniciando cognição artificial...');
+      setShowCognition(true);
     } catch (err: any) {
       toast.error(err.message || 'Erro ao realizar cadastro.');
-    } finally {
       setLoading(false);
     }
   };
@@ -242,6 +243,14 @@ export const CadastroPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-950 flex flex-col items-center justify-center p-4 relative overflow-hidden backdrop-blur-3xl bg-opacity-80">
+      <AnimatePresence>
+        {showCognition && (
+          <CognitionExperience 
+            userName={formData.name || 'Acadêmico'} 
+            onComplete={() => navigate('/login')} 
+          />
+        )}
+      </AnimatePresence>
       
       <div 
         className="absolute inset-0 z-0 pointer-events-none" 
