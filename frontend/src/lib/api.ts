@@ -7,6 +7,7 @@ import type {
 const api = axios.create({
   baseURL: '/api',
   headers: { 'Content-Type': 'application/json' },
+  withCredentials: true,
 });
 
 // Impede que o SPA fallback da Vercel (que converte 404s da API em index.html) quebre o app

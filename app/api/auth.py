@@ -54,7 +54,13 @@ def login(request: LoginRequest, response: Response):
     if request.email.strip().lower() == "admin@ariano.gov" and request.password.strip() == "admin123":
         logger.info("Admin login matched")
         token = create_access_token({"sub": "admin", "type": "admin", "name": "Admin Gov"})
-        response.set_cookie(key="auth_token", value=token, httponly=True, secure=False, samesite="lax")
+        response.set_cookie(
+            key="auth_token", 
+            value=token, 
+            httponly=True, 
+            secure=True, 
+            samesite="lax"
+        )
         return AuthResponse(status="success", message="Admin logged in", user_type="admin", user_uid="admin", name="Admin Gov")
 
     user = get_user_by_email(request.email)
@@ -74,7 +80,13 @@ def login(request: LoginRequest, response: Response):
              raise HTTPException(status_code=401, detail="Credenciais inválidas")
 
     token = create_access_token({"sub": user["uid"], "type": user["type"], "name": user["name"]})
-    response.set_cookie(key="auth_token", value=token, httponly=True, secure=False, samesite="lax")
+    response.set_cookie(
+        key="auth_token", 
+        value=token, 
+        httponly=True, 
+        secure=True, 
+        samesite="lax"
+    )
     
     return AuthResponse(
         status="success", 
