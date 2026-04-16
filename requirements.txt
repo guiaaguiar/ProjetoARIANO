@@ -14,6 +14,14 @@ langchain-community>=0.3.0
 # Neo4j direct driver (for Cypher queries outside neomodel)
 neo4j>=5.20.0
 
+# Graph Analysis & Visualization (Sprint 4) — Layout, Community Detection
+networkx>=3.6.1
+
+# Auth & PDF
+PyMuPDF>=1.23.0
+passlib[bcrypt]>=1.7.4
+PyJWT>=2.8.0
+
 # Dev & Test
 ruff>=0.6.0
 pytest>=8.3.0

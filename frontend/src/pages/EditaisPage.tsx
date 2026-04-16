@@ -50,30 +50,32 @@ export default function EditaisPage() {
   };
 
   const agencyColors: Record<string, string> = {
-    FACEPE: '#0ea5e9', CNPq: '#10b981', CAPES: '#8b5cf6',
-    'Prefeitura do Recife': '#f59e0b',
+    FACEPE: '#2dd4bf', CNPq: '#34d399', CAPES: '#a78bfa',
+    'Prefeitura do Recife': '#fbbf24',
   };
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <motion.h1 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="text-3xl font-bold text-text-primary">
-            Editais
-          </motion.h1>
-          <p className="text-text-secondary mt-1.5">Chamadas públicas e oportunidades de financiamento</p>
-        </div>
+    <div className="container-fluid py-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="page-header !mb-0"
+        >
+          <h1>Editais</h1>
+          <p>Chamadas públicas e oportunidades de financiamento</p>
+        </motion.div>
         <button onClick={() => setShowForm(true)} className="btn-primary flex items-center gap-2">
           <Plus className="w-4 h-4" /> Novo Edital
         </button>
       </div>
 
-      <motion.div layout className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+      <motion.div layout className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <AnimatePresence mode="popLayout">
           {loading ? (
             Array.from({ length: 4 }).map((_, i) => (
-              <motion.div key={`skel-${i}`} className="card-glass animate-pulse" style={{ padding: '4px' }}>
-                <div className="h-40 bg-surface-hover rounded" />
+              <motion.div key={`skel-${i}`} className="card-glass p-4 lg:p-6">
+                <div className="h-40 skeleton" />
               </motion.div>
             ))
           ) : (
@@ -85,8 +87,7 @@ export default function EditaisPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
-                  className="card-glass group"
-                  style={{ padding: '4px' }}
+                  className="card-glass group p-4 lg:p-6"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
@@ -126,7 +127,7 @@ export default function EditaisPage() {
                       min: {edital.min_level}
                     </span>
                   </div>
-                  <div className="flex flex-wrap gap-1.5" style={{ paddingTop: '2px' }}>
+                  <div className="flex flex-wrap gap-1.5 pt-1">
                     {edital.required_skills.map(sk => (
                       <span key={sk.uid} className="badge text-[11px]"
                         style={{ backgroundColor: `${NODE_COLORS.skill}15`, borderColor: `${NODE_COLORS.skill}30`, color: NODE_COLORS.skill }}>

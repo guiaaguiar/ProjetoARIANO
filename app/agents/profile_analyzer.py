@@ -90,49 +90,65 @@ class ProfileAnalyzer:
         return self._analyze_rule_based(profile_data)
 
     def _analyze_with_llm(self, profile_data: dict) -> dict:
-        """Use Nemotron 3 Super to extract skills and classify areas."""
-        prompt = f"""Analise o seguinte perfil acadêmico e extraia informações estruturadas.
+        """Use Nemotron 3 Super to extract skills and classify areas using Graph-CoT."""
+        from app.core.graph_tools import retrieve_node, neighbour_check
+        
+        bio = profile_data.get('bio', '')
+        curriculo_texto = profile_data.get('curriculo_texto', '')
+        search_query = f"{bio} {curriculo_texto}"[:500]
+        
+        similar_profiles = retrieve_node(search_query, k=2)
+        cluster_skills = []
+        for p in similar_profiles:
+            neighbors = neighbour_check(p.get('uid', ''), "HAS_SKILL")
+            cluster_skills.extend([n.get('name', '') for n in neighbors])
+        
+        cluster_skills = list(set(cluster_skills))
+        
+        prompt = f"""Analise o seguinte perfil acadêmico e extraia informações via Graph-CoT (Chain-of-Thought).
 
-PERFIL:
+PERFIL ATUAL:
 - Nome: {profile_data.get('name', '')}
 - Instituição: {profile_data.get('institution', '')}
-- Curso: {profile_data.get('course', '')}
-- Nível: {profile_data.get('level', '')}
-- Bio: {profile_data.get('bio', '')}
-- Skills declarados: {profile_data.get('skills', [])}
+- Curso/Depto: {profile_data.get('course', profile_data.get('department', ''))}
+- Semestre: {profile_data.get('semester', '')}
+- Bio: {bio}
+- Currículo (texto): {curriculo_texto}
 
-INSTRUÇÕES:
-1. Extraia TODAS as skills técnicas mencionadas ou implícitas no perfil
-2. Classifique cada skill em uma categoria: programacao, ia, ciencia_dados, banco_de_dados, devops, hardware, seguranca
-3. Atribua uma confiança (0.0 a 1.0) para cada skill baseado no quão explícito está no perfil
-4. Identifique as áreas de pesquisa/atuação principais
-5. Sugira skills adicionais que provavelmente esse perfil possui
+CONTEXTO DO GRAFO (Recuperado):
+- Perfis similares no ecossistema: {[p.get('name', '') for p in similar_profiles]}
+- Skills comuns neste cluster: {cluster_skills}
 
-Responda APENAS em JSON válido com esta estrutura:
+INSTRUÇÕES (Graph-CoT):
+Você deve gerar um raciocínio sequencial estruturado em "scratchpad" (5 steps) e depois o resultado final.
+Step 1: Ler bio + curriculo_texto e identificar capacidades
+Step 2: Comparar com contexto do grafo (cluster_skills) para ver se há aderência
+Step 3: Determinar a `maturidade` (0.0 a 10.0) baseada em experiências, e semestre
+Step 4: Inferir o texto `o_que_busco` descritivo do que o acadêmico busca no ecossistema
+Step 5: Extrair skills tecnológicas explícitas ou implícitas e associar áreas. O usuário NÃO selecionou tags, VOCÊ deve fazer isso.
+
+Responda APENAS em JSON válido com a estrutura exata:
 {{
+    "scratchpad": "[SCRATCHPAD]\\nStep 1: ...\\nStep 2: ...\\nStep 3: ...\\nStep 4: ...\\nStep 5: ...",
+    "maturidade": 7.5,
+    "o_que_busco": "Oportunidades de pesquisa em IA e Healthtech...",
     "extracted_skills": [
-        {{"name": "Python", "category": "programacao", "confidence": 0.95}},
-        ...
+        {{"name": "Python", "category": "programacao", "confidence": 0.95}}
     ],
-    "classified_areas": ["Inteligencia Artificial", "Ciencia de Dados"],
-    "suggested_skills": [
-        {{"name": "Pandas", "category": "ciencia_dados", "confidence": 0.6}},
-        ...
-    ],
-    "profile_summary": "Breve resumo do perfil acadêmico em 1 frase"
+    "classified_areas": ["Inteligencia Artificial", "Saude Digital"],
+    "profile_summary": "Resumo em 1 frase"
 }}"""
 
         try:
             response = self.llm.invoke(prompt)
             content = response.content
-            # Extract JSON from response
             if "```json" in content:
                 content = content.split("```json")[1].split("```")[0]
             elif "```" in content:
                 content = content.split("```")[1].split("```")[0]
 
             result = json.loads(content.strip())
-            logger.info(f"✅ ProfileAnalyzer LLM: Extracted {len(result.get('extracted_skills', []))} skills for {profile_data.get('name')}")
+            logger.info(f"✅ ProfileAnalyzer LLM Graph-CoT executado para {profile_data.get('name')}. Maturidade: {result.get('maturidade')}")
             return result
         except Exception as e:
             logger.warning(f"⚠️ LLM analysis failed, falling back to rules: {e}")
@@ -142,12 +158,12 @@ Responda APENAS em JSON válido com esta estrutura:
         """Rule-based skill extraction when LLM is unavailable."""
         bio = (profile_data.get("bio", "") or "").lower()
         course = (profile_data.get("course", "") or "").lower()
+        curriculo = (profile_data.get("curriculo_texto", "") or "").lower()
         declared_skills = profile_data.get("skills", [])
 
         extracted_skills = []
         classified_areas = []
 
-        # Add declared skills with high confidence
         for skill_name in declared_skills:
             category = self._categorize_skill(skill_name)
             extracted_skills.append({
@@ -156,38 +172,36 @@ Responda APENAS em JSON válido com esta estrutura:
                 "confidence": 0.9,
             })
 
-        # Extract skills from bio text
         all_skills = {s: cat for cat, skills in SKILL_CATEGORIES.items() for s in skills}
         for skill_name, category in all_skills.items():
-            if skill_name.lower() in bio and skill_name not in declared_skills:
+            if (skill_name.lower() in bio or skill_name.lower() in curriculo) and skill_name not in declared_skills:
                 extracted_skills.append({
                     "name": skill_name,
                     "category": category,
                     "confidence": 0.7,
                 })
 
-        # Classify areas from course and bio
         area_keywords = {
             "Inteligencia Artificial": ["ia", "inteligencia artificial", "machine learning", "deep learning", "ml"],
             "Ciencia de Dados": ["dados", "data science", "estatistic", "analytics"],
             "Engenharia de Software": ["software", "desenvolvimento", "web", "sistemas"],
-            "Redes de Computadores": ["redes", "network", "telecomunicac"],
-            "Seguranca da Informacao": ["seguranca", "ciberseg", "cybersec", "criptograf"],
             "Sistemas Embarcados": ["embarcado", "iot", "arduino", "hardware"],
             "Computacao em Nuvem": ["cloud", "nuvem", "aws", "azure"],
             "Processamento de Linguagem Natural": ["nlp", "pln", "linguagem natural", "texto"],
         }
 
-        text_to_search = f"{bio} {course}"
+        text_to_search = f"{bio} {course} {curriculo}"
         for area, keywords in area_keywords.items():
             if any(kw in text_to_search for kw in keywords):
                 classified_areas.append(area)
 
         return {
+            "scratchpad": "[SCRATCHPAD] Execução via regras estáticas sem LLM.",
+            "maturidade": profile_data.get("semester", 1) * 0.8 + 2.0,
+            "o_que_busco": "Oportunidades de colaboração e pesquisa.",
             "extracted_skills": extracted_skills,
             "classified_areas": classified_areas,
-            "suggested_skills": [],
-            "profile_summary": f"Perfil acadêmico de {profile_data.get('level', 'graduacao')} em {profile_data.get('institution', 'N/A')}",
+            "profile_summary": f"Perfil acadêmico em {profile_data.get('institution', 'N/A')}",
         }
 
     def _categorize_skill(self, skill_name: str) -> str:
@@ -258,10 +272,22 @@ Responda APENAS em JSON válido com esta estrutura:
                     """,
                     {"uid": entity_uid, "area_name": area_name},
                 )
+                
+        # Update entity with maturidade and o_que_busco
+        maturidade = analysis.get("maturidade", 0.0)
+        o_que_busco = analysis.get("o_que_busco", "")
+        run_cypher(
+            f"""
+            MATCH (ent:{entity_type} {{uid: $uid}})
+            SET ent.maturidade = $maturidade,
+                ent.o_que_busco = $o_que_busco
+            """,
+            {"uid": entity_uid, "maturidade": maturidade, "o_que_busco": o_que_busco}
+        )
 
         logger.info(
             f"✅ ProfileAnalyzer: Configured graph for {entity_type} {entity_uid} "
-            f"({skills_created} skills, {edges_created} edges)"
+            f"({skills_created} skills, {edges_created} edges, Maturidade={maturidade})"
         )
         return {
             "skills_created": skills_created,

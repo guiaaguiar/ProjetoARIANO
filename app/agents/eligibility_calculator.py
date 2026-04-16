@@ -24,19 +24,11 @@ from app.core.neo4j_driver import run_cypher
 
 logger = logging.getLogger(__name__)
 
-# Academic level values for scoring
-LEVEL_VALUES = {
-    "graduacao": 1,
-    "mestrado": 2,
-    "doutorado": 3,
-    "pos-doutorado": 4,
-}
-
 # Weights for score components
 WEIGHTS = {
     "skill_overlap": 0.45,
     "area_alignment": 0.25,
-    "level_compatibility": 0.15,
+    "maturidade_compatibility": 0.15,
     "priority_bonus": 0.15,
 }
 
@@ -77,14 +69,14 @@ class EligibilityCalculator:
             MATCH (a)
             WHERE a:Student OR a:Researcher OR a:Professor
             RETURN a.uid AS uid, a.name AS name, labels(a)[0] AS type,
-                   a.level AS level, a.institution AS institution
+                   coalesce(a.maturidade, 0.0) AS maturidade, a.institution AS institution
         """)
 
         editais = run_cypher("""
             MATCH (e:Edital)
             WHERE e.status = 'aberto'
-            RETURN e.uid AS uid, e.title AS title, e.min_level AS min_level,
-                   e.agency AS agency, e.funding AS funding
+            RETURN e.uid AS uid, e.title AS title, coalesce(e.min_maturidade, 0.0) AS min_maturidade,
+                   e.instituicao AS instituicao, e.funding AS funding
         """)
 
         total_matches = 0
@@ -128,7 +120,7 @@ class EligibilityCalculator:
             MATCH (a {uid: $uid})
             WHERE a:Student OR a:Researcher OR a:Professor
             RETURN a.uid AS uid, a.name AS name, labels(a)[0] AS type,
-                   a.level AS level, a.institution AS institution
+                   coalesce(a.maturidade, 0.0) AS maturidade, a.institution AS institution
             """,
             {"uid": entity_uid},
         )
@@ -230,10 +222,10 @@ class EligibilityCalculator:
         )
         total_area_count = total_areas[0]["total"] if total_areas else 0
 
-        level_data = run_cypher(
+        maturidade_data = run_cypher(
             """
             MATCH (a {uid: $entity_uid}), (e:Edital {uid: $edital_uid})
-            RETURN a.level AS entity_level, e.min_level AS min_level
+            RETURN coalesce(a.maturidade, 0.0) AS entity_mat, coalesce(e.min_maturidade, 0.0) AS min_mat
             """,
             {"entity_uid": entity_uid, "edital_uid": edital_uid},
         )
@@ -248,15 +240,15 @@ class EligibilityCalculator:
         area_score = len(matched_areas) / max(total_area_count, 1)
         area_score = min(area_score, 1.0)
 
-        # 3. Level compatibility (15%)
-        level_score = 0.0
-        if level_data:
-            entity_level = LEVEL_VALUES.get(level_data[0].get("entity_level", "graduacao"), 1)
-            min_level = LEVEL_VALUES.get(level_data[0].get("min_level", "graduacao"), 1)
-            if entity_level >= min_level:
-                level_score = 1.0
-            elif entity_level == min_level - 1:
-                level_score = 0.5
+        # 3. Maturidade compatibility (15%)
+        maturidade_score = 0.0
+        if maturidade_data:
+            entity_mat = maturidade_data[0].get("entity_mat", 0.0)
+            min_mat = maturidade_data[0].get("min_mat", 0.0)
+            if entity_mat >= min_mat:
+                maturidade_score = 1.0
+            elif entity_mat >= min_mat - 2.0:
+                maturidade_score = 0.5
 
         # 4. Priority bonus (15%)
         essential_matches = sum(1 for s in skill_data if s.get("priority") == "essential")
@@ -275,13 +267,13 @@ class EligibilityCalculator:
         final_score = (
             skill_score * WEIGHTS["skill_overlap"]
             + area_score * WEIGHTS["area_alignment"]
-            + level_score * WEIGHTS["level_compatibility"]
+            + maturidade_score * WEIGHTS["maturidade_compatibility"]
             + priority_score * WEIGHTS["priority_bonus"]
         )
         final_score = round(min(final_score, 1.0), 3)
 
         justification = self._generate_justification(
-            matched_skills, matched_areas, final_score, level_score, skill_score, area_score
+            matched_skills, matched_areas, final_score, maturidade_score, skill_score, area_score
         )
 
         return {
@@ -292,13 +284,13 @@ class EligibilityCalculator:
             "components": {
                 "skill_overlap": round(skill_score, 3),
                 "area_alignment": round(area_score, 3),
-                "level_compatibility": round(level_score, 3),
+                "maturidade_compatibility": round(maturidade_score, 3),
                 "priority_bonus": round(priority_score, 3),
             },
         }
 
     def _generate_justification(
-        self, matched_skills, matched_areas, score, level_score, skill_score, area_score,
+        self, matched_skills, matched_areas, score, maturidade_score, skill_score, area_score,
     ) -> str:
         """Generate a human-readable justification for the match score."""
         if self.llm and score > 0.3:
@@ -307,7 +299,7 @@ class EligibilityCalculator:
 - Score: {score*100:.0f}%
 - Skills compartilhados: {', '.join(matched_skills) if matched_skills else 'nenhum'}
 - Áreas alinhadas: {', '.join(matched_areas) if matched_areas else 'nenhuma'}
-- Compatibilidade de nível: {'Sim' if level_score >= 1.0 else 'Parcial' if level_score > 0 else 'Não'}
+- Maturidade: {'Plena' if maturidade_score >= 1.0 else 'Parcial' if maturidade_score > 0 else 'Baixa'}
 
 Responda APENAS com a justificativa, sem formatação."""
                 response = self.llm.invoke(prompt)
@@ -321,10 +313,10 @@ Responda APENAS com a justificativa, sem formatação."""
             parts.append(f"Skills em comum: {', '.join(matched_skills[:3])}")
         if matched_areas:
             parts.append(f"Áreas alinhadas: {', '.join(matched_areas[:2])}")
-        if level_score >= 1.0:
-            parts.append("Nível acadêmico compatível")
-        elif level_score > 0:
-            parts.append("Nível acadêmico parcialmente compatível")
+        if maturidade_score >= 1.0:
+            parts.append("Maturidade acadêmica alinhada")
+        elif maturidade_score > 0:
+            parts.append("Maturidade acadêmica parcialmente alinhada")
 
         pct = f"{score*100:.0f}%"
         if parts:

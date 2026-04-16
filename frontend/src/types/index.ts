@@ -17,8 +17,10 @@ export interface Student {
   institution: string;
   course: string;
   semester: number;
-  level: string;
   bio: string;
+  curriculo_texto: string;
+  maturidade: number;
+  o_que_busco: string;
   skills: Skill[];
   node_type: 'student';
 }
@@ -28,9 +30,10 @@ export interface Researcher {
   name: string;
   email: string;
   institution: string;
-  level: string;
-  lattes_url: string;
   bio: string;
+  curriculo_texto: string;
+  maturidade: number;
+  o_que_busco: string;
   skills: Skill[];
   areas: Area[];
   node_type: 'researcher';
@@ -44,6 +47,9 @@ export interface Professor {
   department: string;
   research_group: string;
   bio: string;
+  curriculo_texto: string;
+  maturidade: number;
+  o_que_busco: string;
   skills: Skill[];
   areas: Area[];
   node_type: 'professor';
@@ -53,11 +59,11 @@ export interface Edital {
   uid: string;
   title: string;
   description: string;
-  agency: string;
+  instituicao: string;
   edital_type: string;
   funding: number;
   deadline: string;
-  min_level: string;
+  min_maturidade: number;
   status: string;
   required_skills: Skill[];
   target_areas: Area[];
@@ -114,12 +120,12 @@ export interface DashboardStats {
 export type EntityType = 'student' | 'researcher' | 'professor' | 'edital' | 'skill' | 'area';
 
 export const NODE_COLORS: Record<EntityType, string> = {
-  edital: '#2563eb',
-  student: '#00e5ff',
-  researcher: '#10b981',
-  professor: '#f59e0b',
-  skill: '#8b5cf6',
-  area: '#6366f1',
+  edital: '#38bdf8',
+  student: '#2dd4bf',
+  researcher: '#34d399',
+  professor: '#fbbf24',
+  skill: '#a78bfa',
+  area: '#818cf8',
 };
 
 export const NODE_LABELS: Record<EntityType, string> = {

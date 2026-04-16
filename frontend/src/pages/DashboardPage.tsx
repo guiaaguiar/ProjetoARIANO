@@ -28,46 +28,38 @@ export default function DashboardPage() {
   }, []);
 
   const kpis = stats ? [
-    { label: 'Estudantes', value: stats.total_students, icon: GraduationCap, color: '#00e5ff' },
-    { label: 'Pesquisadores', value: stats.total_researchers, icon: Users, color: '#10b981' },
-    { label: 'Professores', value: stats.total_professors, icon: BookOpenText, color: '#f59e0b' },
-    { label: 'Editais', value: stats.total_editais, icon: FileText, color: '#2563eb' },
-    { label: 'Skills', value: stats.total_skills, icon: Sparkles, color: '#8b5cf6' },
-    { label: 'Áreas', value: stats.total_areas, icon: Network, color: '#6366f1' },
-    { label: 'Matches', value: stats.total_matches, icon: Zap, color: '#0ea5e9' },
-    { label: 'Score Médio', value: stats.avg_match_score > 0 ? (stats.avg_match_score * 100).toFixed(0) + '%' : '—', icon: TrendingUp, color: '#10b981' },
+    { label: 'Estudantes', value: stats.total_students, icon: GraduationCap, color: '#2dd4bf' },
+    { label: 'Pesquisadores', value: stats.total_researchers, icon: Users, color: '#34d399' },
+    { label: 'Professores', value: stats.total_professors, icon: BookOpenText, color: '#fbbf24' },
+    { label: 'Editais', value: stats.total_editais, icon: FileText, color: '#38bdf8' },
+    { label: 'Skills', value: stats.total_skills, icon: Sparkles, color: '#a78bfa' },
+    { label: 'Áreas', value: stats.total_areas, icon: Network, color: '#818cf8' },
+    { label: 'Matches', value: stats.total_matches, icon: Zap, color: '#2dd4bf' },
+    { label: 'Score Médio', value: stats.avg_match_score > 0 ? (stats.avg_match_score * 100).toFixed(0) + '%' : '—', icon: TrendingUp, color: '#34d399' },
   ] : [];
 
   return (
-    <div>
-      <div className="mb-8">
-        <motion.h1
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="text-2xl lg:text-3xl font-bold text-text-primary"
-        >
-          Dashboard
-        </motion.h1>
-        <motion.p
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.1 }}
-          className="text-text-secondary text-sm mt-1.5"
-        >
-          Visão geral do ecossistema ARIANO
-        </motion.p>
-      </div>
+    <div className="container-fluid py-4">
+      <motion.div
+        initial="hidden"
+        animate="show"
+        variants={container}
+        className="page-header"
+      >
+        <motion.h1 variants={item}>Dashboard</motion.h1>
+        <motion.p variants={item}>Visão geral do ecossistema ARIANO</motion.p>
+      </motion.div>
 
       <motion.div
         variants={container}
         initial="hidden"
         animate="show"
-        className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 mb-8"
+        className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-8"
       >
         {loading ? (
           Array.from({ length: 8 }).map((_, i) => (
-            <motion.div key={i} variants={item} className="kpi-card animate-pulse">
-              <div className="h-16 bg-surface-hover rounded-lg" />
+            <motion.div key={i} variants={item} className="kpi-card">
+              <div className="h-16 skeleton" />
             </motion.div>
           ))
         ) : (

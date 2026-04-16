@@ -2,6 +2,7 @@ from __future__ import annotations
 
 """API Routes — CRUD + Match + Graph."""
 
+from typing import Optional
 from fastapi import APIRouter, HTTPException
 
 from app.models.schemas import (
@@ -202,7 +203,7 @@ def remove_edital(uid: str):
 # ═══════════════════════════════════════════
 
 @router.get("/matches", response_model=list[MatchResponse], tags=["Matches"])
-def get_matches(entity_uid: str | None = None, threshold: float = 0.0):
+def get_matches(entity_uid: Optional[str] = None, threshold: float = 0.0):
     return crud.get_matches(entity_uid, threshold)
 
 

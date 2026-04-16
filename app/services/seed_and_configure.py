@@ -42,14 +42,14 @@ def _get_all_academics() -> list[dict]:
         for label in ["Student", "Researcher", "Professor"]:
             for node in store.get_nodes_by_label(label):
                 n = store.nodes.get(node["uid"], {})
-                results.append({
                     "uid": node["uid"],
                     "type": label,
                     "name": node.get("name", ""),
                     "bio": node.get("bio", ""),
+                    "curriculo_texto": node.get("curriculo_texto", ""),
                     "institution": node.get("institution", ""),
                     "course": node.get("course", ""),
-                    "level": node.get("level", "graduacao"),
+                    "maturidade": node.get("maturidade", 0.0),
                 })
         return results
     else:
@@ -57,8 +57,9 @@ def _get_all_academics() -> list[dict]:
             MATCH (a)
             WHERE a:Student OR a:Researcher OR a:Professor
             RETURN a.uid AS uid, labels(a)[0] AS type, a.name AS name,
-                   a.bio AS bio, a.institution AS institution,
-                   a.course AS course, a.level AS level
+                   a.bio AS bio, a.curriculo_texto AS curriculo_texto, 
+                   a.institution AS institution,
+                   a.course AS course, coalesce(a.maturidade, 0.0) AS maturidade
         """)
 
 
@@ -72,18 +73,18 @@ def _get_all_editais() -> list[dict]:
                 "uid": node["uid"],
                 "title": node.get("title", ""),
                 "description": node.get("description", ""),
-                "agency": node.get("agency", ""),
+                "instituicao": node.get("instituicao", ""),
                 "edital_type": node.get("edital_type", "pesquisa"),
                 "funding": node.get("funding", 0),
-                "min_level": node.get("min_level", "graduacao"),
+                "min_maturidade": node.get("min_maturidade", 0.0),
             })
         return results
     else:
         return run_cypher("""
             MATCH (e:Edital)
             RETURN e.uid AS uid, e.title AS title, e.description AS description,
-                   e.agency AS agency, e.edital_type AS edital_type,
-                   e.funding AS funding, e.min_level AS min_level
+                   e.instituicao AS instituicao, e.edital_type AS edital_type,
+                   e.funding AS funding, coalesce(e.min_maturidade, 0.0) AS min_maturidade
         """)
 
 
@@ -99,24 +100,27 @@ def run_pipeline():
     start = time.time()
 
     # Step 1: Profile Analysis
-    print("\n📋 Fase 1: Analisando perfis acadêmicos...")
-    analyzer = ProfileAnalyzer()
+    print("\n📋 Fase 1: Analisando perfis acadêmicos (Orchestrator)...")
+    from app.agents.orchestrator import OrchestratorAgent
+    orchestrator = OrchestratorAgent()
 
     academics = _get_all_academics()
     for academic in academics:
         profile_data = {
             "name": academic.get("name", ""),
             "bio": academic.get("bio", ""),
+            "curriculo_texto": academic.get("curriculo_texto", ""),
             "institution": academic.get("institution", ""),
             "course": academic.get("course", ""),
-            "level": academic.get("level", "graduacao"),
+            "maturidade": academic.get("maturidade", 0.0),
             "skills": [],
         }
         try:
-            analyzer.analyze_and_configure(academic["uid"], academic["type"], profile_data)
+            # We just do analysis step to avoid calculating matches before editais are interpreted
+            deep_context = orchestrator.analyzer.analyze_and_configure(academic["uid"], academic["type"], profile_data)
         except Exception as e:
             logger.warning(f"   ⚠️ Skipping {academic['name']}: {e}")
-    print(f"  ✅ {len(academics)} perfis analisados")
+    print(f"  ✅ {len(academics)} perfis analisados via CoT")
 
     # Step 2: Edital Interpretation
     print("\n📜 Fase 2: Interpretando editais...")
@@ -127,10 +131,10 @@ def run_pipeline():
         edital_data = {
             "title": edital.get("title", ""),
             "description": edital.get("description", ""),
-            "agency": edital.get("agency", ""),
+            "instituicao": edital.get("instituicao", ""),
             "edital_type": edital.get("edital_type", "pesquisa"),
             "funding": edital.get("funding", 0),
-            "min_level": edital.get("min_level", "graduacao"),
+            "min_maturidade": edital.get("min_maturidade", 0.0),
             "required_skills": [],
             "target_areas": [],
         }

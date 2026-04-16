@@ -39,11 +39,14 @@ class AreaResponse(BaseModel):
 class StudentCreate(BaseModel):
     name: str
     email: str = ""
+    password: str = ""
     institution: str = ""
     course: str = ""
     semester: int = 1
-    level: str = "graduacao"
     bio: str = ""
+    curriculo_texto: str = ""
+    maturidade: float = 0.0
+    o_que_busco: str = ""
     skills: list[str] = Field(default_factory=list)
 
 class StudentResponse(BaseModel):
@@ -53,8 +56,10 @@ class StudentResponse(BaseModel):
     institution: str
     course: str
     semester: int
-    level: str
     bio: str
+    curriculo_texto: str
+    maturidade: float
+    o_que_busco: str
     skills: list[SkillResponse] = Field(default_factory=list)
     node_type: str = "student"
 
@@ -66,10 +71,12 @@ class StudentResponse(BaseModel):
 class ResearcherCreate(BaseModel):
     name: str
     email: str = ""
+    password: str = ""
     institution: str = ""
-    level: str = "doutorado"
-    lattes_url: str = ""
     bio: str = ""
+    curriculo_texto: str = ""
+    maturidade: float = 0.0
+    o_que_busco: str = ""
     skills: list[str] = Field(default_factory=list)
     areas: list[str] = Field(default_factory=list)
 
@@ -78,9 +85,10 @@ class ResearcherResponse(BaseModel):
     name: str
     email: str
     institution: str
-    level: str
-    lattes_url: str
     bio: str
+    curriculo_texto: str
+    maturidade: float
+    o_que_busco: str
     skills: list[SkillResponse] = Field(default_factory=list)
     areas: list[AreaResponse] = Field(default_factory=list)
     node_type: str = "researcher"
@@ -93,10 +101,14 @@ class ResearcherResponse(BaseModel):
 class ProfessorCreate(BaseModel):
     name: str
     email: str = ""
+    password: str = ""
     institution: str = ""
     department: str = ""
     research_group: str = ""
     bio: str = ""
+    curriculo_texto: str = ""
+    maturidade: float = 0.0
+    o_que_busco: str = ""
     skills: list[str] = Field(default_factory=list)
     areas: list[str] = Field(default_factory=list)
 
@@ -108,6 +120,9 @@ class ProfessorResponse(BaseModel):
     department: str
     research_group: str
     bio: str
+    curriculo_texto: str
+    maturidade: float
+    o_que_busco: str
     skills: list[SkillResponse] = Field(default_factory=list)
     areas: list[AreaResponse] = Field(default_factory=list)
     node_type: str = "professor"
@@ -120,11 +135,11 @@ class ProfessorResponse(BaseModel):
 class EditalCreate(BaseModel):
     title: str
     description: str = ""
-    agency: str = ""
+    instituicao: str = ""
     edital_type: str = "pesquisa"
     funding: float = 0.0
     deadline: str = ""
-    min_level: str = "graduacao"
+    min_maturidade: float = 0.0
     required_skills: list[str] = Field(default_factory=list)
     target_areas: list[str] = Field(default_factory=list)
 
@@ -132,11 +147,11 @@ class EditalResponse(BaseModel):
     uid: str
     title: str
     description: str
-    agency: str
+    instituicao: str
     edital_type: str
     funding: float
     deadline: str
-    min_level: str
+    min_maturidade: float
     status: str
     required_skills: list[SkillResponse] = Field(default_factory=list)
     target_areas: list[AreaResponse] = Field(default_factory=list)

@@ -10,6 +10,7 @@ Endpoints for triggering and managing AI agent operations:
 """
 
 import logging
+from typing import Optional
 from fastapi import APIRouter, HTTPException, BackgroundTasks
 from pydantic import BaseModel, Field
 
@@ -83,8 +84,8 @@ class InterpretEditalRequest(BaseModel):
 
 
 class CalculateRequest(BaseModel):
-    entity_uid: str | None = None
-    edital_uid: str | None = None
+    entity_uid: Optional[str] = None
+    edital_uid: Optional[str] = None
 
 
 class AgentResponse(BaseModel):
@@ -318,8 +319,8 @@ def run_full_pipeline():
 
 @router.get("/matches", response_model=AgentResponse, tags=["Match Engine"])
 def query_matches(
-    entity_uid: str | None = None,
-    edital_uid: str | None = None,
+    entity_uid: Optional[str] = None,
+    edital_uid: Optional[str] = None,
     threshold: float = 0.0,
     limit: int = 100,
 ):
@@ -367,6 +368,58 @@ def query_entity_connections(entity_uid: str):
         )
     except Exception as e:
         raise HTTPException(500, f"Query failed: {str(e)}")
+
+@router.get("/communities", response_model=AgentResponse, tags=["Agents"])
+def detect_communities():
+    """Detect communities using NetworkX Louvain algorithm based on ELIGIBLE_FOR and HAS_SKILL."""
+    import networkx as nx
+    from app.core.neo4j_driver import run_cypher, is_memory_mode, get_memory_store
+    
+    G = nx.Graph()
+    
+    if is_memory_mode():
+        store = get_memory_store()
+        for node_id, node in store.nodes.items():
+            G.add_node(node_id, type=node["labels"][0], name=node["props"].get("name") or node["props"].get("title", ""))
+            
+        for edge in store.edges:
+            G.add_edge(edge["source"], edge["target"], weight=1.0)
+    else:
+        nodes = run_cypher("MATCH (n) RETURN n.uid as id, labels(n)[0] as type, coalesce(n.name, n.title) as name")
+        for n in nodes:
+            G.add_node(n["id"], type=n["type"], name=n["name"])
+            
+        edges = run_cypher("MATCH (a)-[r]->(b) RETURN a.uid as source, b.uid as target")
+        for e in edges:
+            G.add_edge(e["source"], e["target"], weight=1.0)
+            
+    # Remove isolated nodes to avoid noise
+    G.remove_nodes_from(list(nx.isolates(G)))
+
+    try:
+        # Louvain algorithm
+        communities = nx.community.louvain_communities(G, weight='weight')
+        
+        clusters = []
+        for i, comm in enumerate(communities):
+            members = []
+            for node_id in comm:
+                node_data = G.nodes[node_id]
+                members.append({"id": node_id, "type": node_data.get("type"), "name": node_data.get("name")})
+            
+            clusters.append({
+                "cluster_id": i + 1,
+                "size": len(comm),
+                "members": members
+            })
+            
+        return AgentResponse(
+            status="success",
+            message=f"Detected {len(clusters)} communities",
+            data={"clusters": clusters}
+        )
+    except Exception as e:
+        raise HTTPException(500, f"Community detection failed: {str(e)}")
 
 
 @router.get("/status", response_model=AgentResponse, tags=["AI Agents"])

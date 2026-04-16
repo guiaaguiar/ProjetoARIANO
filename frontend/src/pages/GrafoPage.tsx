@@ -49,7 +49,7 @@ export default function GrafoPage() {
   const [loading, setLoading] = useState(true);
   const [selectedNode, setSelectedNode] = useState<NodeDetail | null>(null);
   const [graphInfo, setGraphInfo] = useState({ nodes: 0, edges: 0 });
-  const [activeFilters, setActiveFilters] = useState<Set<string>>(new Set([]));
+  const [activeFilters, setActiveFilters] = useState<Set<string>>(new Set(Object.keys(NODE_COLORS)));
   const nodesRef = useRef<D3Node[]>([]);
   const edgesRef = useRef<D3Edge[]>([]);
   const simulationRef = useRef<d3.Simulation<D3Node, D3Edge> | null>(null);
@@ -108,7 +108,7 @@ export default function GrafoPage() {
       .attr('stroke', (e: D3Edge) => {
         const s = typeof e.source === 'object' ? (e.source as D3Node).id : e.source;
         const t = typeof e.target === 'object' ? (e.target as D3Node).id : e.target;
-        return (s === nodeId || t === nodeId) ? '#38bdf8cc' : e.color + '80';
+        return (s === nodeId || t === nodeId) ? '#2dd4bfcc' : e.color + '80';
       })
       .attr('stroke-width', (e: D3Edge) => {
         const s = typeof e.source === 'object' ? (e.source as D3Node).id : e.source;
@@ -237,7 +237,7 @@ export default function GrafoPage() {
       .attr('orient', 'auto')
       .append('path')
       .attr('d', 'M0,-5L10,0L0,5')
-      .attr('fill', '#38bdf890');
+      .attr('fill', '#2dd4bf90');
 
     const g = svg.append('g').attr('class', 'graph-container');
 
@@ -271,7 +271,7 @@ export default function GrafoPage() {
       .append('text')
       .attr('font-size', '9px')
       .attr('font-family', "'JetBrains Mono', monospace")
-      .attr('fill', '#38bdf8')
+      .attr('fill', '#2dd4bf')
       .attr('text-anchor', 'middle')
       .attr('opacity', 0)
       .text(d => d.label);
@@ -438,10 +438,14 @@ export default function GrafoPage() {
     // Initial zoom
     svg.call(zoom.transform, d3.zoomIdentity.translate(0, 0).scale(0.9));
 
-    // Staggered Fade-in Animation
+    // Staggered Fade-in Animation (progressive by node type)
+    const typeOrder = Object.keys(NODE_COLORS);
     nodeElements.transition()
       .duration(1000)
-      .delay((_d, i) => Math.min(i * 15, 800)) // smooth staggered effect
+      .delay((d, i) => {
+        const typeIndex = typeOrder.indexOf(d.nodeType);
+        return typeIndex * 400 + Math.min(i * 10, 500); 
+      })
       .attr('opacity', (n: D3Node) => activeFiltersRef.current.has(n.nodeType) ? 1 : 0);
 
     // Store refs for filter updates
@@ -546,19 +550,20 @@ export default function GrafoPage() {
   const nodeColor = (type: string) => NODE_COLORS[type as EntityType] || '#64748b';
 
   return (
-    <div className="h-[calc(100vh-88px)] lg:h-[calc(100vh-56px)] flex flex-col gap-4">
+    <div className="container-fluid py-4 h-[calc(100vh-88px)] lg:h-[calc(100vh-56px)] flex flex-col gap-4">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <motion.h1 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
-            className="text-2xl lg:text-3xl font-bold text-text-primary">
-            Grafo de Conhecimento
-          </motion.h1>
-          <p className="text-text-secondary text-sm mt-1.5">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="page-header !mb-0"
+        >
+          <h1>Grafo de Conhecimento</h1>
+          <p>
             <span className="text-accent font-mono">{graphInfo.nodes}</span> nós ·{' '}
             <span className="text-accent font-mono">{graphInfo.edges}</span> arestas
           </p>
-        </div>
+        </motion.div>
         <div className="flex items-center gap-2">
           <button onClick={() => handleZoom('in')} className="btn-secondary p-2.5"><ZoomIn className="w-4 h-4" /></button>
           <button onClick={() => handleZoom('out')} className="btn-secondary p-2.5"><ZoomOut className="w-4 h-4" /></button>
@@ -570,19 +575,19 @@ export default function GrafoPage() {
       <div className="flex gap-2.5 flex-wrap">
         {(Object.entries(NODE_COLORS) as [EntityType, string][]).map(([type, color]) => (
           <button key={type} onClick={() => toggleFilter(type)}
-            className={`badge text-xs cursor-pointer transition-all py-1.5 ${activeFilters.has(type) ? '' : 'opacity-20'}`}
-            style={{ backgroundColor: `${color}15`, borderColor: `${color}40`, color, paddingLeft: '2px', paddingRight: '2px' }}>
+            className={`badge cursor-pointer transition-all py-1.5 px-3 ${activeFilters.has(type) ? '' : 'opacity-20 hover:opacity-40'}`}
+            style={{ backgroundColor: `${color}15`, borderColor: `${color}40`, color }}>
             <span className="w-2.5 h-2.5 rounded-full mr-2 inline-block" style={{ backgroundColor: color, boxShadow: `0 0 8px ${color}80` }} />
-            <span style={{ paddingLeft: '2px' }}>{NODE_LABELS[type]}</span>
+            <span>{NODE_LABELS[type]}</span>
           </button>
         ))}
       </div>
 
       {/* Graph + Detail panel */}
-      <div className="flex-1 flex gap-2 min-h-0">
+      <div className="flex-1 flex flex-col lg:flex-row gap-4 min-h-0">
         {/* Graph Container */}
-        <div ref={containerRef} className="relative rounded-xl border border-border overflow-hidden flex-1"
-          style={{ backgroundColor: '#020810' }}>
+        <div ref={containerRef} className="card-glass relative overflow-hidden flex-1"
+          style={{ backgroundColor: '#0a1628' }}>
           {loading && (
             <div className="absolute inset-0 flex items-center justify-center bg-void/90 z-10">
               <div className="flex flex-col items-center gap-3">
@@ -608,9 +613,9 @@ export default function GrafoPage() {
               animate={{ width: 340, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="hidden lg:flex flex-col rounded-xl border border-border bg-surface overflow-hidden min-w-0"
+              className="hidden lg:flex flex-col rounded-xl border border-border bg-surface overflow-hidden min-w-[340px]"
             >
-              <div className="border-b border-border" style={{ padding: '4px' }}>
+              <div className="border-b border-border p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-10 h-10 min-w-[40px] rounded-full flex items-center justify-center text-sm font-bold"
@@ -631,11 +636,11 @@ export default function GrafoPage() {
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto space-y-5" style={{ padding: '4px' }}>
+              <div className="flex-1 overflow-y-auto space-y-6 p-4">
                 {Object.entries(selectedNode.metadata).filter(([, v]) => v).length > 0 && (
                   <div>
-                    <p className="text-[10px] text-text-muted uppercase tracking-wider mb-2.5 font-semibold" style={{ padding: '4px' }}>Detalhes</p>
-                    <div className="space-y-2 bg-void-light rounded-lg" style={{ padding: '4px' }}>
+                    <h4 className="text-[10px] text-text-muted uppercase tracking-wider mb-3 font-semibold px-1">Detalhes</h4>
+                    <div className="space-y-3 bg-void-light rounded-lg p-3 border border-border/[0.5]">
                       {Object.entries(selectedNode.metadata).filter(([, v]) => v).map(([key, val]) => (
                         <div key={key} className="flex justify-between text-xs gap-2">
                           <span className="text-text-muted capitalize">{key.replace(/_/g, ' ')}</span>
@@ -651,15 +656,14 @@ export default function GrafoPage() {
                 )}
 
                 <div>
-                  <p className="text-[10px] text-text-muted uppercase tracking-wider font-semibold" style={{ paddingTop: '10px', paddingBottom: '10px' }}>
+                  <h4 className="text-[10px] text-text-muted uppercase tracking-wider font-semibold mb-3 px-1">
                     Conexões ({selectedNode.neighbors.length})
-                  </p>
-                  <div className="space-y-1">
+                  </h4>
+                  <div className="space-y-1.5">
                     {selectedNode.neighbors.map(n => (
                       <div key={n.id}
                         onClick={() => selectNodeFromPanel(n.id)}
-                        className="flex items-center gap-2.5 rounded-lg hover:bg-surface-hover cursor-pointer transition-all group"
-                        style={{ padding: '4px' }}
+                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-surface-hover cursor-pointer transition-all group border border-transparent hover:border-border/[0.5]"
                       >
                         <span className="w-2.5 h-2.5 min-w-[10px] rounded-full" style={{ backgroundColor: nodeColor(n.type), boxShadow: `0 0 6px ${nodeColor(n.type)}60` }} />
                         <div className="min-w-0 flex-1">

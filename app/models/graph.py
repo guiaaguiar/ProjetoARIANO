@@ -109,11 +109,14 @@ class Student(StructuredNode):
     uid = UniqueIdProperty()
     name = StringProperty(required=True)
     email = StringProperty(default="")
+    password_hash = StringProperty(default="")
     institution = StringProperty(default="")
     course = StringProperty(default="")
     semester = IntegerProperty(default=1)
-    level = StringProperty(default="graduacao")  # graduacao, mestrado, doutorado
     bio = StringProperty(default="")
+    curriculo_texto = StringProperty(default="")
+    maturidade = FloatProperty(default=0.0)
+    o_que_busco = StringProperty(default="")
     created_at = DateTimeProperty(default_now=True)
     updated_at = DateTimeProperty(default_now=True)
 
@@ -128,10 +131,12 @@ class Researcher(StructuredNode):
     uid = UniqueIdProperty()
     name = StringProperty(required=True)
     email = StringProperty(default="")
+    password_hash = StringProperty(default="")
     institution = StringProperty(default="")
-    level = StringProperty(default="doutorado")  # mestrado, doutorado, pos-doutorado
-    lattes_url = StringProperty(default="")
     bio = StringProperty(default="")
+    curriculo_texto = StringProperty(default="")
+    maturidade = FloatProperty(default=0.0)
+    o_que_busco = StringProperty(default="")
     created_at = DateTimeProperty(default_now=True)
     updated_at = DateTimeProperty(default_now=True)
 
@@ -147,10 +152,14 @@ class Professor(StructuredNode):
     uid = UniqueIdProperty()
     name = StringProperty(required=True)
     email = StringProperty(default="")
+    password_hash = StringProperty(default="")
     institution = StringProperty(default="")
     department = StringProperty(default="")
     research_group = StringProperty(default="")
     bio = StringProperty(default="")
+    curriculo_texto = StringProperty(default="")
+    maturidade = FloatProperty(default=0.0)
+    o_que_busco = StringProperty(default="")
     created_at = DateTimeProperty(default_now=True)
     updated_at = DateTimeProperty(default_now=True)
 
@@ -172,11 +181,11 @@ class Edital(StructuredNode):
     uid = UniqueIdProperty()
     title = StringProperty(required=True)
     description = StringProperty(default="")
-    agency = StringProperty(default="")  # FACEPE, CNPq, CAPES
+    instituicao = StringProperty(default="")  # FACEPE, CNPq, CAPES
     edital_type = StringProperty(default="pesquisa")  # pesquisa, extensao, iniciacao_cientifica
     funding = FloatProperty(default=0.0)
     deadline = StringProperty(default="")
-    min_level = StringProperty(default="graduacao")  # graduacao, mestrado, doutorado
+    min_maturidade = FloatProperty(default=0.0)
     status = StringProperty(default="aberto")  # aberto, fechado, em_analise
     created_at = DateTimeProperty(default_now=True)
     updated_at = DateTimeProperty(default_now=True)

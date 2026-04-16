@@ -60,31 +60,33 @@ export default function AcademicosPage() {
   const currentTab = tabConfig[tab];
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <motion.h1 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="text-3xl font-bold text-text-primary">
-            Acadêmicos
-          </motion.h1>
-          <p className="text-text-secondary mt-1.5">Gerencie estudantes, pesquisadores e professores</p>
-        </div>
+    <div className="container-fluid py-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="page-header !mb-0"
+        >
+          <h1>Acadêmicos</h1>
+          <p>Gerencie estudantes, pesquisadores e professores</p>
+        </motion.div>
         <button onClick={() => setShowForm(true)} className="btn-primary flex items-center gap-2">
           <Plus className="w-4 h-4" /> Cadastrar
         </button>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2" style={{ paddingBottom: '8px' }}>
+      <div className="flex flex-wrap gap-3 pb-8">
         {(Object.entries(tabConfig) as [Tab, typeof currentTab][]).map(([key, cfg]) => (
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`flex items-center gap-2 py-2 rounded-lg text-sm font-medium transition-all ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               tab === key
                 ? 'text-white border'
                 : 'text-text-secondary hover:text-text-primary bg-surface hover:bg-surface-hover border border-transparent'
             }`}
-            style={tab === key ? { backgroundColor: `${cfg.color}15`, borderColor: `${cfg.color}40`, color: cfg.color, paddingLeft: '2px', paddingRight: '2px' } : { paddingLeft: '2px', paddingRight: '2px' }}
+            style={tab === key ? { backgroundColor: `${cfg.color}15`, borderColor: `${cfg.color}40`, color: cfg.color } : {}}
           >
             <cfg.icon className="w-4 h-4" /> {cfg.label}
             <span className="text-xs opacity-70">({cfg.data.length})</span>
@@ -93,12 +95,12 @@ export default function AcademicosPage() {
       </div>
 
       {/* Cards */}
-      <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+      <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <AnimatePresence mode="popLayout">
           {loading ? (
             Array.from({ length: 6 }).map((_, i) => (
-              <motion.div key={`skel-${i}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="card-glass animate-pulse" style={{ padding: '4px' }}>
-                <div className="h-32 bg-surface-hover rounded" />
+              <motion.div key={`skel-${i}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="card-glass p-4 lg:p-6">
+                <div className="h-32 skeleton" />
               </motion.div>
             ))
           ) : (
@@ -109,7 +111,7 @@ export default function AcademicosPage() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="card-glass group" style={{ padding: '4px' }}
+                className="card-glass group p-4 lg:p-6"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
@@ -169,17 +171,17 @@ export default function AcademicosPage() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={e => e.stopPropagation()}
-              className="card-glass w-full max-w-md" style={{ padding: '4px' }}
+              className="card-glass w-full max-w-md p-6"
             >
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-text-primary px-2 pt-2">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-text-primary">
                   Novo {currentTab.label === 'Estudantes' ? 'Estudante' : currentTab.label === 'Pesquisadores' ? 'Pesquisador' : 'Professor'}
                 </h2>
-                <button onClick={() => setShowForm(false)} className="text-text-muted hover:text-text-primary pr-2 pt-2">
+                <button onClick={() => setShowForm(false)} className="text-text-muted hover:text-text-primary">
                   <X className="w-5 h-5" />
                 </button>
               </div>
-              <div className="space-y-3 px-2 pb-2">
+              <div className="space-y-4">
                 <input placeholder="Nome completo" value={formData.name}
                   onChange={e => setFormData(d => ({ ...d, name: e.target.value }))} />
                 <input placeholder="Email" value={formData.email}
@@ -190,7 +192,7 @@ export default function AcademicosPage() {
                   onChange={e => setFormData(d => ({ ...d, bio: e.target.value }))} />
                 <input placeholder="Skills (separadas por vírgula)" value={formData.skills}
                   onChange={e => setFormData(d => ({ ...d, skills: e.target.value }))} />
-                <div className="flex gap-2 pt-2">
+                <div className="flex gap-3 pt-4">
                   <button onClick={handleCreate} className="btn-primary flex-1">Cadastrar</button>
                   <button onClick={() => setShowForm(false)} className="btn-secondary">Cancelar</button>
                 </div>

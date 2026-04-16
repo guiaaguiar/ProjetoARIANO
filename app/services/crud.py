@@ -190,8 +190,9 @@ def list_students() -> list[StudentResponse]:
             results.append(StudentResponse(
                 uid=s.get("uid", ""), name=s.get("name", ""), email=s.get("email", ""),
                 institution=s.get("institution", ""), course=s.get("course", ""),
-                semester=s.get("semester", 1), level=s.get("level", "graduacao"),
-                bio=s.get("bio", ""),
+                semester=s.get("semester", 1),
+                bio=s.get("bio", ""), curriculo_texto=s.get("curriculo_texto", ""),
+                maturidade=s.get("maturidade", 0.0), o_que_busco=s.get("o_que_busco", ""),
                 skills=_mem_get_skills_for(s.get("uid", "")),
             ))
         return results
@@ -199,7 +200,9 @@ def list_students() -> list[StudentResponse]:
     return [StudentResponse(
         uid=s.uid, name=s.name, email=s.email or "",
         institution=s.institution or "", course=s.course or "",
-        semester=s.semester or 1, level=s.level or "graduacao", bio=s.bio or "",
+        semester=s.semester or 1, bio=s.bio or "",
+        curriculo_texto=s.curriculo_texto or "",
+        maturidade=s.maturidade or 0.0, o_que_busco=s.o_que_busco or "",
         skills=[SkillResponse(uid=sk.uid, name=sk.name, category=sk.category)
                 for sk in s.skills.all()],
     ) for s in Student.nodes.all()]
@@ -213,8 +216,10 @@ def get_student(uid: str) -> StudentResponse | None:
         return StudentResponse(
             uid=s.get("uid", ""), name=s.get("name", ""), email=s.get("email", ""),
             institution=s.get("institution", ""), course=s.get("course", ""),
-            semester=s.get("semester", 1), level=s.get("level", "graduacao"),
-            bio=s.get("bio", ""), skills=_mem_get_skills_for(uid),
+            semester=s.get("semester", 1),
+            bio=s.get("bio", ""), curriculo_texto=s.get("curriculo_texto", ""),
+            maturidade=s.get("maturidade", 0.0), o_que_busco=s.get("o_que_busco", ""),
+            skills=_mem_get_skills_for(uid),
         )
     Student, *_ = _neomodel()
     try:
@@ -222,7 +227,9 @@ def get_student(uid: str) -> StudentResponse | None:
         return StudentResponse(
             uid=s.uid, name=s.name, email=s.email or "",
             institution=s.institution or "", course=s.course or "",
-            semester=s.semester or 1, level=s.level or "graduacao", bio=s.bio or "",
+            semester=s.semester or 1, bio=s.bio or "",
+            curriculo_texto=s.curriculo_texto or "",
+            maturidade=s.maturidade or 0.0, o_que_busco=s.o_que_busco or "",
             skills=[SkillResponse(uid=sk.uid, name=sk.name, category=sk.category)
                     for sk in s.skills.all()],
         )
@@ -237,14 +244,18 @@ def create_student(data: StudentCreate) -> StudentResponse:
         store = get_memory_store()
         store.add_node(uid, ["Student"], {
             "name": data.name, "email": data.email, "institution": data.institution,
-            "course": data.course, "semester": data.semester, "level": data.level,
-            "bio": data.bio,
+            "course": data.course, "semester": data.semester,
+            "bio": data.bio, "curriculo_texto": data.curriculo_texto,
+            "maturidade": data.maturidade, "o_que_busco": data.o_que_busco,
+            "password_hash": data.password,
         })
         return get_student(uid)
     Student, *_ = _neomodel()
     student = Student(
         name=data.name, email=data.email, institution=data.institution,
-        course=data.course, semester=data.semester, level=data.level, bio=data.bio,
+        course=data.course, semester=data.semester, bio=data.bio,
+        curriculo_texto=data.curriculo_texto, maturidade=data.maturidade,
+        o_que_busco=data.o_que_busco, password_hash=data.password,
     ).save()
     return get_student(student.uid)
 
@@ -257,7 +268,9 @@ def update_student(uid: str, data: StudentCreate) -> StudentResponse | None:
             return None
         node["props"].update({"name": data.name, "email": data.email,
                               "institution": data.institution, "course": data.course,
-                              "semester": data.semester, "level": data.level, "bio": data.bio})
+                              "semester": data.semester, "bio": data.bio,
+                              "curriculo_texto": data.curriculo_texto, "maturidade": data.maturidade,
+                              "o_que_busco": data.o_que_busco})
         return get_student(uid)
     return get_student(uid)  # simplified for now
 
@@ -288,16 +301,18 @@ def list_researchers() -> list[ResearcherResponse]:
             uid = r.get("uid", "")
             results.append(ResearcherResponse(
                 uid=uid, name=r.get("name", ""), email=r.get("email", ""),
-                institution=r.get("institution", ""), level=r.get("level", "doutorado"),
-                lattes_url=r.get("lattes_url", ""), bio=r.get("bio", ""),
+                institution=r.get("institution", ""),
+                bio=r.get("bio", ""), curriculo_texto=r.get("curriculo_texto", ""),
+                maturidade=r.get("maturidade", 0.0), o_que_busco=r.get("o_que_busco", ""),
                 skills=_mem_get_skills_for(uid), areas=_mem_get_areas_for(uid),
             ))
         return results
     _, Researcher, *_ = _neomodel()
     return [ResearcherResponse(
         uid=r.uid, name=r.name, email=r.email or "",
-        institution=r.institution or "", level=r.level or "doutorado",
-        lattes_url=r.lattes_url or "", bio=r.bio or "",
+        institution=r.institution or "",
+        bio=r.bio or "", curriculo_texto=r.curriculo_texto or "",
+        maturidade=r.maturidade or 0.0, o_que_busco=r.o_que_busco or "",
         skills=[SkillResponse(uid=sk.uid, name=sk.name, category=sk.category)
                 for sk in r.skills.all()],
         areas=[AreaResponse(uid=a.uid, name=a.name, parent_area=a.parent_area or "")
@@ -312,8 +327,9 @@ def get_researcher(uid: str) -> ResearcherResponse | None:
             return None
         return ResearcherResponse(
             uid=uid, name=r.get("name", ""), email=r.get("email", ""),
-            institution=r.get("institution", ""), level=r.get("level", "doutorado"),
-            lattes_url=r.get("lattes_url", ""), bio=r.get("bio", ""),
+            institution=r.get("institution", ""),
+            bio=r.get("bio", ""), curriculo_texto=r.get("curriculo_texto", ""),
+            maturidade=r.get("maturidade", 0.0), o_que_busco=r.get("o_que_busco", ""),
             skills=_mem_get_skills_for(uid), areas=_mem_get_areas_for(uid),
         )
     _, Researcher, *_ = _neomodel()
@@ -321,8 +337,9 @@ def get_researcher(uid: str) -> ResearcherResponse | None:
         r = Researcher.nodes.get(uid=uid)
         return ResearcherResponse(
             uid=r.uid, name=r.name, email=r.email or "",
-            institution=r.institution or "", level=r.level or "doutorado",
-            lattes_url=r.lattes_url or "", bio=r.bio or "",
+            institution=r.institution or "",
+            bio=r.bio or "", curriculo_texto=r.curriculo_texto or "",
+            maturidade=r.maturidade or 0.0, o_que_busco=r.o_que_busco or "",
             skills=[SkillResponse(uid=sk.uid, name=sk.name, category=sk.category)
                     for sk in r.skills.all()],
             areas=[AreaResponse(uid=a.uid, name=a.name, parent_area=a.parent_area or "")
@@ -339,10 +356,19 @@ def create_researcher(data: ResearcherCreate) -> ResearcherResponse:
         store = get_memory_store()
         store.add_node(uid, ["Researcher"], {
             "name": data.name, "email": data.email, "institution": data.institution,
-            "level": data.level, "lattes_url": data.lattes_url, "bio": data.bio,
+            "bio": data.bio, "curriculo_texto": data.curriculo_texto,
+            "maturidade": data.maturidade, "o_que_busco": data.o_que_busco,
+            "password_hash": data.password,
         })
         return get_researcher(uid)
-    return None  # simplified
+    _, Researcher, *_ = _neomodel()
+    researcher = Researcher(
+        name=data.name, email=data.email, institution=data.institution,
+        bio=data.bio, curriculo_texto=data.curriculo_texto,
+        maturidade=data.maturidade, o_que_busco=data.o_que_busco,
+        password_hash=data.password,
+    ).save()
+    return get_researcher(researcher.uid)
 
 
 def update_researcher(uid: str, data: ResearcherCreate) -> ResearcherResponse | None:
@@ -377,6 +403,8 @@ def list_professors() -> list[ProfessorResponse]:
                 uid=uid, name=p.get("name", ""), email=p.get("email", ""),
                 institution=p.get("institution", ""), department=p.get("department", ""),
                 research_group=p.get("research_group", ""), bio=p.get("bio", ""),
+                curriculo_texto=p.get("curriculo_texto", ""),
+                maturidade=p.get("maturidade", 0.0), o_que_busco=p.get("o_que_busco", ""),
                 skills=_mem_get_skills_for(uid), areas=_mem_get_areas_for(uid),
             ))
         return results
@@ -385,6 +413,8 @@ def list_professors() -> list[ProfessorResponse]:
         uid=p.uid, name=p.name, email=p.email or "",
         institution=p.institution or "", department=p.department or "",
         research_group=p.research_group or "", bio=p.bio or "",
+        curriculo_texto=p.curriculo_texto or "",
+        maturidade=p.maturidade or 0.0, o_que_busco=p.o_que_busco or "",
         skills=[SkillResponse(uid=sk.uid, name=sk.name, category=sk.category)
                 for sk in p.skills.all()],
         areas=[AreaResponse(uid=a.uid, name=a.name, parent_area=a.parent_area or "")
@@ -401,6 +431,8 @@ def get_professor(uid: str) -> ProfessorResponse | None:
             uid=uid, name=p.get("name", ""), email=p.get("email", ""),
             institution=p.get("institution", ""), department=p.get("department", ""),
             research_group=p.get("research_group", ""), bio=p.get("bio", ""),
+            curriculo_texto=p.get("curriculo_texto", ""),
+            maturidade=p.get("maturidade", 0.0), o_que_busco=p.get("o_que_busco", ""),
             skills=_mem_get_skills_for(uid), areas=_mem_get_areas_for(uid),
         )
     _, _, Professor, *_ = _neomodel()
@@ -410,6 +442,8 @@ def get_professor(uid: str) -> ProfessorResponse | None:
             uid=p.uid, name=p.name, email=p.email or "",
             institution=p.institution or "", department=p.department or "",
             research_group=p.research_group or "", bio=p.bio or "",
+            curriculo_texto=p.curriculo_texto or "",
+            maturidade=p.maturidade or 0.0, o_que_busco=p.o_que_busco or "",
             skills=[SkillResponse(uid=sk.uid, name=sk.name, category=sk.category)
                     for sk in p.skills.all()],
             areas=[AreaResponse(uid=a.uid, name=a.name, parent_area=a.parent_area or "")
@@ -427,10 +461,20 @@ def create_professor(data: ProfessorCreate) -> ProfessorResponse:
         store.add_node(uid, ["Professor"], {
             "name": data.name, "email": data.email, "institution": data.institution,
             "department": data.department, "research_group": data.research_group,
-            "bio": data.bio,
+            "bio": data.bio, "curriculo_texto": data.curriculo_texto,
+            "maturidade": data.maturidade, "o_que_busco": data.o_que_busco,
+            "password_hash": data.password,
         })
         return get_professor(uid)
-    return None
+    _, _, Professor, *_ = _neomodel()
+    prof = Professor(
+        name=data.name, email=data.email, institution=data.institution,
+        department=data.department, research_group=data.research_group,
+        bio=data.bio, curriculo_texto=data.curriculo_texto,
+        maturidade=data.maturidade, o_que_busco=data.o_que_busco,
+        password_hash=data.password,
+    ).save()
+    return get_professor(prof.uid)
 
 
 def update_professor(uid: str, data: ProfessorCreate) -> ProfessorResponse | None:
@@ -484,18 +528,18 @@ def list_editais() -> list[EditalResponse]:
                     ))
             results.append(EditalResponse(
                 uid=uid, title=e.get("title", ""), description=e.get("description", ""),
-                agency=e.get("agency", ""), edital_type=e.get("edital_type", "pesquisa"),
+                instituicao=e.get("instituicao", ""), edital_type=e.get("edital_type", "pesquisa"),
                 funding=e.get("funding", 0.0), deadline=e.get("deadline", ""),
-                min_level=e.get("min_level", "graduacao"), status=e.get("status", "aberto"),
+                min_maturidade=e.get("min_maturidade", 0.0), status=e.get("status", "aberto"),
                 required_skills=req_skills, target_areas=target_areas,
             ))
         return results
     _, _, _, Edital, Skill, Area = _neomodel()
     return [EditalResponse(
         uid=e.uid, title=e.title, description=e.description or "",
-        agency=e.agency or "", edital_type=e.edital_type or "pesquisa",
+        instituicao=e.instituicao or "", edital_type=e.edital_type or "pesquisa",
         funding=e.funding or 0.0, deadline=e.deadline or "",
-        min_level=e.min_level or "graduacao", status=e.status or "aberto",
+        min_maturidade=e.min_maturidade or 0.0, status=e.status or "aberto",
         required_skills=[SkillResponse(uid=sk.uid, name=sk.name, category=sk.category)
                          for sk in e.requires_skills.all()],
         target_areas=[AreaResponse(uid=a.uid, name=a.name, parent_area=a.parent_area or "")
@@ -518,12 +562,19 @@ def create_edital(data: EditalCreate) -> EditalResponse:
         store = get_memory_store()
         store.add_node(uid, ["Edital"], {
             "title": data.title, "description": data.description,
-            "agency": data.agency, "edital_type": data.edital_type,
-            "funding": data.funding, "min_level": data.min_level,
+            "instituicao": data.instituicao, "edital_type": data.edital_type,
+            "funding": data.funding, "min_maturidade": data.min_maturidade,
+            "deadline": data.deadline,
             "status": "aberto",
         })
         return get_edital(uid)
-    return None
+    _, _, _, Edital, *_ = _neomodel()
+    edital = Edital(
+        title=data.title, description=data.description, instituicao=data.instituicao,
+        edital_type=data.edital_type, funding=data.funding, min_maturidade=data.min_maturidade,
+        deadline=data.deadline, status="aberto"
+    ).save()
+    return get_edital(edital.uid)
 
 
 def update_edital(uid: str, data: EditalCreate) -> EditalResponse | None:
@@ -551,6 +602,8 @@ def delete_edital(uid: str) -> bool:
 
 def get_matches(entity_uid: str | None = None, threshold: float = 0.0) -> list[MatchResponse]:
     if is_memory_mode():
+        import datetime
+        today_str = datetime.date.today().isoformat()
         store = get_memory_store()
         edges = store.get_edges(edge_type="ELIGIBLE_FOR")
         results = []
@@ -563,6 +616,10 @@ def get_matches(entity_uid: str | None = None, threshold: float = 0.0) -> list[M
             source = store.get_node(edge["source"])
             target = store.get_node(edge["target"])
             if source and target:
+                deadline = target["props"].get("deadline", "")
+                if deadline and deadline < today_str:
+                    continue  # Expired edital
+                
                 results.append(MatchResponse(
                     entity_uid=edge["source"],
                     entity_name=source["props"].get("name", ""),
@@ -578,10 +635,12 @@ def get_matches(entity_uid: str | None = None, threshold: float = 0.0) -> list[M
         return results
 
     from neomodel import db
-    where_clause = ""
-    params = {"threshold": threshold}
+    import datetime
+    today_str = datetime.date.today().isoformat()
+    where_clause = "AND coalesce(e.deadline, '9999-12-31') >= $today"
+    params = {"threshold": threshold, "today": today_str}
     if entity_uid:
-        where_clause = "AND a.uid = $entity_uid"
+        where_clause += " AND a.uid = $entity_uid"
         params["entity_uid"] = entity_uid
     query = f"""
         MATCH (a)-[r:ELIGIBLE_FOR]->(e:Edital)
@@ -658,11 +717,11 @@ def _get_graph_data_neo4j() -> GraphData:
     for s in Student.nodes.all():
         nodes.append(GraphNode(id=s.uid, label=s.name, type="student",
                                size=NODE_SIZES["student"], color=NODE_COLORS["student"],
-                               metadata={"institution": s.institution, "level": s.level}))
+                               metadata={"institution": s.institution, "maturidade": s.maturidade}))
     for r in Researcher.nodes.all():
         nodes.append(GraphNode(id=r.uid, label=r.name, type="researcher",
                                size=NODE_SIZES["researcher"], color=NODE_COLORS["researcher"],
-                               metadata={"institution": r.institution, "level": r.level}))
+                               metadata={"institution": r.institution, "maturidade": r.maturidade}))
     for p in Professor.nodes.all():
         nodes.append(GraphNode(id=p.uid, label=p.name, type="professor",
                                size=NODE_SIZES["professor"], color=NODE_COLORS["professor"],
@@ -670,7 +729,7 @@ def _get_graph_data_neo4j() -> GraphData:
     for e in Edital.nodes.all():
         nodes.append(GraphNode(id=e.uid, label=e.title, type="edital",
                                size=NODE_SIZES["edital"], color=NODE_COLORS["edital"],
-                               metadata={"agency": e.agency, "funding": e.funding}))
+                               metadata={"instituicao": e.instituicao, "funding": e.funding}))
     for sk in Skill.nodes.all():
         nodes.append(GraphNode(id=sk.uid, label=sk.name, type="skill",
                                size=NODE_SIZES["skill"], color=NODE_COLORS["skill"]))
