@@ -47,7 +47,7 @@ def get_user_by_email(email: str):
 @router.post("/login", response_model=AuthResponse)
 def login(request: LoginRequest, response: Response):
     # Admin dual portal
-    if request.email == "admin@ariano.gov" and request.password == "admin123":
+    if request.email.strip().lower() == "admin@ariano.gov" and request.password.strip() == "admin123":
         token = create_access_token({"sub": "admin", "type": "admin", "name": "Admin Gov"})
         response.set_cookie(key="auth_token", value=token, httponly=True, secure=False, samesite="lax")
         return AuthResponse(status="success", message="Admin logged in", user_type="admin", user_uid="admin", name="Admin Gov")
