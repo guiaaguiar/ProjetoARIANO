@@ -7,11 +7,11 @@ import {
 } from 'lucide-react';
 
 const navItems = [
-  { label: 'Dashboard', path: '/', icon: LayoutDashboard },
-  { label: 'Acadêmicos', path: '/academicos', icon: GraduationCap },
-  { label: 'Editais', path: '/editais', icon: FileText },
-  { label: 'Matches', path: '/matches', icon: Zap },
-  { label: 'Grafo', path: '/grafo', icon: Network },
+  { label: 'Dashboard', path: '/admin', icon: LayoutDashboard },
+  { label: 'Acadêmicos', path: '/admin/academicos', icon: GraduationCap },
+  { label: 'Editais', path: '/admin/editais', icon: FileText },
+  { label: 'Matches', path: '/admin/matches', icon: Zap },
+  { label: 'Grafo', path: '/admin/grafo', icon: Network },
 ];
 
 export default function Sidebar() {
