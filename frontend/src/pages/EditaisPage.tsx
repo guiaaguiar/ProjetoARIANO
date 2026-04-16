@@ -80,7 +80,7 @@ export default function EditaisPage() {
             ))
           ) : (
             editais.map(edital => {
-              const agencyColor = agencyColors[edital.agency] || '#64748b';
+              const agencyColor = agencyColors[edital.instituicao] || '#64748b';
               return (
                 <motion.div
                   key={edital.uid} layout
@@ -96,7 +96,7 @@ export default function EditaisPage() {
                           className="badge text-[11px]"
                           style={{ backgroundColor: `${agencyColor}15`, borderColor: `${agencyColor}30`, color: agencyColor }}
                         >
-                          {edital.agency}
+                          {edital.instituicao}
                         </span>
                         <span className="badge text-[11px] bg-surface-hover border-border text-text-muted">
                           {edital.edital_type}
@@ -124,7 +124,7 @@ export default function EditaisPage() {
                       </span>
                     )}
                     <span className="badge text-[10px] bg-surface-hover border-border text-text-muted">
-                      min: {edital.min_level}
+                      min: {edital.min_maturidade}
                     </span>
                   </div>
                   <div className="flex flex-wrap gap-1.5 pt-1">
