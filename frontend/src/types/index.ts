@@ -80,6 +80,7 @@ export interface Match {
   matched_skills: string[];
   matched_areas: string[];
   justification: string;
+  agency: string;
 }
 
 export interface GraphNode {

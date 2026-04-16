@@ -11,7 +11,8 @@ import {
   Bell,
   LogOut,
   MapPin,
-  Clock
+  Clock,
+  ArrowRight
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
