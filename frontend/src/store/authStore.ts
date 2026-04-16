@@ -25,7 +25,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   logout: () => set({ user: null, isAuthenticated: false, isLoading: false }),
   checkAuth: async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/auth/me', {
+      const res = await fetch('/api/auth/me', {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include', // Includes cookie in cross-origin
       });

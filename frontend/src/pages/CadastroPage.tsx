@@ -45,7 +45,7 @@ export const CadastroPage: React.FC = () => {
       }
 
       // Temporarily use fetch natively until api client is bound
-      const response = await fetch('http://localhost:8000/api/users/register', {
+      const response = await fetch('/api/users/register', {
         method: 'POST',
         body: data,
       });

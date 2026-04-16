@@ -22,7 +22,7 @@ export const LoginPage: React.FC = () => {
     try {
       // Usando request direto para backend da mesma origem devido a proxy configurado
       // MOCK temporário sem axios enquanto auth backend se configura
-      const res = await fetch('http://localhost:8000/api/auth/login', {
+      const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
