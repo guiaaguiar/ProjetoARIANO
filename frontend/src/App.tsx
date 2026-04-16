@@ -8,6 +8,7 @@ import MatchesPage from './pages/MatchesPage';
 import GrafoPage from './pages/GrafoPage';
 import { LoginPage } from './pages/LoginPage';
 import { CadastroPage } from './pages/CadastroPage';
+import UserDashboard from './pages/UserDashboard';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { useAuthStore } from './store/authStore';
 import { useEffect } from 'react';
@@ -29,6 +30,7 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/cadastro" element={<CadastroPage />} />
+        <Route path="/user/cadastro" element={<Navigate to="/cadastro" replace />} />
         
         {/* Admin Portal */}
         <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
@@ -44,7 +46,7 @@ export default function App() {
 
         {/* User Portal */}
         <Route element={<ProtectedRoute allowedRoles={['student', 'researcher', 'professor']} />}>
-          <Route path="/user" element={<UserPlaceholder />} />
+          <Route path="/user" element={<UserDashboard />} />
         </Route>
 
         <Route path="/" element={<Navigate to="/login" replace />} />
