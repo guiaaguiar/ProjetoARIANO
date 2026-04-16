@@ -26,11 +26,44 @@ export const CadastroPage: React.FC = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleNext = () => setStep(s => s + 1);
+  const validateStep = (s: number) => {
+    if (s === 1) {
+      if (!formData.name || !formData.email || !formData.password) {
+        toast.error('Preencha nome, email e senha.');
+        return false;
+      }
+      if (!formData.email.includes('@')) {
+        toast.error('Email inválido.');
+        return false;
+      }
+    } else if (s === 2) {
+      if (!formData.institution || !formData.course || !formData.bio) {
+        toast.error('Preencha instituição, curso e bio.');
+        return false;
+      }
+    } else if (s === 3) {
+      if (!formData.o_que_busco) {
+        toast.error('Conte-nos o que você busca.');
+        return false;
+      }
+      if (!file) {
+        toast.error('O upload do currículo é obrigatório para a IA analisar seu perfil.');
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const handleNext = () => {
+    if (validateStep(step)) setStep(s => s + 1);
+  };
+
   const handlePrev = () => setStep(s => s - 1);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateStep(3)) return;
+    
     setLoading(true);
 
     try {
@@ -44,14 +77,15 @@ export const CadastroPage: React.FC = () => {
         data.append('curriculo_pdf', file);
       }
 
-      // Temporarily use fetch natively until api client is bound
       const response = await fetch('/api/users/register', {
         method: 'POST',
         body: data,
       });
 
+      const result = await response.json();
+
       if (!response.ok) {
-        throw new Error('Falha ao realizar cadastro. Verifique e-mail existente.');
+        throw new Error(result.detail || 'Falha ao realizar cadastro.');
       }
 
       toast.success('Cadastro concluído com sucesso! A Inteligência já leu seu currículo.');
