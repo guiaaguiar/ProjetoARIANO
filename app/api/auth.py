@@ -1,9 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, Response, Request
 from pydantic import BaseModel
 from typing import Optional
+import logging
 
 from app.core.security import verify_password, create_access_token, decode_access_token
 from app.core.neo4j_driver import is_memory_mode, get_memory_store, run_cypher
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Auth"])
 
@@ -46,23 +49,28 @@ def get_user_by_email(email: str):
 
 @router.post("/login", response_model=AuthResponse)
 def login(request: LoginRequest, response: Response):
+    logger.info(f"Login attempt for: {request.email}")
     # Admin dual portal
     if request.email.strip().lower() == "admin@ariano.gov" and request.password.strip() == "admin123":
+        logger.info("Admin login matched")
         token = create_access_token({"sub": "admin", "type": "admin", "name": "Admin Gov"})
         response.set_cookie(key="auth_token", value=token, httponly=True, secure=False, samesite="lax")
         return AuthResponse(status="success", message="Admin logged in", user_type="admin", user_uid="admin", name="Admin Gov")
 
     user = get_user_by_email(request.email)
     if not user:
+        logger.warning(f"User not found: {request.email}")
         raise HTTPException(status_code=401, detail="Credenciais inválidas")
         
     pwd_hash = user.get("password_hash")
     if pwd_hash:
         if not verify_password(request.password, pwd_hash):
+             logger.warning(f"Invalid password for: {request.email}")
              raise HTTPException(status_code=401, detail="Credenciais inválidas")
     else:
         # Fallback for seeded data without hashed passwords
         if request.password != "123456":
+             logger.warning(f"Invalid fallback password for: {request.email}")
              raise HTTPException(status_code=401, detail="Credenciais inválidas")
 
     token = create_access_token({"sub": user["uid"], "type": user["type"], "name": user["name"]})
