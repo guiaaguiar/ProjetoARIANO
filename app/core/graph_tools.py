@@ -26,8 +26,8 @@ def retrieve_node(query: str, k: int = 1) -> list[dict]:
     RETURN n.uid AS uid, n.name AS name, labels(n)[0] AS type
     LIMIT $k
     """
-    results, _ = run_cypher(cypher, {"q": query_lower, "k": k})
-    return [{"uid": row[0], "name": row[1], "type": row[2]} for row in results]
+    results = run_cypher(cypher, {"q": query_lower, "k": k})
+    return [{"uid": row.get("uid"), "name": row.get("name"), "type": row.get("type")} for row in results]
 
 def node_feature(uid: str, feature: str) -> Any:
     """Return a specific attribute of a node."""
@@ -39,8 +39,8 @@ def node_feature(uid: str, feature: str) -> Any:
         return None
     
     cypher = f"MATCH (n {{uid: $uid}}) RETURN n.{feature} AS value"
-    results, _ = run_cypher(cypher, {"uid": uid})
-    return results[0][0] if results else None
+    results = run_cypher(cypher, {"uid": uid})
+    return results[0].get("value") if results else None
 
 def neighbour_check(uid: str, edge_type: str = "") -> list[dict]:
     """List neighbours of a node, optionally filtered by edge type."""
@@ -55,9 +55,9 @@ def neighbour_check(uid: str, edge_type: str = "") -> list[dict]:
         return neighbors
     
     edge_filter = f":{edge_type}" if edge_type else ""
-    cypher = f"MATCH (n {{uid: $uid}})-[{edge_filter}]->(m) RETURN m.uid, m.name, labels(m)[0]"
-    results, _ = run_cypher(cypher, {"uid": uid})
-    return [{"uid": row[0], "name": row[1], "type": row[2]} for row in results]
+    cypher = f"MATCH (n {{uid: $uid}})-[{edge_filter}]->(m) RETURN m.uid AS uid, m.name AS name, labels(m)[0] AS type"
+    results = run_cypher(cypher, {"uid": uid})
+    return [{"uid": row.get("uid"), "name": row.get("name"), "type": row.get("type")} for row in results]
 
 def node_degree(uid: str, edge_type: str = "") -> int:
     """Count connections of a specific type."""
@@ -92,23 +92,28 @@ def get_entity_deep_context(uid: str, depth: int = 3) -> dict:
     UNWIND range(0, size(rels)-1) AS i
     WITH n, rels[i] AS r, nodes[i] AS start_node, nodes[i+1] AS end_node
     RETURN DISTINCT 
-           start_node.uid, labels(start_node)[0], start_node.name,
-           type(r), properties(r),
-           end_node.uid, labels(end_node)[0], end_node.name
+           start_node.uid AS from_uid, labels(start_node)[0] AS from_type, start_node.name AS from_name,
+           type(r) AS rel_type, properties(r) AS rel_props,
+           end_node.uid AS to_uid, labels(end_node)[0] AS to_type, end_node.name AS to_name
     """
-    results, _ = run_cypher(cypher, {"uid": uid})
+    results = run_cypher(cypher, {"uid": uid})
     
     # Simplistic context building for prompt consumption
-    cypher_details = "MATCH (n {uid: $uid}) RETURN properties(n)"
-    details_results, _ = run_cypher(cypher_details, {"uid": uid})
+    cypher_details = "MATCH (n {uid: $uid}) RETURN properties(n) AS details"
+    details_results = run_cypher(cypher_details, {"uid": uid})
     if details_results:
-        context["details"] = details_results[0][0]
+        context["details"] = details_results[0].get("details")
         
     for row in results:
         context["connections"].append({
-            "from_uid": row[0], "from_type": row[1], "from_name": row[2],
-            "rel_type": row[3], "rel_props": row[4],
-            "to_uid": row[5], "to_type": row[6], "to_name": row[7]
+            "from_uid": row.get("from_uid"), 
+            "from_type": row.get("from_type"), 
+            "from_name": row.get("from_name"),
+            "rel_type": row.get("rel_type"), 
+            "rel_props": row.get("rel_props"),
+            "to_uid": row.get("to_uid"), 
+            "to_type": row.get("to_type"), 
+            "to_name": row.get("to_name")
         })
         
     return context

@@ -36,13 +36,14 @@ def get_user_by_email(email: str):
     WHERE (u:Student OR u:Researcher OR u:Professor) AND u.email = $email
     RETURN u.uid AS uid, labels(u)[0] AS type, u.password_hash AS password_hash, u.name AS name
     """
-    results, _ = run_cypher(query, {"email": email})
+    results = run_cypher(query, {"email": email})
     if results:
+        user = results[0]
         return {
-            "uid": results[0][0],
-            "type": results[0][1].lower(),
-            "password_hash": results[0][2],
-            "name": results[0][3]
+            "uid": user.get("uid"),
+            "type": user.get("type", "").lower(),
+            "password_hash": user.get("password_hash"),
+            "name": user.get("name")
         }
     return None
 
