@@ -62,7 +62,7 @@ def login(request: LoginRequest, response: Response):
             secure=True, 
             samesite="lax"
         )
-        return AuthResponse(status="success", message="Admin logged in", user_type="admin", user_uid="admin", name="Admin Gov")
+        return AuthResponse(status="success", message="Admin conectado com sucesso", user_type="admin", user_uid="admin", name="Admin Gov")
 
     user = get_user_by_email(request.email)
     if not user:
@@ -91,7 +91,7 @@ def login(request: LoginRequest, response: Response):
     
     return AuthResponse(
         status="success", 
-        message="Logged in", 
+        message="Login realizado com sucesso", 
         user_type=user["type"],
         user_uid=user["uid"],
         name=user.get("name")
@@ -100,7 +100,7 @@ def login(request: LoginRequest, response: Response):
 @router.post("/logout")
 def logout(response: Response):
     response.delete_cookie(key="auth_token")
-    return {"status": "success", "message": "Logged out"}
+    return {"status": "success", "message": "Sessão encerrada"}
     
 @router.get("/me", response_model=AuthResponse)
 def get_me(request: Request):
@@ -114,7 +114,7 @@ def get_me(request: Request):
         
     return AuthResponse(
         status="success", 
-        message="Auth valid", 
+        message="Autenticado", 
         user_type=payload.get("type"), 
         user_uid=payload.get("sub"),
         name=payload.get("name")

@@ -7,6 +7,12 @@
 > **Data:** 16/04/2026  
 > **Última atualização:** 16/04/2026
 
+> [!IMPORTANT]
+> **REGRAS DE OURO (SUI GENERIS):**
+> 1. **Nenhum aviso, erro ou pop-up deve estar em Inglês.** Tudo deve ser em Português Brasileiro (PT-BR).
+> 2. Todas as mensagens de erro do backend DEVEM ser traduzidas antes de chegarem ao frontend.
+> 3. O design deve ser sempre Premium, Neon Teal e focado na experiência "Agentes em Ação".
+
 ---
 
 ## 1. Visão Geral

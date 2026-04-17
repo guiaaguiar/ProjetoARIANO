@@ -15,7 +15,23 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+    # Bcrypt limited to 72 bytes
+    if len(password.encode('utf-8')) > 72:
+        from fastapi import HTTPException
+        raise HTTPException(
+            status_code=400, 
+            detail="A senha escolhida é muito longa (máximo de 72 caracteres)."
+        )
+    try:
+        return pwd_context.hash(password)
+    except Exception as e:
+        import logging
+        logging.error(f"Erro ao gerar hash da senha: {e}")
+        from fastapi import HTTPException
+        raise HTTPException(
+            status_code=500, 
+            detail="Erro ao processar segurança da conta. Tente novamente."
+        )
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     to_encode = data.copy()

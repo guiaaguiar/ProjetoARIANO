@@ -32,11 +32,21 @@ export const CadastroPage: React.FC = () => {
   const validateStep = (s: number) => {
     if (s === 1) {
       if (!formData.name || !formData.email || !formData.password) {
-        toast.error('Preencha nome, email e senha.');
+        toast.error('Por favor, preencha todos os campos: nome, e-mail e senha.');
         return false;
       }
       if (!formData.email.includes('@')) {
-        toast.error('Email inválido.');
+        toast.error('O endereço de e-mail informado é inválido.');
+        return false;
+      }
+      
+      const pwd = formData.password;
+      const hasUpper = /[A-Z]/.test(pwd);
+      const hasNumber = /[0-9]/.test(pwd);
+      const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(pwd);
+      
+      if (!hasUpper || !hasNumber || !hasSpecial) {
+        toast.error('Sua senha deve conter pelo menos uma letra maiúscula, um número e um caractere especial (ex: !, @, #).');
         return false;
       }
     } else if (s === 2) {
