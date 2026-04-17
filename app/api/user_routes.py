@@ -23,113 +23,104 @@ async def register_user(
     password: str = Form(...),
     institution: str = Form(...),
     course: str = Form(...),
-    semester: Optional[int] = Form(1),
+    semester: Optional[str] = Form("1"),
     user_type: str = Form("student"),
     bio: str = Form(""),
     o_que_busco: str = Form(""),
     curriculo_pdf: Optional[UploadFile] = File(None)
 ):
     """
-    Registra um novo usuário no CORETO.
+    Registra um novo usuário no CORETO com tratamento robusto de erros.
     """
-    
-    # Check if email exists
-    email = email.lower().strip()
-    logger.info(f"Registering user with email: {email}")
-    
-    if is_memory_mode():
-        store = get_memory_store()
-        # Count total nodes for debugging
-        total_nodes = len(store.nodes)
-        logger.info(f"Memory mode active. Total nodes in store: {total_nodes}")
-        
-        for label in ["Student", "Researcher", "Professor"]:
-            for node_id, node in store.nodes.items():
-                # Check for all node types just in case
-                if node.get("props", {}).get("email") == email:
-                    logger.warning(f"Email {email} found in memory store (uid: {node_id})")
-                    raise HTTPException(status_code=400, detail="Email já cadastrado")
-    else:
-        results = run_cypher("MATCH (u) WHERE u.email = $email RETURN u.uid", {"email": email})
-        if results:
-            logger.warning(f"Email {email} found in Neo4j")
-            raise HTTPException(status_code=400, detail="Email já cadastrado")
-            
-    curriculo_texto = ""
-    if curriculo_pdf:
-        # Extract text using PyMuPDF
-        try:
-            logger.info(f"Extracting text from PDF for {email}")
-            content = await curriculo_pdf.read()
-            curriculo_texto = extract_text_from_pdf(content) or ""
-            logger.info(f"PDF extraction successful. Length: {len(curriculo_texto)}")
-        except Exception as e:
-            logger.error(f"Error reading PDF for {email}: {e}")
-            raise HTTPException(status_code=400, detail=f"Erro ao ler PDF: {str(e)}")
-            
-    # Process password
-    password_hash = get_password_hash(password)
-    
-    uid = str(uuid.uuid4())[:8]
-    profile_data = {
-        "name": name,
-        "email": email,
-        "institution": institution,
-        "course": course,
-        "semester": semester,
-        "bio": bio,
-        "o_que_busco": o_que_busco,
-        "curriculo_texto": curriculo_texto,
-        "password": password_hash,
-    }
-    
-    # Save base user node
-    neo4j_type = {"student": "Student", "researcher": "Researcher", "professor": "Professor"}.get(user_type, "Student")
-    
     try:
+        # 1. Normalização de dados
+        email = email.lower().strip()
+        logger.info(f"📝 Iniciando registro: {email} ({user_type})")
+        
+        # Converte semester para int com segurança
+        try:
+            val_semester = int(semester) if semester and str(semester).isdigit() else 1
+        except:
+            val_semester = 1
+            
+        # 2. Verificação de existência
         if is_memory_mode():
             store = get_memory_store()
-            store.add_node(uid, [neo4j_type], {**profile_data, "password_hash": password_hash})
-            logger.info(f"User {uid} added to memory store")
+            for node in store.get_nodes_by_label("Student") + store.get_nodes_by_label("Researcher") + store.get_nodes_by_label("Professor"):
+                if node.get("email") == email:
+                    raise HTTPException(status_code=400, detail="Este e-mail já está cadastrado no sistema.")
+        else:
+            results = run_cypher("MATCH (u) WHERE u.email = $email RETURN u.uid", {"email": email})
+            if results:
+                raise HTTPException(status_code=400, detail="Este e-mail já está cadastrado no Neo4j.")
+
+        # 3. Extração de PDF (opcional)
+        curriculo_texto = ""
+        if curriculo_pdf and curriculo_pdf.filename:
+            try:
+                content = await curriculo_pdf.read()
+                curriculo_texto = extract_text_from_pdf(content)
+                logger.info(f"📄 Texto extraído do PDF ({len(curriculo_texto)} caracteres)")
+            except Exception as pdf_err:
+                logger.warning(f"⚠️ Erro ao processar PDF: {pdf_err}")
+                # Não bloqueia o cadastro por erro no PDF
+        
+        # 4. Hash de Senha
+        password_hash = get_password_hash(password)
+        
+        # 5. Persistência Base
+        uid = str(uuid.uuid4())[:8]
+        neo4j_type = {"student": "Student", "researcher": "Researcher", "professor": "Professor"}.get(user_type, "Student")
+        
+        profile_data = {
+            "uid": uid,
+            "name": name,
+            "email": email,
+            "password_hash": password_hash,
+            "institution": institution,
+            "course": course,
+            "semester": val_semester,
+            "bio": bio,
+            "o_que_busco": o_que_busco,
+            "curriculo_texto": curriculo_texto,
+            "created_at": datetime.now().isoformat()
+        }
+
+        if is_memory_mode():
+            store = get_memory_store()
+            store.add_node(uid, [neo4j_type], profile_data)
         else:
             run_cypher(f"""
                 CREATE (u:{neo4j_type} {{
-                    uid: $uid,
-                    name: $name,
-                    email: $email,
-                    password_hash: $password_hash,
-                    institution: $institution,
-                    course: $course,
-                    semester: $semester,
-                    bio: $bio,
-                    o_que_busco: $o_que_busco,
-                    curriculo_texto: $curriculo_texto,
+                    uid: $uid, name: $name, email: $email, password_hash: $password_hash,
+                    institution: $institution, course: $course, semester: $semester,
+                    bio: $bio, o_que_busco: $o_que_busco, curriculo_texto: $curriculo_texto,
                     created_at: $created_at
                 }})
-            """, {
-                "uid": uid,
-                "name": name,
-                "email": email,
-                "password_hash": password_hash,
-                "institution": institution,
-                "course": course,
-                "semester": semester,
-                "bio": bio,
-                "o_que_busco": o_que_busco,
-                "curriculo_texto": curriculo_texto,
-                "created_at": datetime.now().isoformat()
-            })
-            logger.info(f"User {uid} added to Neo4j")
-    except Exception as e:
-        logger.error(f"❌ Erro fatal ao salvar usuário {email}: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Erro interno ao salvar dados: {str(e)}")
+            """, profile_data)
         
-    # Orchestrate LLM Analysis in background to avoid timeouts
-    orchestrator = OrchestratorAgent()
-    background_tasks.add_task(orchestrator.process_new_entity, uid, neo4j_type, profile_data)
-    
-    return {
-        "status": "success",
-        "message": "Usuário cadastrado com inteligência ativada em segundo plano.",
-        "uid": uid
-    }
+        logger.info(f"✅ Usuário {uid} persistido com sucesso.")
+
+        # 6. Ativação da Inteligência (Background)
+        try:
+            orchestrator = OrchestratorAgent()
+            background_tasks.add_task(orchestrator.process_new_entity, uid, neo4j_type, profile_data)
+            logger.info(f"🧠 Orquestrador agendado para o usuário {uid}")
+        except Exception as ai_err:
+            logger.error(f"❌ Falha ao iniciar orquestrador IA: {ai_err}")
+            # Retorna sucesso do cadastro mesmo se IA falhar (pode ser processado depois)
+
+        return {
+            "status": "success",
+            "message": "Cadastro realizado com sucesso! A IA está analisando seu perfil.",
+            "uid": uid
+        }
+
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        logger.error(f"💥 Erro catastrófico no registro: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Erro interno ao processar cadastro: {str(e)}"
+        )

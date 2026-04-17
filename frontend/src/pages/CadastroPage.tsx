@@ -197,6 +197,7 @@ export const CadastroPage: React.FC = () => {
                   placeholder="Ciência da Computação"
                 />
               </div>
+            {formData.user_type === 'student' && (
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-1">Semestre</label>
                 <input
@@ -208,6 +209,7 @@ export const CadastroPage: React.FC = () => {
                   className="w-full px-4 py-2 bg-gray-900 border border-gray-800 rounded-lg text-white"
                 />
               </div>
+            )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1">Mini-Bio</label>

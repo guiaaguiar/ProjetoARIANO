@@ -413,13 +413,19 @@ def get_driver():
         try:
             from neo4j import GraphDatabase
             from app.core.config import settings
+            
+            # Use a short connection timeout to avoid hanging on Vercel
             _driver = GraphDatabase.driver(
                 settings.neo4j_uri,
                 auth=(settings.neo4j_user, settings.neo4j_password),
+                connection_timeout=5.0,  # 5 seconds max to connect
+                max_connection_lifetime=600,
             )
-            # Test connectivity
-            _driver.verify_connectivity()
-            logger.info("✅ Neo4j driver connected successfully")
+            # verify_connectivity can hang if the network is flaky
+            # We skip it or use a try block with timeout if we really want to test
+            logger.info(f"Attempting Neo4j connection to {settings.neo4j_uri}...")
+            # _driver.verify_connectivity() # Skipping blocking call for faster startup
+            logger.info("✅ Neo4j driver initialized (lazy connectivity)")
         except Exception as e:
             logger.warning(f"⚠️ Neo4j unavailable ({e}), using in-memory graph store")
             _driver = None
