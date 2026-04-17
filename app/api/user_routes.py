@@ -121,8 +121,8 @@ async def register_user(
             })
             logger.info(f"User {uid} added to Neo4j")
     except Exception as e:
-        logger.error(f"Error saving user {email} to DB: {e}")
-        raise HTTPException(status_code=500, detail=f"Erro ao salvar no banco: {str(e)}")
+        logger.error(f"❌ Erro fatal ao salvar usuário {email}: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Erro interno ao salvar dados: {str(e)}")
         
     # Orchestrate LLM Analysis in background to avoid timeouts
     orchestrator = OrchestratorAgent()

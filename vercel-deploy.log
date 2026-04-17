@@ -1,19 +1,19 @@
 Retrieving project…
 Deploying gui7ks-projects/ariano
-Uploading [--------------------] (0.0B/39.4KB)
-Uploading [======--------------] (13.1KB/39.4KB)
-Uploading [================----] (32.6KB/39.4KB)
-Uploading [=================---] (34.5KB/39.4KB)
-Uploading [====================] (39.4KB/39.4KB)
-Inspect: https://vercel.com/gui7ks-projects/ariano/B4nhHAdfLwZrphtL4Yk9PW2xFa9u [3s]
-Production: https://ariano-bxd3bh3cu-gui7ks-projects.vercel.app [3s]
-https://ariano-bxd3bh3cu-gui7ks-projects.vercel.appBuilding...
-Building...
+Uploading [--------------------] (0.0B/69.5KB)
+Uploading [=========-----------] (32.0KB/69.5KB)
+Uploading [=============-------] (46.9KB/69.5KB)
+Uploading [================----] (55.6KB/69.5KB)
+Uploading [====================] (69.5KB/69.5KB)
+Inspect: https://vercel.com/gui7ks-projects/ariano/AB6HJgpweYZ2rqSejpG27Jg9S5PP [3s]
+Production: https://ariano-5nigbhau2-gui7ks-projects.vercel.app [3s]
+https://ariano-5nigbhau2-gui7ks-projects.vercel.appBuilding...
 Building: Running build in Washington, D.C., USA (East) – iad1
 Building: Build machine configuration: 2 cores, 8 GB
 Building: Retrieving list of deployment files...
-Building: Downloading 103 deployment files...
-Building: Restored build cache from previous deployment (7H6xEd3HzWVHerayb5ZVLAP52tcV)
+Building: Downloading 104 deployment files...
+Building: Downloading 104 deployment files...
+Building: Restored build cache from previous deployment (B4nhHAdfLwZrphtL4Yk9PW2xFa9u)
 Building: Running "vercel build"
 Building: Vercel CLI 51.2.1
 Building: Running "install" command: `cd frontend && npm install`...
@@ -33,26 +33,28 @@ Building: computing gzip size...
 Building: dist/index.html                         0.63 kB │ gzip:   0.39 kB
 Building: dist/assets/wallpaper-CTPjKo0w.png  3,080.87 kB
 Building: dist/assets/index-BGne2jD0.css         65.73 kB │ gzip:  11.42 kB
-Building: dist/assets/index-EPtfc-Pz.js         579.54 kB │ gzip: 181.73 kB
-Building: ✓ built in 1.26s
+Building: dist/assets/index-CQ6uLFpv.js         579.83 kB │ gzip: 181.91 kB
 Building: [plugin builtin:vite-reporter]
 Building: (!) Some chunks are larger than 500 kB after minification. Consider:
 Building: - Using dynamic import() to code-split the application
 Building: - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
 Building: - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+Building: ✓ built in 1.34s
 Building: No Python version specified in .python-version, pyproject.toml, or Pipfile.lock. Using python version: 3.12
 Building: Creating virtual environment at "/vercel/path0/.vercel/python/.venv"...
 Building: Using uv 0.10.11
 Building: Installing required dependencies from requirements.txt...
-Building: Bundle size (269.44 MB) exceeds limit. Enabling runtime dependency installation.
-Building: Build Completed in /vercel/output [14s]
+Building: Bundle size (269.45 MB) exceeds limit. Enabling runtime dependency installation.
+Building: Build Completed in /vercel/output [15s]
 Building: Deploying outputs...
 Building: Deployment completed
 Building: Creating build cache...
-[2K[1A[2K[GProduction: https://ariano-bxd3bh3cu-gui7ks-projects.vercel.app [2m]
+Building: Created build cache: 12s
+Building: Uploading build cache [47.22 MB]
+[2K[1A[2K[GProduction: https://ariano-5nigbhau2-gui7ks-projects.vercel.app [2m]
 Completing...
 Aliased: https://projetoariano.vercel.app [2m]
 
 Common next commands:
-- `vercel inspect ariano-bxd3bh3cu-gui7ks-projects.vercel.app --logs`
-- `vercel redeploy ariano-bxd3bh3cu-gui7ks-projects.vercel.app`
+- `vercel inspect ariano-5nigbhau2-gui7ks-projects.vercel.app --logs`
+- `vercel redeploy ariano-5nigbhau2-gui7ks-projects.vercel.app`

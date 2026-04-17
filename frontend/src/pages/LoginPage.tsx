@@ -139,8 +139,8 @@ export const LoginPage: React.FC = () => {
                 <div className="ml-3">
                   <h3 className="text-sm font-medium text-blue-400">Ambiente de Testes</h3>
                   <div className="mt-2 text-sm text-blue-300/80">
-                    <p>Demo Admin: admin@ariano.gov / admin123</p>
-                    <p>Demo User: Use seeded email / 123456</p>
+                    <p>Admin Demo: admin@ariano.gov / admin123</p>
+                    <p>Usuário Demo: Use um e-mail cadastrado / 123456</p>
                   </div>
                 </div>
               </div>
