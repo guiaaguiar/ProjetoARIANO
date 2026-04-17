@@ -12,6 +12,7 @@ Part of PHASE 1 (Graph Configuration) — runs offline/async.
 
 import json
 import logging
+import uuid
 from typing import Optional
 
 from app.core.config import settings
@@ -224,10 +225,15 @@ Responda APENAS em JSON válido com a estrutura exata:
                 """
                 MERGE (s:Skill {name: $name})
                 ON CREATE SET s.category = $category,
-                              s.uid = randomUUID(),
-                              s.created_at = datetime()
+                              s.uid = $skill_uid,
+                              s.created_at = $created_at
                 """,
-                {"name": skill_data["name"], "category": skill_data.get("category", "general")},
+                {
+                    "name": skill_data["name"], 
+                    "category": skill_data.get("category", "general"),
+                    "skill_uid": str(uuid.uuid4())[:8],
+                    "created_at": datetime.now().isoformat()
+                },
             )
             skills_created += 1
 
@@ -238,7 +244,7 @@ Responda APENAS em JSON válido com a estrutura exata:
                 MERGE (a)-[r:HAS_SKILL]->(s)
                 ON CREATE SET r.confidence = $confidence,
                               r.source = 'agent:ProfileAnalyzer',
-                              r.created_at = datetime()
+                              r.created_at = $created_at
                 ON MATCH SET r.confidence = CASE
                     WHEN $confidence > r.confidence THEN $confidence
                     ELSE r.confidence END
@@ -247,6 +253,7 @@ Responda APENAS em JSON válido com a estrutura exata:
                     "uid": entity_uid,
                     "skill_name": skill_data["name"],
                     "confidence": skill_data.get("confidence", 0.8),
+                    "created_at": datetime.now().isoformat()
                 },
             )
             edges_created += 1
@@ -255,10 +262,14 @@ Responda APENAS em JSON válido com a estrutura exata:
             run_cypher(
                 """
                 MERGE (a:Area {name: $name})
-                ON CREATE SET a.uid = randomUUID(),
-                              a.created_at = datetime()
+                ON CREATE SET a.uid = $area_uid,
+                              a.created_at = $created_at
                 """,
-                {"name": area_name},
+                {
+                    "name": area_name,
+                    "area_uid": str(uuid.uuid4())[:8],
+                    "created_at": datetime.now().isoformat()
+                },
             )
 
             if entity_type in ["Researcher", "Professor"]:
@@ -268,9 +279,9 @@ Responda APENAS em JSON válido com a estrutura exata:
                     MATCH (a:Area {{name: $area_name}})
                     MERGE (ent)-[r:RESEARCHES_AREA]->(a)
                     ON CREATE SET r.source = 'agent:ProfileAnalyzer',
-                                  r.created_at = datetime()
+                                  r.created_at = $created_at
                     """,
-                    {"uid": entity_uid, "area_name": area_name},
+                    {"uid": entity_uid, "area_name": area_name, "created_at": datetime.now().isoformat()},
                 )
                 
         # Update entity with maturidade and o_que_busco

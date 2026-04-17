@@ -120,6 +120,10 @@ def _interpret_cypher(query: str, params: dict | None = None) -> list[dict]:
     query_upper = query.strip().upper()
     query_clean = query.strip()
 
+    # ── CREATE ──
+    if "CREATE" in query_upper and "(" in query_clean and ")" in query_clean:
+        return _handle_create(query_clean, params, store)
+
     # ── MERGE node ──
     if "MERGE" in query_upper and "(" in query_clean and ")" in query_clean:
         return _handle_merge(query_clean, params, store)
@@ -138,6 +142,19 @@ def _interpret_cypher(query: str, params: dict | None = None) -> list[dict]:
 
     return []
 
+
+def _handle_create(query: str, params: dict, store: MemoryGraphStore) -> list[dict]:
+    """Handle CREATE operations for nodes."""
+    import re
+    # Extract label: CREATE (n:Label {props})
+    match = re.search(r'\((\w+):(\w+)', query)
+    if match:
+        label = match.group(2)
+        uid = params.get("uid") or str(uuid.uuid4())[:8]
+        props = {**params, "uid": uid}
+        store.add_node(uid, [label], props)
+        return [{"uid": uid}]
+    return []
 
 def _handle_merge(query: str, params: dict, store: MemoryGraphStore) -> list[dict]:
     """Handle MERGE operations for nodes and edges."""

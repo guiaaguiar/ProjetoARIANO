@@ -1,4 +1,4 @@
-from fastapi import APIRouter, File, UploadFile, Form, HTTPException
+from fastapi import APIRouter, File, UploadFile, Form, HTTPException, BackgroundTasks
 from typing import Optional
 import tempfile
 import os
@@ -9,6 +9,7 @@ from app.core.security import get_password_hash
 from app.core.neo4j_driver import run_cypher, is_memory_mode, get_memory_store
 import uuid
 import logging
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +17,7 @@ router = APIRouter(tags=["Users"])
 
 @router.post("/register")
 async def register_user(
+    background_tasks: BackgroundTasks,
     name: str = Form(...),
     email: str = Form(...),
     password: str = Form(...),
@@ -102,7 +104,7 @@ async def register_user(
                     bio: $bio,
                     o_que_busco: $o_que_busco,
                     curriculo_texto: $curriculo_texto,
-                    created_at: datetime()
+                    created_at: $created_at
                 }})
             """, {
                 "uid": uid,
@@ -114,24 +116,20 @@ async def register_user(
                 "semester": semester,
                 "bio": bio,
                 "o_que_busco": o_que_busco,
-                "curriculo_texto": curriculo_texto
+                "curriculo_texto": curriculo_texto,
+                "created_at": datetime.now().isoformat()
             })
             logger.info(f"User {uid} added to Neo4j")
     except Exception as e:
         logger.error(f"Error saving user {email} to DB: {e}")
         raise HTTPException(status_code=500, detail=f"Erro ao salvar no banco: {str(e)}")
         
-    # Orchestrate LLM Analysis
+    # Orchestrate LLM Analysis in background to avoid timeouts
     orchestrator = OrchestratorAgent()
-    try:
-        logger.info(f"Starting Orchestrator for {uid}")
-        orchestrator.process_new_entity(uid, neo4j_type, profile_data)
-        logger.info(f"Orchestrator completed for {uid}")
-    except Exception as e:
-        logger.error(f"Orchestrator pipeline failed for {uid}: {e}")
+    background_tasks.add_task(orchestrator.process_new_entity, uid, neo4j_type, profile_data)
     
     return {
         "status": "success",
-        "message": "Usuário cadastrado com inteligência ativada.",
+        "message": "Usuário cadastrado com inteligência ativada em segundo plano.",
         "uid": uid
     }

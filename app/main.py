@@ -3,8 +3,9 @@
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.api.routes import router
 from app.api.agent_routes import router as agent_router
@@ -65,6 +66,16 @@ app = FastAPI(
     redoc_url="/redoc",
     lifespan=lifespan,
 )
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    import logging
+    logger = logging.getLogger("app.main")
+    logger.error(f"❌ Global unexpected error: {exc}", exc_info=True)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": f"Erro crítico: {str(exc)}", "type": "GlobalError"},
+    )
 
 app.add_middleware(
     CORSMiddleware,
