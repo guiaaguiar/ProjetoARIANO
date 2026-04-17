@@ -21,7 +21,7 @@ async def register_user(
     password: str = Form(...),
     institution: str = Form(...),
     course: str = Form(...),
-    semester: int = Form(...),
+    semester: Optional[int] = Form(1),
     user_type: str = Form("student"),
     bio: str = Form(""),
     o_que_busco: str = Form(""),
@@ -59,7 +59,7 @@ async def register_user(
         try:
             logger.info(f"Extracting text from PDF for {email}")
             content = await curriculo_pdf.read()
-            curriculo_texto = extract_text_from_pdf(content)
+            curriculo_texto = extract_text_from_pdf(content) or ""
             logger.info(f"PDF extraction successful. Length: {len(curriculo_texto)}")
         except Exception as e:
             logger.error(f"Error reading PDF for {email}: {e}")

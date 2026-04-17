@@ -15,7 +15,7 @@ import { useAuthStore } from './store/authStore';
 import { useEffect } from 'react';
 
 function UserPlaceholder({ title }: { title: string }) {
-  return <div className="text-white p-4"><h1>{title}</h1><p className="text-gray-400 mt-2 font-mono text-sm opacity-60 italic">> Agente Orchestrator preparando visualização...</p></div>;
+  return <div className="text-white p-4"><h1>{title}</h1><p className="text-gray-400 mt-2 font-mono text-sm opacity-60 italic">{'>'} Agente Orchestrator preparando visualização...</p></div>;
 }
 
 export default function App() {

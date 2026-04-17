@@ -20,6 +20,7 @@ export const CadastroPage: React.FC = () => {
     user_type: 'student',
     bio: '',
     o_que_busco: '',
+    semester: '1',
   });
 
   const [file, setFile] = useState<File | null>(null);
@@ -73,7 +74,6 @@ export const CadastroPage: React.FC = () => {
       Object.entries(formData).forEach(([key, value]) => {
         data.append(key, value);
       });
-      data.append('semester', '1'); // Default for now
       
       if (file) {
         data.append('curriculo_pdf', file);
@@ -134,7 +134,7 @@ export const CadastroPage: React.FC = () => {
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1">E-mail</label>
               <input
-                type="email"
+                type="text"
                 required
                 value={formData.email}
                 onChange={e => updateForm('email', e.target.value)}
@@ -175,16 +175,29 @@ export const CadastroPage: React.FC = () => {
                 placeholder="Ex: UFPE"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Curso / Departamento</label>
-              <input
-                type="text"
-                required
-                value={formData.course}
-                onChange={e => updateForm('course', e.target.value)}
-                className="w-full px-4 py-2 bg-gray-900 border border-gray-800 rounded-lg text-white"
-                placeholder="Ex: Ciência da Computação"
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Curso / Depto</label>
+                <input
+                  type="text"
+                  required
+                  value={formData.course}
+                  onChange={e => updateForm('course', e.target.value)}
+                  className="w-full px-4 py-2 bg-gray-900 border border-gray-800 rounded-lg text-white"
+                  placeholder="Ciência da Computação"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Semestre</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="12"
+                  value={formData.semester || '1'}
+                  onChange={e => updateForm('semester', e.target.value)}
+                  className="w-full px-4 py-2 bg-gray-900 border border-gray-800 rounded-lg text-white"
+                />
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1">Mini-Bio</label>
