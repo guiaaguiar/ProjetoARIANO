@@ -1,11 +1,11 @@
-from fastapi import APIRouter, File, UploadFile, Form, HTTPException, BackgroundTasks
+from fastapi import APIRouter, File, UploadFile, Form, HTTPException, BackgroundTasks, Response
 from typing import Optional
 import tempfile
 import os
 
 from app.services.pdf_extractor import extract_text_from_pdf
 from app.agents.orchestrator import OrchestratorAgent
-from app.core.security import get_password_hash
+from app.core.security import get_password_hash, create_access_token
 from app.core.neo4j_driver import run_cypher, is_memory_mode, get_memory_store
 import uuid
 import logging
@@ -17,6 +17,7 @@ router = APIRouter(tags=["Users"])
 
 @router.post("/register")
 async def register_user(
+    response: Response,
     background_tasks: BackgroundTasks,
     name: str = Form(...),
     email: str = Form(...),
@@ -109,6 +110,16 @@ async def register_user(
         except Exception as ai_err:
             logger.error(f"❌ Falha ao iniciar orquestrador IA: {ai_err}")
             # Retorna sucesso do cadastro mesmo se IA falhar (pode ser processado depois)
+
+        # 7. Auto-login via Cookie
+        token = create_access_token({"sub": uid, "type": neo4j_type.lower(), "name": name})
+        response.set_cookie(
+            key="auth_token",
+            value=token,
+            httponly=True,
+            secure=True,
+            samesite="lax"
+        )
 
         return {
             "status": "success",

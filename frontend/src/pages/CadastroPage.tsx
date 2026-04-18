@@ -272,7 +272,10 @@ export const CadastroPage: React.FC = () => {
         {showCognition && (
           <CognitionExperience 
             userName={formData.name || 'Acadêmico'} 
-            onComplete={() => navigate('/login')} 
+            onComplete={() => {
+              // Ensure auth state is updated properly before navigating
+              window.location.href = '/user/ecossistema';
+            }} 
           />
         )}
       </AnimatePresence>
