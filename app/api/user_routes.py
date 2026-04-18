@@ -28,6 +28,7 @@ async def register_user(
     user_type: str = Form("student"),
     bio: str = Form(""),
     o_que_busco: str = Form(""),
+    curriculo_texto: Optional[str] = Form(""),
     curriculo_pdf: Optional[UploadFile] = File(None)
 ):
     """
@@ -55,16 +56,18 @@ async def register_user(
             if results:
                 raise HTTPException(status_code=400, detail="Este e-mail já está cadastrado no Neo4j.")
 
-        # 3. Extração de PDF (opcional)
-        curriculo_texto = ""
+        # 3. Extração de Conteúdo (Prioridade PDF > Texto Form)
+        final_text = curriculo_texto or ""
         if curriculo_pdf and curriculo_pdf.filename:
             try:
                 content = await curriculo_pdf.read()
-                curriculo_texto = extract_text_from_pdf(content)
-                logger.info(f"📄 Texto extraído do PDF ({len(curriculo_texto)} caracteres)")
+                pdf_extracted = extract_text_from_pdf(content)
+                if pdf_extracted:
+                    final_text = pdf_extracted
+                logger.info(f"📄 Conteúdo extraído: {len(final_text)} caracteres")
             except Exception as pdf_err:
                 logger.warning(f"⚠️ Erro ao processar PDF: {pdf_err}")
-                # Não bloqueia o cadastro por erro no PDF
+                # Mantém o texto do formulário se o PDF falhar
         
         # 4. Hash de Senha
         password_hash = get_password_hash(password)
@@ -83,7 +86,7 @@ async def register_user(
             "semester": val_semester,
             "bio": bio,
             "o_que_busco": o_que_busco,
-            "curriculo_texto": curriculo_texto,
+            "curriculo_texto": final_text,
             "created_at": datetime.now().isoformat()
         }
 
