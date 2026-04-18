@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, UploadCloud, FileText, Settings, User } from 'lucide-react';
+import { ArrowLeft, ArrowRight, UploadCloud, FileText, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 import { CognitionExperience } from '../components/layout/CognitionExperience';
 
@@ -9,6 +9,7 @@ export const CadastroPage: React.FC = () => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [showCognition, setShowCognition] = useState(false);
+  const [apiPromise, setApiPromise] = useState<Promise<any> | null>(null);
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -21,6 +22,7 @@ export const CadastroPage: React.FC = () => {
     bio: '',
     o_que_busco: '',
     semester: '1',
+    curriculo_texto: '', // Fallback se não tiver PDF
   });
 
   const [file, setFile] = useState<File | null>(null);
@@ -59,8 +61,8 @@ export const CadastroPage: React.FC = () => {
         toast.error('Conte-nos o que você busca.');
         return false;
       }
-      if (!file) {
-        toast.error('O upload do currículo é obrigatório para a IA analisar seu perfil.');
+      if (!file && !formData.curriculo_texto) {
+        toast.error('Faça upload do seu PDF ou cole o texto do seu currículo no campo de texto alternativo.');
         return false;
       }
     }
@@ -77,35 +79,28 @@ export const CadastroPage: React.FC = () => {
     e.preventDefault();
     if (!validateStep(3)) return;
     
-    setLoading(true);
-
-    try {
-      const data = new FormData();
-      Object.entries(formData).forEach(([key, value]) => {
-        data.append(key, value);
-      });
-      
-      if (file) {
-        data.append('curriculo_pdf', file);
-      }
-
-      const response = await fetch('/api/users/register', {
-        method: 'POST',
-        body: data,
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.detail || 'Falha ao realizar cadastro.');
-      }
-
-      toast.success('Entidades cadastradas! Iniciando cognição artificial...');
-      setShowCognition(true);
-    } catch (err: any) {
-      toast.error(err.message || 'Erro ao realizar cadastro.');
-      setLoading(false);
+    // Preparar dados
+    const data = new FormData();
+    Object.entries(formData).forEach(([key, value]) => {
+      data.append(key, value as string);
+    });
+    
+    if (file) {
+      data.append('curriculo_pdf', file);
     }
+
+    // Iniciar a requisição HTTP, mas NÃO "await" aqui. Deixe o CognitionExperience atuar "ENQUANTO" a request rola.
+    const promise = fetch('/api/users/register', {
+      method: 'POST',
+      body: data,
+    }).then(async res => {
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.detail || 'Falha ao realizar cadastro.');
+      return result;
+    });
+
+    setApiPromise(promise);
+    setShowCognition(true);
   };
 
   const renderStepContent = () => {
@@ -252,14 +247,30 @@ export const CadastroPage: React.FC = () => {
               <UploadCloud className="w-8 h-8 text-teal-500 mx-auto mb-2" />
               <p className="text-white font-medium">Faça upload do seu currículo (PDF)</p>
               <p className="text-xs text-gray-400 mt-1">
-                Nossa IA vai ler seu currículo para entender perfeitamente suas habilidades.
-                (Seu PDF não será salvo no banco de dados).
+                Nossa IA vai extrair e analisar. (O arquivo original é descartado, não salvamos PDF).
               </p>
               {file && (
                 <div className="mt-4 p-2 bg-teal-500/20 text-teal-400 rounded-lg flex items-center justify-center gap-2">
                   <FileText className="w-4 h-4" /> {file.name}
                 </div>
               )}
+            </div>
+            
+            <div className="relative flex py-2 items-center">
+              <div className="flex-grow border-t border-gray-800"></div>
+              <span className="flex-shrink-0 mx-4 text-gray-500 text-xs uppercase tracking-wider">OU (Fallback)</span>
+              <div className="flex-grow border-t border-gray-800"></div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-1">Cole informações textuais aqui</label>
+              <textarea
+                value={formData.curriculo_texto}
+                onChange={e => updateForm('curriculo_texto', e.target.value)}
+                rows={3}
+                className="w-full px-4 py-2 bg-gray-900 border border-gray-800 rounded-lg text-gray-300 resize-none"
+                placeholder="Exemplo de Fallback: Se não possuir o PDF agora, cole aqui as principais experiências e tecnologias que você domina..."
+              />
             </div>
           </motion.div>
         );
@@ -272,8 +283,8 @@ export const CadastroPage: React.FC = () => {
         {showCognition && (
           <CognitionExperience 
             userName={formData.name || 'Acadêmico'} 
+            apiPromise={apiPromise}
             onComplete={() => {
-              // Ensure auth state is updated properly before navigating
               window.location.href = '/user/ecossistema';
             }} 
           />

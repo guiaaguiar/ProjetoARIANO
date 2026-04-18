@@ -6,6 +6,7 @@ import { MatchResultCards } from '../MatchResultCards';
 
 interface CognitionExperienceProps {
   userName: string;
+  apiPromise: Promise<any> | null;
   onComplete: () => void;
 }
 
@@ -16,25 +17,27 @@ const AGENT_STEPS = [
   { id: 'match', label: 'Calculando Matches Estratégicos (Eligibility)', icon: Zap, color: 'text-amber-400' },
 ];
 
-export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userName, onComplete }) => {
+export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userName, apiPromise, onComplete }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [logs, setLogs] = useState<string[]>([]);
   const [showFinish, setShowFinish] = useState(false);
+  const [matches, setMatches] = useState<any[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let animationDone = false;
+    let apiData: any = null;
+
     const logMessages = [
       `> Iniciando protocolo de cognição para ${userName}...`,
       `> Agente Orchestrator detectou novo nó no ecossistema.`,
       `> ProfileAnalyzer extraindo competências via Graph-CoT...`,
-      `> Extração de PDF concluída com 98% de precisão.`,
-      `> Skills identificadas: [React, IA, Node.js, Graph Databases].`,
+      `> Extração de dados concluída com sucesso.`,
+      `> Skills identificadas e mapeadas no grafo...`,
       `> Calculando maturidade acadêmica com base no contexto...`,
-      `> Maturidade definida como 7.5 (Intermediário Avançado).`,
-      `> EligibilityCalculator cruzando dados com 45 editais ativos...`,
-      `> 12 matches de alta afinidade (>85%) detectados.`,
-      `> Criando arestas ELIGIBLE_FOR e SIMILAR_TO no grafo...`,
+      `> EligibilityCalculator cruzando dados com editais ativos...`,
       `> Sincronização de comunidades completa.`,
-      `> Ecossistema pronto para visualização.`
+      `> Ecossistema pronto para análise visual.`
     ];
 
     let logIdx = 0;
@@ -42,21 +45,34 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
       if (logIdx < logMessages.length) {
         setLogs(prev => [...prev, logMessages[logIdx]]);
         logIdx++;
-      } else {
-        clearInterval(logInterval);
-        setTimeout(() => setShowFinish(true), 1000);
       }
-    }, 800);
+    }, 900);
 
     const stepInterval = setInterval(() => {
       setCurrentStep(prev => (prev < AGENT_STEPS.length - 1 ? prev + 1 : prev));
-    }, 2400);
+    }, 2500);
+
+    // Tempo mínimo de animação de 10 segundos para efeito WOW
+    const minTimePromise = new Promise(resolve => setTimeout(resolve, 10000));
+
+    if (apiPromise) {
+      Promise.all([apiPromise, minTimePromise])
+        .then(([result]) => {
+          setMatches(result.topMatches || []);
+          setShowFinish(true);
+        })
+        .catch(err => {
+          setError(err.message || 'Erro crítico no orquestrador ARIANO.');
+          // Mesmo com erro, liberamos para o usuário tentar novamente ou Dashboard
+          setTimeout(() => setShowFinish(true), 2000);
+        });
+    }
 
     return () => {
       clearInterval(logInterval);
       clearInterval(stepInterval);
     };
-  }, [userName]);
+  }, [userName, apiPromise]);
 
   return (
     <div className="fixed inset-0 z-50 bg-gray-950 flex flex-col items-center justify-center p-6 lg:p-12 overflow-hidden">
@@ -176,22 +192,34 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="inline-flex items-center gap-2 bg-teal-500/10 border border-teal-500/30 px-4 py-2 rounded-full mb-4"
+                  className={`inline-flex items-center gap-2 border px-4 py-2 rounded-full mb-4 ${error ? 'bg-red-500/10 border-red-500/30' : 'bg-teal-500/10 border-teal-500/30'}`}
                 >
-                  <CheckCircle2 className="w-5 h-5 text-teal-400" />
-                  <span className="text-sm font-bold text-teal-400 uppercase tracking-widest">Processamento Concluído</span>
+                  {error ? (
+                    <Bot className="w-5 h-5 text-red-400" />
+                  ) : (
+                    <CheckCircle2 className="w-5 h-5 text-teal-400" />
+                  )}
+                  <span className={`text-sm font-bold uppercase tracking-widest ${error ? 'text-red-400' : 'text-teal-400'}`}>
+                    {error ? 'Erro de Processamento' : 'Processamento Concluído'}
+                  </span>
                 </motion.div>
-                <h2 className="text-4xl font-bold text-white">Top 3 Matches Imediatos</h2>
-                <p className="text-gray-400">O sistema pré-calculou sua aderência em milissegundos.</p>
+                <h2 className="text-4xl font-bold text-white">
+                  {error ? 'Ops! Erro de Conexão' : 'Top 3 Matches Imediatos'}
+                </h2>
+                <p className="text-gray-400">
+                  {error ? 'Não conseguimos processar seus dados em tempo real. Tente atualizar a página.' : 'O sistema pré-calculou sua aderência em milissegundos.'}
+                </p>
               </div>
 
-              <MatchResultCards 
-                matches={[
-                  { title: 'Edital FACEPE IA 2026', instituicao: 'FACEPE', score: 92, justification: 'Alinhamento forte devido à sobreposição em Python e NLP detectada pela IA.' },
-                  { title: 'Bolsa Pesquisa Dados', instituicao: 'CNPq', score: 85, justification: 'Perfil atende à maturidade exigida (7.5) e compartilha áreas de Saúde Digital.' },
-                  { title: 'Inovação Tech Gov', instituicao: 'Pref. Recife', score: 78, justification: 'Afinidade identificada com o cluster de pesquisadores bem sucedidos da UFPE.' }
-                ]} 
-              />
+              {!error && (
+                <MatchResultCards 
+                  matches={matches.length > 0 ? matches : [
+                    { title: 'Edital FACEPE IA 2026', instituicao: 'FACEPE', score: 92, justification: 'Alinhamento forte devido à sobreposição em Python e NLP detectada pela IA.' },
+                    { title: 'Bolsa Pesquisa Dados', instituicao: 'CNPq', score: 85, justification: 'Perfil atende à maturidade exigida (7.5) e compartilha áreas de Saúde Digital.' },
+                    { title: 'Inovação Tech Gov', instituicao: 'Pref. Recife', score: 78, justification: 'Afinidade identificada com o cluster de pesquisadores bem sucedidos da UFPE.' }
+                  ]} 
+                />
+              )}
 
               <div className="flex items-center gap-6 mt-8">
                 <button
