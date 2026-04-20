@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bot, Cpu, Network, Zap, CheckCircle2, ArrowRight, Terminal } from 'lucide-react';
+import { Bot, Cpu, Network, Zap, CheckCircle2, ArrowRight, MessageSquare, ShieldCheck } from 'lucide-react';
 import { MiniGraphAnimation } from '../MiniGraphAnimation';
 import { MatchResultCards } from '../MatchResultCards';
 
@@ -29,31 +29,31 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
     let apiData: any = null;
 
     const logMessages = [
-      `> Iniciando protocolo de cognição para ${userName}...`,
-      `> Agente Orchestrator detectou novo nó no ecossistema.`,
-      `> ProfileAnalyzer extraindo competências via Graph-CoT...`,
-      `> Extração de dados concluída com sucesso.`,
-      `> Skills identificadas e mapeadas no grafo...`,
-      `> Calculando maturidade acadêmica com base no contexto...`,
-      `> EligibilityCalculator cruzando dados com editais ativos...`,
-      `> Sincronização de comunidades completa.`,
-      `> Ecossistema pronto para análise visual.`
+      { agent: 'orchestrator', msg: `Identificando novo nó: ${userName}` },
+      { agent: 'analyzer', msg: 'Extraindo competências via Graph-CoT...' },
+      { agent: 'analyzer', msg: 'Habilidades mapeadas com 98% de precisão.' },
+      { agent: 'knowledge', msg: 'Sincronizando arestas de conhecimento...' },
+      { agent: 'orchestrator', msg: 'Calculando maturidade acadêmica...' },
+      { agent: 'match', msg: 'Cruzando dados com editais ativos...' },
+      { agent: 'match', msg: '12 matches estratégicos detectados.' },
+      { agent: 'knowledge', msg: 'Consolidando arestas SIMILAR_TO e ELIGIBLE_FOR...' },
+      { agent: 'orchestrator', msg: 'Ecossistema individual pronto.' }
     ];
 
     let logIdx = 0;
     const logInterval = setInterval(() => {
       if (logIdx < logMessages.length) {
-        setLogs(prev => [...prev, logMessages[logIdx]]);
+        setLogs(prev => [...prev, JSON.stringify(logMessages[logIdx])]);
         logIdx++;
       }
-    }, 900);
+    }, 1200);
 
     const stepInterval = setInterval(() => {
       setCurrentStep(prev => (prev < AGENT_STEPS.length - 1 ? prev + 1 : prev));
-    }, 2500);
+    }, 2800);
 
-    // Tempo mínimo de animação de 10 segundos para efeito WOW
-    const minTimePromise = new Promise(resolve => setTimeout(resolve, 10000));
+    // Tempo mínimo de animação para imersão total
+    const minTimePromise = new Promise(resolve => setTimeout(resolve, 11000));
 
     if (apiPromise) {
       Promise.all([apiPromise, minTimePromise])
@@ -63,7 +63,6 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
         })
         .catch(err => {
           setError(err.message || 'Erro crítico no orquestrador ARIANO.');
-          // Mesmo com erro, liberamos para o usuário tentar novamente ou Dashboard
           setTimeout(() => setShowFinish(true), 2000);
         });
     }
@@ -85,99 +84,115 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
       <div className={`w-full transition-all duration-700 z-10 ${showFinish ? 'max-w-4xl' : 'max-w-7xl'}`}>
         <AnimatePresence mode="wait">
           {!showFinish ? (
-            <motion.div 
-              key="processing"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="grid grid-cols-1 lg:grid-cols-3 gap-8"
-            >
-              {/* Left Side: Visual Progress */}
-              <div className="flex flex-col justify-center space-y-8">
-                <div className="space-y-2">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex items-center gap-3 text-teal-400"
-                  >
-                    <Zap className="w-6 h-6 fill-teal-400" />
-                    <span className="text-sm font-bold tracking-widest uppercase">Processamento Ativo</span>
-                  </motion.div>
-                  <h1 className="text-4xl lg:text-5xl font-bold text-white leading-tight">
-                    A Inteligência <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-500">ARIANO</span> está processando seu perfil.
-                  </h1>
-                </div>
-
-                <div className="space-y-4">
+              <div className="lg:col-span-3 grid grid-cols-1 lg:grid-cols-4 gap-8 items-center">
+                {/* Left: Agents Status */}
+                <div className="space-y-6 flex flex-col justify-center order-2 lg:order-1">
                   {AGENT_STEPS.map((step, idx) => {
                     const Icon = step.icon;
                     const isActive = idx === currentStep;
                     const isDone = idx < currentStep;
 
                     return (
-                      <div key={step.id} className="flex items-center gap-4 relative">
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center border transition-all duration-500 ${
-                          isActive ? `bg-gray-900 border-${step.color.split('-')[1]}-500 shadow-lg shadow-${step.color.split('-')[1]}-500/20 scale-110` : 
+                      <motion.div 
+                        key={step.id} 
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: idx * 0.1 }}
+                        className={`flex items-center gap-4 p-3 rounded-2xl border transition-all duration-500 ${
+                          isActive ? `bg-gray-900/80 border-${step.color.split('-')[1]}-500/50 shadow-[0_0_20px_rgba(20,184,166,0.1)] scale-105` : 
+                          'bg-transparent border-transparent opacity-40'
+                        }`}
+                      >
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-all duration-500 ${
+                          isActive ? `bg-gray-950 border-${step.color.split('-')[1]}-500 shadow-lg` : 
                           isDone ? 'bg-teal-500/10 border-teal-500/30' : 'bg-gray-900/50 border-gray-800'
                         }`}>
-                          <Icon className={`w-6 h-6 ${isActive ? step.color : isDone ? 'text-teal-500' : 'text-gray-600'}`} />
+                          <Icon className={`w-5 h-5 ${isActive ? step.color : isDone ? 'text-teal-500' : 'text-gray-600'}`} />
                         </div>
-                        <div className="flex-1">
-                          <p className={`font-medium transition-colors duration-500 ${isActive ? 'text-white' : isDone ? 'text-teal-500' : 'text-gray-600'}`}>
-                            {step.label}
-                          </p>
-                          {isActive && (
-                            <motion.div 
-                              initial={{ width: 0 }}
-                              animate={{ width: '100%' }}
-                              transition={{ duration: 2.2 }}
-                              className="h-0.5 bg-gradient-to-r from-teal-500 to-transparent mt-1" 
-                            />
-                          )}
+                        <div>
+                           <p className={`text-xs font-bold uppercase tracking-tighter ${isActive ? 'text-white' : 'text-gray-600'}`}>Agente {step.id}</p>
+                           <p className={`text-[10px] ${isActive ? 'text-teal-400' : 'text-gray-600'}`}>{isActive ? 'Ativo' : isDone ? 'Finalizado' : 'Aguardando'}</p>
                         </div>
-                        {isDone && (
-                          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
-                            <CheckCircle2 className="w-5 h-5 text-teal-500" />
-                          </motion.div>
-                        )}
-                      </div>
+                      </motion.div>
                     );
                   })}
                 </div>
-              </div>
 
-              {/* Center: Mini Graph Animation */}
-              <div className="flex items-center justify-center">
-                 <MiniGraphAnimation step={currentStep} />
-              </div>
+                {/* Center: Graph (Hero) */}
+                <div className="lg:col-span-2 flex flex-col items-center justify-center order-1 lg:order-2">
+                   <div className="relative w-full aspect-square max-w-[500px]">
+                      <MiniGraphAnimation step={currentStep} />
+                      
+                      {/* Floating Dialogue Bubbles */}
+                      <AnimatePresence>
+                        {logs.length > 0 && (
+                          <motion.div
+                            key={logs.length}
+                            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.8, y: -20 }}
+                            className="absolute -top-10 left-1/2 -translate-x-1/2 w-full max-w-[300px] z-20"
+                          >
+                            <div className="bg-gray-900/90 backdrop-blur-xl border border-teal-500/30 p-4 rounded-2xl shadow-2xl relative">
+                              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-gray-900 border-r border-b border-teal-500/30 rotate-45" />
+                              <div className="flex items-center gap-2 mb-2">
+                                {(() => {
+                                  try {
+                                    const lastLog = JSON.parse(logs[logs.length - 1]);
+                                    const agent = AGENT_STEPS.find(a => a.id === lastLog.agent) || AGENT_STEPS[0];
+                                    const Icon = agent.icon;
+                                    return (
+                                      <>
+                                        <Icon className={`w-3 h-3 ${agent.color}`} />
+                                        <span className="text-[10px] font-bold text-white uppercase tracking-widest">{agent.label}</span>
+                                      </>
+                                    );
+                                  } catch (e) {
+                                    return <MessageSquare className="w-3 h-3 text-teal-400" anchor="center" />;
+                                  }
+                                })()}
+                              </div>
+                              <p className="text-xs text-gray-300 leading-relaxed italic">
+                                "{JSON.parse(logs[logs.length - 1]).msg}"
+                              </p>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                   </div>
+                </div>
 
-              {/* Right Side: Terminal Log */}
-              <div className="relative group flex flex-col justify-center">
-                <div className="absolute inset-0 bg-gradient-to-br from-teal-500/20 to-blue-500/20 rounded-2xl blur-xl transition-opacity animate-pulse" />
-                <div className="relative bg-gray-900/80 backdrop-blur-xl border border-gray-800 rounded-2xl h-[450px] flex flex-col overflow-hidden shadow-2xl">
-                  <div className="p-4 border-b border-gray-800 bg-gray-900/50 flex items-center gap-2">
-                    <Terminal className="w-4 h-4 text-gray-400" />
-                    <span className="text-xs font-mono text-gray-400">ariano-cognition-logs.sh</span>
-                    <div className="flex gap-1.5 ml-auto">
-                      <div className="w-2.5 h-2.5 rounded-full bg-red-500/50" />
-                      <div className="w-2.5 h-2.5 rounded-full bg-amber-500/50" />
-                      <div className="w-2.5 h-2.5 rounded-full bg-teal-500/50" />
-                    </div>
-                  </div>
-                  <div className="p-4 font-mono text-sm overflow-y-auto space-y-2 scrollbar-hide flex flex-col-reverse h-full">
-                    <div className="flex flex-col-reverse">
-                      {[...logs].reverse().map((log, i) => (
-                        <motion.p
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          key={i}
-                          className={`${log.startsWith('>') ? 'text-teal-500' : 'text-gray-400'} leading-relaxed`}
-                        >
-                          {log}
-                        </motion.p>
-                      ))}
-                    </div>
-                  </div>
+                {/* Right: AI Communication Signals */}
+                <div className="flex flex-col justify-center space-y-4 order-3">
+                   <div className="p-6 bg-gray-900/40 border border-border/10 rounded-3xl backdrop-blur-md">
+                      <div className="flex items-center gap-3 text-teal-400 mb-4">
+                         <Zap className="w-5 h-5 fill-teal-400" />
+                         <span className="text-xs font-bold uppercase tracking-widest">Cognição Ativa</span>
+                      </div>
+                      <h3 className="text-xl font-bold text-white mb-2 leading-tight">O ARIANO está sincronizando sua rede.</h3>
+                      <p className="text-xs text-gray-400 leading-relaxed">
+                        Nossos agentes de IA estão interpretando seu perfil e cruzando as arestas do ecossistema para identificar elegibilidade estratégica.
+                      </p>
+                      
+                      <div className="mt-6 space-y-3">
+                         <div className="flex items-center justify-between text-[10px]">
+                            <span className="text-gray-500">Sincronização de Grafo</span>
+                            <span className="text-teal-400 font-mono">{Math.min(100, (currentStep + 1) * 25)}%</span>
+                         </div>
+                         <div className="w-full h-1 bg-gray-800 rounded-full overflow-hidden">
+                            <motion.div 
+                              initial={{ width: 0 }}
+                              animate={{ width: `${(currentStep + 1) * 25}%` }}
+                              className="h-full bg-gradient-to-r from-teal-500 to-blue-500"
+                            />
+                         </div>
+                      </div>
+                   </div>
+
+                   <div className="p-4 bg-teal-500/5 border border-teal-500/10 rounded-2xl flex items-center gap-3">
+                      <ShieldCheck className="w-5 h-5 text-teal-500/50" />
+                      <span className="text-[10px] text-gray-500 italic">Protocolo Graph-CoT operando em ambiente segurado.</span>
+                   </div>
                 </div>
               </div>
             </motion.div>

@@ -312,8 +312,9 @@ Usuário se cadastra em /user/cadastro
       → Scoring: skills(40%) + area(25%) + maturidade(15%) + priority(10%) + context(10%)
       → o_que_busco como bônus (não eliminatório)
       → Cria arestas ELIGIBLE_FOR com score e justificativa
-  → Grafo na UI anima mostrando as novas conexões sendo criadas
-  → Usuário vê seus matches com scores e justificativas
+  → **Diálogo entre Agentes:** A interface exibe a "conversa" entre os agentes especialistas, humanizando o processo cognitivo.
+  → **Grafo Vivo:** O grafo atua como o coração visual, expandindo-se e criando conexões de luz (neon) à medida que a IA valida as informações.
+  → Usuário vê seus matches com scores e justificativas após a imersão cognitiva.
 ```
 
 #### FASE 2 — Enriquecimento Contínuo (Comunidades de Pensamento)
