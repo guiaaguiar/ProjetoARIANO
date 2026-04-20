@@ -17,6 +17,20 @@ const AGENT_STEPS = [
   { id: 'match', label: 'Calculando Matches Estratégicos (Eligibility)', icon: Zap, color: 'text-amber-400' },
 ];
 
+const AGENT_COLORS: Record<string, string> = {
+  orchestrator: 'border-teal-500/50 shadow-[0_0_20px_rgba(20,184,166,0.1)]',
+  analyzer: 'border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.1)]',
+  knowledge: 'border-purple-500/50 shadow-[0_0_20px_rgba(168,85,247,0.1)]',
+  match: 'border-amber-500/50 shadow-[0_0_20px_rgba(245,158,11,0.1)]',
+};
+
+const AGENT_ICON_COLORS: Record<string, string> = {
+  orchestrator: 'bg-gray-950 border-teal-500 shadow-teal-500/20',
+  analyzer: 'bg-gray-950 border-blue-500 shadow-blue-500/20',
+  knowledge: 'bg-gray-950 border-purple-500 shadow-purple-500/20',
+  match: 'bg-gray-950 border-amber-500 shadow-amber-500/20',
+};
+
 export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userName, apiPromise, onComplete }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [logs, setLogs] = useState<string[]>([]);
@@ -25,9 +39,11 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log("🚀 ARIANO: Cognition Experience v2.0 (No-Console Edition) Initialized.");
     let animationDone = false;
     let apiData: any = null;
-
+    
+    // Logs estruturados para diálogo
     const logMessages = [
       { agent: 'orchestrator', msg: `Identificando novo nó: ${userName}` },
       { agent: 'analyzer', msg: 'Extraindo competências via Graph-CoT...' },
@@ -46,13 +62,13 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
         setLogs(prev => [...prev, JSON.stringify(logMessages[logIdx])]);
         logIdx++;
       }
-    }, 1200);
+    }, 1400);
 
     const stepInterval = setInterval(() => {
       setCurrentStep(prev => (prev < AGENT_STEPS.length - 1 ? prev + 1 : prev));
-    }, 2800);
+    }, 3200);
 
-    // Tempo mínimo de animação para imersão total
+    // Tempo mínimo de animação para imersão total (11s)
     const minTimePromise = new Promise(resolve => setTimeout(resolve, 11000));
 
     if (apiPromise) {
@@ -62,6 +78,7 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
           setShowFinish(true);
         })
         .catch(err => {
+          console.error("❌ ARIANO: Critical Error in Cognition Pipeline:", err);
           setError(err.message || 'Erro crítico no orquestrador ARIANO.');
           setTimeout(() => setShowFinish(true), 2000);
         });
@@ -84,7 +101,13 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
       <div className={`w-full transition-all duration-700 z-10 ${showFinish ? 'max-w-4xl' : 'max-w-7xl'}`}>
         <AnimatePresence mode="wait">
           {!showFinish ? (
-              <div className="lg:col-span-3 grid grid-cols-1 lg:grid-cols-4 gap-8 items-center">
+            <motion.div 
+              key="processing"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="lg:col-span-3 grid grid-cols-1 lg:grid-cols-4 gap-8 items-center"
+            >
                 {/* Left: Agents Status */}
                 <div className="space-y-6 flex flex-col justify-center order-2 lg:order-1">
                   {AGENT_STEPS.map((step, idx) => {
@@ -99,12 +122,12 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: idx * 0.1 }}
                         className={`flex items-center gap-4 p-3 rounded-2xl border transition-all duration-500 ${
-                          isActive ? `bg-gray-900/80 border-${step.color.split('-')[1]}-500/50 shadow-[0_0_20px_rgba(20,184,166,0.1)] scale-105` : 
+                          isActive ? `bg-gray-900/80 ${AGENT_COLORS[step.id]} scale-105` : 
                           'bg-transparent border-transparent opacity-40'
                         }`}
                       >
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-all duration-500 ${
-                          isActive ? `bg-gray-950 border-${step.color.split('-')[1]}-500 shadow-lg` : 
+                          isActive ? `${AGENT_ICON_COLORS[step.id]} shadow-lg` : 
                           isDone ? 'bg-teal-500/10 border-teal-500/30' : 'bg-gray-900/50 border-gray-800'
                         }`}>
                           <Icon className={`w-5 h-5 ${isActive ? step.color : isDone ? 'text-teal-500' : 'text-gray-600'}`} />
