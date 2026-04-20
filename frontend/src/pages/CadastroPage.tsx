@@ -4,13 +4,23 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, ArrowRight, UploadCloud, FileText, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 import { CognitionExperience } from '../components/layout/CognitionExperience';
+import { useAuthStore } from '../store/authStore';
+import { useEffect } from 'react';
 
 export const CadastroPage: React.FC = () => {
+  const { isAuthenticated, isLoading } = useAuthStore();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [showCognition, setShowCognition] = useState(false);
   const [apiPromise, setApiPromise] = useState<Promise<any> | null>(null);
   const navigate = useNavigate();
+
+  // Bloqueio de acesso se já estiver logado
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      navigate('/user');
+    }
+  }, [isAuthenticated, isLoading, navigate]);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -285,7 +295,7 @@ export const CadastroPage: React.FC = () => {
             userName={formData.name || 'Acadêmico'} 
             apiPromise={apiPromise}
             onComplete={() => {
-              window.location.href = '/user/ecossistema';
+              window.location.href = '/user'; // Redireciona para o Dashboard (Perfil)
             }} 
           />
         )}

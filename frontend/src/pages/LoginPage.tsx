@@ -11,9 +11,19 @@ export const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { setUser } = useAuthStore();
+  const { setUser, isAuthenticated, isLoading, user } = useAuthStore();
 
   const from = location.state?.from?.pathname || '/';
+
+  React.useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      if (user?.type === 'admin') {
+        navigate('/admin', { replace: true });
+      } else {
+        navigate('/user', { replace: true });
+      }
+    }
+  }, [isAuthenticated, isLoading, user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
