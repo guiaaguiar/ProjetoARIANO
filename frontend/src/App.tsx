@@ -11,6 +11,7 @@ import { CadastroPage } from './pages/CadastroPage';
 import UserDashboard from './pages/UserDashboard';
 import UserLayout from './components/layout/UserLayout';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import UserMatchesPage from './pages/UserMatchesPage';
 import { useAuthStore } from './store/authStore';
 import { useEffect } from 'react';
 
@@ -49,7 +50,7 @@ export default function App() {
         <Route element={<ProtectedRoute allowedRoles={['student', 'researcher', 'professor']} />}>
           <Route path="/user" element={<UserLayout />}>
             <Route index element={<UserDashboard />} />
-            <Route path="matches" element={<UserPlaceholder title="Meus Matches" />} />
+            <Route path="matches" element={<UserMatchesPage />} />
             <Route path="ecossistema" element={<UserPlaceholder title="Meu Ecossistema" />} />
             <Route path="comunidades" element={<UserPlaceholder title="Comunidades de Pensamento" />} />
           </Route>
