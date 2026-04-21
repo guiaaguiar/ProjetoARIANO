@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Bot, Cpu, Network, Zap, CheckCircle2, ArrowRight, MessageSquare, ShieldCheck } from 'lucide-react';
 import { MiniGraphAnimation } from '../MiniGraphAnimation';
 import { MatchResultCards } from '../MatchResultCards';
+import { useAuthStore } from '../../store/authStore';
 
 interface CognitionExperienceProps {
   userName: string;
@@ -32,6 +33,7 @@ const AGENT_ICON_COLORS: Record<string, string> = {
 };
 
 export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userName, apiPromise, onComplete }) => {
+  const { setCachedMatches } = useAuthStore();
   const [currentStep, setCurrentStep] = useState(0);
   const [logs, setLogs] = useState<string[]>([]);
   const [showFinish, setShowFinish] = useState(false);
@@ -73,8 +75,21 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
 
     if (apiPromise) {
       Promise.all([apiPromise, minTimePromise])
-        .then(([result]) => {
-          setMatches(result.topMatches || []);
+        .then(async ([result]) => {
+          // Se o backend retornou matches, salva. 
+          // Se não (comum em background tasks), tentamos uma busca rápida pelo uid
+          let finalMatches = result.topMatches || [];
+          
+          if (finalMatches.length === 0 && result.uid) {
+             try {
+               const fresh = await api.getMatches(result.uid, 0.3);
+               finalMatches = fresh;
+             } catch(e) { /* silent fail */ }
+          }
+          
+          setMatches(finalMatches);
+          setCachedMatches(finalMatches);
+          
           // Transição automática para o sucesso
           setTimeout(() => setShowFinish(true), 1000);
         })

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 import { Trophy, Search, Cpu } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import * as api from '../lib/api';
@@ -8,8 +8,8 @@ import type { Match } from '../types';
 import { MatchResultCards } from '../components/MatchResultCards';
 
 export default function UserMatchesPage() {
-  const user = useAuthStore(state => state.user);
-  const [matches, setMatches] = useState<Match[]>([]);
+  const { user, cachedMatches } = useAuthStore();
+  const [matches, setMatches] = useState<Match[]>(cachedMatches.length > 0 ? cachedMatches : []);
   const [loading, setLoading] = useState(true);
   const [threshold, setThreshold] = useState(0.4); // Start with 40%
 

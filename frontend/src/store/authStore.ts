@@ -12,17 +12,21 @@ interface AuthState {
   isLoading: boolean;
   setUser: (user: User | null) => void;
   setLoading: (isLoading: boolean) => void;
+  setCachedMatches: (matches: any[]) => void;
   logout: () => void;
   checkAuth: () => Promise<void>;
+  cachedMatches: any[];
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isAuthenticated: false,
   isLoading: true,
+  cachedMatches: [],
   setUser: (user) => set({ user, isAuthenticated: !!user, isLoading: false }),
   setLoading: (isLoading) => set({ isLoading }),
-  logout: () => set({ user: null, isAuthenticated: false, isLoading: false }),
+  setCachedMatches: (matches) => set({ cachedMatches: matches }),
+  logout: () => set({ user: null, isAuthenticated: false, isLoading: false, cachedMatches: [] }),
   checkAuth: async () => {
     try {
       const res = await fetch('/api/auth/me', {
