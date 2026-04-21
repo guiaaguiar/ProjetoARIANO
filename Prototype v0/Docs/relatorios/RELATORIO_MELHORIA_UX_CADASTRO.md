@@ -1,25 +1,19 @@
 # Relatório de Melhoria UX: Experiência de Cognição ARIANO
 
 **Data:** 20/04/2026
-**Status:** Implementação Concluída (Aguardando Propagação no Deploy)
+**Status:** ✅ Homologado e Publicado (Cinematic Edition v2.1)
 **Objetivo:** Elevar a percepção de valor e imersão durante o fluxo de cadastro, eliminando ruídos técnicos e focando na inteligência visual e dialógica dos agentes de IA.
 
 ---
 
 ## 1. Mudanças Implementadas no Código
 
-### 1.1 Redesenho da Interface `CognitionExperience.tsx`
-- **Remoção do Terminal Técnico**: O console que exibia logs estilo shell (`> Iniciando protocolo...`) foi removido para evitar poluição visual e uma estética excessivamente técnica para o usuário final.
-- **Implementação do Diálogo entre Agentes**: 
-    - As mensagens de log agora são estruturadas como objetos `{ agent, msg }`.
-    - Foi adicionado um componente de **Balão de Diálogo (Bubble)** flutuante sobre o grafo.
-    - Cada balão identifica o agente que está "falando" (Orquestrador, Analisador, etc.) e sua mensagem, humanizando o processo cognitivo.
-- **Centralização do Grafo (Hero Section)**:
-    - O grafo foi movido para o centro e teve seu tamanho aumentado.
-    - Ele agora serve como o "coração" da animação, com os agentes orbitando ou enviando sinais para ele.
-- **Novo Layout de Sinais de Cognição**:
-    - À direita, incluí um painel de "Cognição Ativa" com uma barra de progresso de sincronização que reflete o avanço real/simulado dos agentes.
-    - Adicionado selo de "Protocolo Graph-CoT" para reforçar a fundamentação teórica sem quebrar a estética Blue Neon.
+### 1.1 Redesenho da Interface `CognitionExperience.tsx` (Cinematic Edition)
+- **Eliminação Total de Texto Técnico**: Removidos todos os logs e balões de diálogo que pudessem remeter a um "console".
+- **Visualização de Órbita de Agentes**: Os agentes agora orbitam o grafo central em uma composição visual harmônica, utilizando ícones e indicadores de luz (Glows) para sinalizar atividade.
+- **Correção da Tela Preta**: Resolvido erro de referência em `SCREEN_WIDTH` que impedia o carregamento do componente em determinados dispositivos.
+- **Navegação Fluida**: Implementação do hook `useNavigate` para transição imediata e sem recarregamento para o Dashboard (/user).
+- **Linguagem Humanizada**: Títulos e botões focados em "Exploração" e "Futuro", reduzindo o atrito cognitivo.
 
 ### 1.2 Lógica de Proteção e Redirecionamento
 - **Bloqueio de Re-cadastro**: Implementamos um `useEffect` na `CadastroPage` e `LoginPage` que verifica o cookie de autenticação. Usuários já logados são impedidos de ver o formulário de cadastro, sendo redirecionados para `/user`.
