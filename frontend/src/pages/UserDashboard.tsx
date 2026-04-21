@@ -15,6 +15,7 @@ import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
 import * as api from '../lib/api';
 import type { Match, Edital } from '../types';
+import { UserDashboardGraph } from '../components/UserDashboardGraph';
 
 export default function UserDashboard() {
   const { user } = useAuthStore();
@@ -163,28 +164,9 @@ export default function UserDashboard() {
           </div>
           
           <div className="aspect-square rounded-3xl bg-gray-900/60 border border-teal-500/10 relative overflow-hidden group">
-            {/* Mock Graph Visualization */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-16 h-16 rounded-full bg-teal-500 shadow-[0_0_30px_rgba(45,212,191,0.4)] flex items-center justify-center animate-pulse z-10">
-                <img src="/Coreto_LOGO.png" className="w-8 h-8 opacity-80" alt="ME" />
-              </div>
-              
-              {/* Orbitals / Nodes */}
-              {[...Array(6)].map((_, i) => (
-                <div 
-                  key={i} 
-                  className="absolute w-3 h-3 rounded-full bg-teal-400/50 border border-teal-400/80"
-                  style={{
-                    transform: `rotate(${i * 60}deg) translate(80px) rotate(-${i * 60}deg)`,
-                    animation: `pulse 2s ease-in-out ${i * 0.3}s infinite`
-                  }}
-                />
-              ))}
-              
-              {/* Connection Lines (SVG) */}
-              <svg className="absolute inset-0 w-full h-full opacity-20">
-                <circle cx="50%" cy="50%" r="80" fill="none" stroke="currentColor" strokeWidth="0.5" className="text-teal-500" strokeDasharray="4 4" />
-              </svg>
+            {/* Real Graph Visualization */}
+            <div className="absolute inset-0">
+               <UserDashboardGraph />
             </div>
             
             <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-transparent to-transparent opacity-60" />

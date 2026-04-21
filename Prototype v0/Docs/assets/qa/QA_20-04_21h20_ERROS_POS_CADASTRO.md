@@ -1,7 +1,7 @@
 # Relatório de QA — Anomalias Pós-Cadastro ARIANO
 
-**Data/Hora:** 20/04/2026 — 21h20
-**Status:** ✅ RESOLVIDO (Hotfix v2.2)
+**Data/Hora:** 20/04/2026 — 21h25
+**Status:** ✅ RESOLVIDO (Hotfix v2.3 Gold Edition)
 
 ---
 
@@ -24,9 +24,10 @@
 
 ## 2. Pontos de Melhoria Imediata (Fix Checklist)
 
-- [x] **Persistência de Matches**: Implementado botão de "Sincronização Manual" em `/user/matches` para casos onde o background task da IA demore mais que o esperado.
+- [x] **Persistência de Matches**: Implementado botão de "Sincronização Manual" em `/user/matches`.
 - [x] **Implementação do Ecossistema**: Criada a página real `UserEcosystemPage.tsx` com visualização de grafo individual.
 - [x] **Lógica de Comunidades**: Criada a página real `UserCommunitiesPage.tsx` com visualização de clusters estratégicos.
+- [x] **Grafo do Dashboard Real**: Removida a animação mockada do `UserDashboard.tsx` e substituída pelo `UserDashboardGraph.tsx`, que consome dados reais da API `/api/graph`.
 
 ---
 
