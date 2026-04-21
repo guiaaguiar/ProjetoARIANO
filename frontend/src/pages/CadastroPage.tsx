@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, ArrowRight, UploadCloud, FileText, Settings } from 'lucide-react';
 import { toast } from 'sonner';
@@ -295,7 +295,7 @@ export const CadastroPage: React.FC = () => {
             userName={formData.name || 'Acadêmico'} 
             apiPromise={apiPromise}
             onComplete={() => {
-              window.location.href = '/user'; // Redireciona para o Dashboard (Perfil)
+              navigate('/user', { replace: true });
             }} 
           />
         )}
