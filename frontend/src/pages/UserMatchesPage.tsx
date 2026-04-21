@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { toast } from 'react-hot-toast';
 import { Trophy, Search, Cpu } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import * as api from '../lib/api';
@@ -11,6 +12,22 @@ export default function UserMatchesPage() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   const [threshold, setThreshold] = useState(0.4); // Start with 40%
+
+  const handleRecalculate = async () => {
+    if (!user?.uid) return;
+    setLoading(true);
+    try {
+      await api.calculateMatches({ entity_uid: user.uid });
+      const data = await api.getMatches(user.uid, threshold);
+      setMatches(data);
+      toast.success('IA finalizou a análise do seu perfil!');
+    } catch (err) {
+      console.error('Erro ao recalcular:', err);
+      toast.error('O Orquestrador está ocupado agora, tente novamente em instantes.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!user?.uid) return;
@@ -102,7 +119,26 @@ export default function UserMatchesPage() {
             </div>
           )}
           
-          <MatchResultCards matches={matchResultData} />
+          {matches.length === 0 && !loading && (
+            <div className="flex flex-col items-center justify-center p-12 bg-gray-900/20 border border-dashed border-gray-800 rounded-3xl text-center space-y-6">
+               <Cpu className="w-12 h-12 text-teal-500/40" />
+               <div className="space-y-2">
+                 <h3 className="text-xl font-bold text-white">Análise em Processamento</h3>
+                 <p className="text-sm text-gray-500 max-w-sm">
+                   Nossos agentes de IA ainda estão mapeando suas arestas no ecossistema. 
+                   Isso pode levar alguns instantes após o cadastro.
+                 </p>
+               </div>
+               <button 
+                 onClick={handleRecalculate}
+                 className="px-6 py-3 bg-teal-600 hover:bg-teal-500 text-white rounded-xl font-bold text-xs uppercase tracking-widest transition-all shadow-lg shadow-teal-500/20"
+               >
+                 Sincronizar Inteligência Agora
+               </button>
+            </div>
+          )}
+          
+          {matches.length > 0 && <MatchResultCards matches={matchResultData} />}
           
           {matches.length > 0 && (
             <p className="text-center text-text-muted text-[11px] mt-12 max-w-sm mx-auto leading-relaxed">

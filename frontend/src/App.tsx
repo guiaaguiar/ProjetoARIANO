@@ -12,6 +12,8 @@ import UserDashboard from './pages/UserDashboard';
 import UserLayout from './components/layout/UserLayout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import UserMatchesPage from './pages/UserMatchesPage';
+import UserEcosystemPage from './pages/UserEcosystemPage';
+import UserCommunitiesPage from './pages/UserCommunitiesPage';
 import { useAuthStore } from './store/authStore';
 import { useEffect } from 'react';
 
@@ -51,8 +53,8 @@ export default function App() {
           <Route path="/user" element={<UserLayout />}>
             <Route index element={<UserDashboard />} />
             <Route path="matches" element={<UserMatchesPage />} />
-            <Route path="ecossistema" element={<UserPlaceholder title="Meu Ecossistema" />} />
-            <Route path="comunidades" element={<UserPlaceholder title="Comunidades de Pensamento" />} />
+            <Route path="ecossistema" element={<UserEcosystemPage />} />
+            <Route path="comunidades" element={<UserCommunitiesPage />} />
           </Route>
         </Route>
 
