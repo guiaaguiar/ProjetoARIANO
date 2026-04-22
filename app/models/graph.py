@@ -30,7 +30,7 @@ class HasSkillRel(StructuredRel):
     """Edge: (Academia)-[:HAS_SKILL]->(Skill)."""
 
     confidence = FloatProperty(default=0.0)
-    source = StringProperty(default="manual")
+    provenance = StringProperty(default="manual")
     created_at = DateTimeProperty(default_now=True)
 
 
@@ -38,7 +38,7 @@ class RequiresSkillRel(StructuredRel):
     """Edge: (Edital)-[:REQUIRES_SKILL]->(Skill)."""
 
     priority = StringProperty(default="desirable")  # essential, desirable, optional
-    source = StringProperty(default="manual")
+    provenance = StringProperty(default="manual")
     created_at = DateTimeProperty(default_now=True)
 
 
@@ -56,14 +56,14 @@ class EligibleForRel(StructuredRel):
 class ResearchesAreaRel(StructuredRel):
     """Edge: (Academia)-[:RESEARCHES_AREA]->(Area)."""
 
-    source = StringProperty(default="manual")
+    provenance = StringProperty(default="manual")
     created_at = DateTimeProperty(default_now=True)
 
 
 class TargetsAreaRel(StructuredRel):
     """Edge: (Edital)-[:TARGETS_AREA]->(Area)."""
 
-    source = StringProperty(default="manual")
+    provenance = StringProperty(default="manual")
     created_at = DateTimeProperty(default_now=True)
 
 

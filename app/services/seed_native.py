@@ -265,11 +265,11 @@ def _seed_to_memory(store) -> dict:
         for sk in s["skills"]:
             if sk in skill_uids:
                 store.add_edge(uid, skill_uids[sk], "HAS_SKILL",
-                               {"confidence": 0.85, "source": "seed"})
+                               {"confidence": 0.85, "provenance": "seed"})
         for area in s.get("areas", []):
             if area in area_uids:
                 store.add_edge(uid, area_uids[area], "RESEARCHES_AREA",
-                               {"source": "seed"})
+                               {"provenance": "seed"})
     print(f"  ✅ {len(STUDENTS)} students")
 
     # Researchers
@@ -282,11 +282,11 @@ def _seed_to_memory(store) -> dict:
         for sk in r["skills"]:
             if sk in skill_uids:
                 store.add_edge(uid, skill_uids[sk], "HAS_SKILL",
-                               {"confidence": 0.9, "source": "seed"})
+                               {"confidence": 0.9, "provenance": "seed"})
         for area in r.get("areas", []):
             if area in area_uids:
                 store.add_edge(uid, area_uids[area], "RESEARCHES_AREA",
-                               {"source": "seed"})
+                               {"provenance": "seed"})
     print(f"  ✅ {len(RESEARCHERS)} researchers")
 
     # Professors
@@ -301,11 +301,11 @@ def _seed_to_memory(store) -> dict:
         for sk in p["skills"]:
             if sk in skill_uids:
                 store.add_edge(uid, skill_uids[sk], "HAS_SKILL",
-                               {"confidence": 0.95, "source": "seed"})
+                               {"confidence": 0.95, "provenance": "seed"})
         for area in p.get("areas", []):
             if area in area_uids:
                 store.add_edge(uid, area_uids[area], "RESEARCHES_AREA",
-                               {"source": "seed"})
+                               {"provenance": "seed"})
     print(f"  ✅ {len(PROFESSORS)} professors")
 
     # Editais
@@ -320,11 +320,11 @@ def _seed_to_memory(store) -> dict:
         for sk in e["required_skills"]:
             if sk in skill_uids:
                 store.add_edge(uid, skill_uids[sk], "REQUIRES_SKILL",
-                               {"priority": "essential", "source": "seed"})
+                               {"priority": "essential", "provenance": "seed"})
         for area in e["target_areas"]:
             if area in area_uids:
                 store.add_edge(uid, area_uids[area], "TARGETS_AREA",
-                               {"source": "seed"})
+                               {"provenance": "seed"})
     print(f"  ✅ {len(EDITAIS)} editais")
 
     total_nodes = store.count_nodes()
@@ -375,13 +375,13 @@ def _seed_to_neo4j() -> dict:
             if sk in skill_uids:
                 run_cypher("""
                     MATCH (a {uid: $uid}), (s:Skill {name: $skill})
-                    MERGE (a)-[:HAS_SKILL {confidence: $conf, source: 'seed'}]->(s)
+                    MERGE (a)-[:HAS_SKILL {confidence: $conf, provenance: 'seed'}]->(s)
                 """, {"uid": uid, "skill": sk, "conf": confidence})
         for area in areas:
             if area in area_uids:
                 run_cypher("""
                     MATCH (a {uid: $uid}), (ar:Area {name: $area})
-                    MERGE (a)-[:RESEARCHES_AREA {source: 'seed'}]->(ar)
+                    MERGE (a)-[:RESEARCHES_AREA {provenance: 'seed'}]->(ar)
                 """, {"uid": uid, "area": area})
 
     for s in STUDENTS:
@@ -414,13 +414,13 @@ def _seed_to_neo4j() -> dict:
             if sk in skill_uids:
                 run_cypher("""
                     MATCH (e:Edital {uid: $uid}), (s:Skill {name: $skill})
-                    MERGE (e)-[:REQUIRES_SKILL {priority: 'essential', source: 'seed'}]->(s)
+                    MERGE (e)-[:REQUIRES_SKILL {priority: 'essential', provenance: 'seed'}]->(s)
                 """, {"uid": uid, "skill": sk})
         for area in areas:
             if area in area_uids:
                 run_cypher("""
                     MATCH (e:Edital {uid: $uid}), (a:Area {name: $area})
-                    MERGE (e)-[:TARGETS_AREA {source: 'seed'}]->(a)
+                    MERGE (e)-[:TARGETS_AREA {provenance: 'seed'}]->(a)
                 """, {"uid": uid, "area": area})
     print(f"  ✅ {len(EDITAIS)} editais")
 

@@ -182,7 +182,7 @@ def _handle_merge(query: str, params: dict, store: MemoryGraphStore) -> list[dic
         if source_uid and target_uid:
             edge_props = {}
             # Extract SET properties from params
-            for key in ["confidence", "priority", "source", "score",
+            for key in ["confidence", "priority", "provenance", "source", "score",
                         "matched_skills", "matched_areas", "justification",
                         "calculated_by"]:
                 if key in params:
