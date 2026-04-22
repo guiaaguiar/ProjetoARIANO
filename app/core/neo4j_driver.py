@@ -428,7 +428,7 @@ def get_driver():
             import os
             
             # Detecção de ambiente Vercel/Produção
-            is_vercel = os.environ.get("VERCEL") == "1"
+            is_vercel = os.environ.get("VERCEL") is not None
             is_localhost = "localhost" in settings.neo4j_uri or "127.0.0.1" in settings.neo4j_uri
 
             if is_vercel and is_localhost:
@@ -475,7 +475,9 @@ def close_driver():
 
 
 def is_memory_mode() -> bool:
-    """Check if we're using in-memory fallback."""
+    """Check if we're using in-memory fallback. Initializes if needed."""
+    if not _use_memory and _driver is None:
+        get_driver()
     return _use_memory
 
 
