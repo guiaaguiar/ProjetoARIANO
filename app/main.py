@@ -31,15 +31,9 @@ async def lifespan(app: FastAPI):
     from app.core.neo4j_driver import is_memory_mode
 
     if is_memory_mode():
-        logger.info("📦 Memory mode — auto-seeding graph data...")
+        logger.info("📦 Memory mode detected — seeding will occur on first request if needed")
         from app.services.seed_native import seed_native
-        from app.agents.eligibility_calculator import EligibilityCalculator
-        seed_native()
-        logger.info("📦 Computing native ELIGIBLE_FOR matches...")
-        calc = EligibilityCalculator()
-        calc.llm = None  # Disable LLM calls to prevent blocking backend startup
-        calc.calculate_all_matches()
-        logger.info("✅ In-memory graph seeded and ready")
+        seed_native() # Still seed once at startup if possible
     else:
         logger.info("✅ Neo4j connection initialized")
 

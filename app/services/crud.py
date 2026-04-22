@@ -669,6 +669,10 @@ def get_matches(entity_uid: str | None = None, threshold: float = 0.0) -> list[M
 def get_graph_data(enriched: bool = True) -> GraphData:
     """Get full graph data for visualization."""
     if is_memory_mode():
+        store = get_memory_store()
+        if store.count_nodes() == 0:
+            from app.services.seed_native import seed_native
+            seed_native()
         data = _get_graph_data_memory()
     else:
         data = _get_graph_data_neo4j()
@@ -778,6 +782,10 @@ def _get_graph_data_neo4j() -> GraphData:
 def get_dashboard_stats() -> DashboardStats:
     if is_memory_mode():
         store = get_memory_store()
+        if store.count_nodes() == 0:
+            from app.services.seed_native import seed_native
+            seed_native()
+        
         edges = store.get_edges(edge_type="ELIGIBLE_FOR")
         scores = [e["props"].get("score", 0) for e in edges]
         return DashboardStats(

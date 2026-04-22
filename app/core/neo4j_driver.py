@@ -263,47 +263,37 @@ def _handle_match_return(query: str, params: dict, store: MemoryGraphStore) -> l
     if "COUNT(S)" in q or "COUNT(A)" in q:
         return [{"total": 0}]
 
-    # Academic entities query
-    if ("STUDENT" in q or "RESEARCHER" in q or "PROFESSOR" in q) and "RETURN" in q and not any(k in q for k in ["HAS_SKILL", "REQUIRES_SKILL", "TARGETS_AREA", "RESEARCHES_AREA", "ELIGIBLE_FOR"]):
+    # Academic and Edital entities query
+    if ("STUDENT" in q or "RESEARCHER" in q or "PROFESSOR" in q or "EDITAL" in q) and "RETURN" in q and not any(k in q for k in ["HAS_SKILL", "REQUIRES_SKILL", "TARGETS_AREA", "RESEARCHES_AREA", "ELIGIBLE_FOR"]):
         results = []
-        for label in ["Student", "Researcher", "Professor"]:
-            if label.upper() in q:
-                for node in store.get_nodes_by_label(label):
-                    # Filter by uid if provided
-                    uid_param = params.get("uid") or params.get("entity_uid")
-                    if uid_param and node.get("uid") != uid_param:
-                        continue
-                    n = store.nodes.get(node["uid"], {})
-                    results.append({
-                        "uid": node.get("uid"),
-                        "name": node.get("name"),
-                        "type": label,
-                        "level": node.get("level"),
-                        "institution": node.get("institution"),
-                        "bio": node.get("bio"),
-                        "course": node.get("course"),
-                    })
-        if not results and "STUDENT" not in q and "RESEARCHER" not in q:
-            pass  # not an academic query
-        return results
-
-    # Edital query
-    if "EDITAL" in q and "ELIGIBLE_FOR" not in q and not any(k in q for k in ["HAS_SKILL", "REQUIRES_SKILL", "TARGETS_AREA", "RESEARCHES_AREA", "ENTITY_LEVEL", "A.LEVEL", "ESSENTIAL"]):
-        uid = params.get("uid")
-        results = []
-        for node in store.get_nodes_by_label("Edital"):
-            if uid and node.get("uid") != uid:
-                continue
-            results.append({
-                "uid": node.get("uid"),
-                "title": node.get("title"),
-                "description": node.get("description"),
-                "agency": node.get("agency"),
-                "edital_type": node.get("edital_type"),
-                "funding": node.get("funding"),
-                "min_level": node.get("min_level"),
-                "status": node.get("status", "aberto"),
-            })
+        labels_to_check = []
+        if "STUDENT" in q: labels_to_check.append("Student")
+        if "RESEARCHER" in q: labels_to_check.append("Researcher")
+        if "PROFESSOR" in q: labels_to_check.append("Professor")
+        if "EDITAL" in q: labels_to_check.append("Edital")
+        
+        for label in labels_to_check:
+            for node in store.get_nodes_by_label(label):
+                uid_param = params.get("uid") or params.get("entity_uid")
+                if uid_param and node.get("uid") != uid_param:
+                    continue
+                results.append({
+                    "uid": node.get("uid"),
+                    "name": node.get("name") or node.get("title"),
+                    "title": node.get("title") or node.get("name"),
+                    "type": label,
+                    "level": node.get("level"),
+                    "institution": node.get("institution") or node.get("agency"),
+                    "bio": node.get("bio"),
+                    "course": node.get("course"),
+                    "maturidade": node.get("maturidade", 0.0),
+                    "min_maturidade": node.get("min_maturidade", 0.0),
+                    "funding": node.get("funding", 0.0),
+                    "agency": node.get("agency"),
+                    "status": node.get("status", "aberto"),
+                    "description": node.get("description", ""),
+                    "edital_type": node.get("edital_type", "pesquisa"),
+                })
         return results
 
     # Shared skills query (HAS_SKILL + REQUIRES_SKILL)
@@ -435,9 +425,19 @@ def get_driver():
         try:
             from neo4j import GraphDatabase
             from app.core.config import settings
+            import os
             
-            # Detecção rápida: se não houver senha ou for localhost sem Neo4j rodando
-            if not settings.neo4j_password or settings.neo4j_password == "password":
+            # Detecção de ambiente Vercel/Produção
+            is_vercel = os.environ.get("VERCEL") == "1"
+            is_localhost = "localhost" in settings.neo4j_uri or "127.0.0.1" in settings.neo4j_uri
+
+            if is_vercel and is_localhost:
+                 logger.warning("🚀 Vercel detected + Localhost URI. Forcing Memory Mode immediately.")
+                 _use_memory = True
+                 return None
+
+            # Detecção rápida: se não houver senha ou for senha padrão em produção
+            if not settings.neo4j_password or settings.neo4j_password == "ariano2026" and not is_localhost:
                  logger.warning("⚠️ Neo4j password not set or placeholder. Falling back to memory mode.")
                  _use_memory = True
                  return None
