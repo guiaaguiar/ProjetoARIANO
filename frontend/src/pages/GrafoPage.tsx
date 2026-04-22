@@ -166,13 +166,17 @@ export default function GrafoPage() {
 
     d3.select(svgRef.current).selectAll('*').remove();
 
+    const CLUSTER_COLORS = ['#2dd4bf', '#3b82f6', '#a855f7', '#f59e0b', '#ef4444', '#10b981', '#6366f1'];
+
     const nodes: D3Node[] = data.nodes.map(n => ({
       id: n.id,
       label: n.label,
       nodeType: n.type,
-      color: n.color,
-      size: n.size,
-      metadata: n.metadata,
+      // Se tiver cluster_id (NetworkX), usa a cor do cluster, senão fallback para cor do tipo
+      color: n.cluster_id !== undefined ? CLUSTER_COLORS[n.cluster_id % CLUSTER_COLORS.length] : n.color,
+      // Se tiver influence (PageRank), escala o tamanho, senão usa o padrão
+      size: n.influence ? Math.max(8, Math.min(30, n.influence * 2)) : n.size,
+      metadata: { ...n.metadata, cluster_id: n.cluster_id, influence: n.influence },
     }));
 
     const edges: D3Edge[] = data.edges
@@ -460,9 +464,18 @@ export default function GrafoPage() {
 
   useEffect(() => {
     let cleanup: (() => void) | undefined;
-    api.getGraphData()
-      .then(data => { cleanup = initGraph(data); })
-      .catch(console.error)
+    api.getEnrichedGraph()
+      .then(data => { 
+        // Se a API retornar erro de NetworkX, faz fallback
+        if (data.error) {
+           api.getGraphData().then(raw => { cleanup = initGraph(raw); });
+        } else {
+           cleanup = initGraph(data); 
+        }
+      })
+      .catch(() => {
+        api.getGraphData().then(raw => { cleanup = initGraph(raw); });
+      })
       .finally(() => setLoading(false));
 
     return () => {

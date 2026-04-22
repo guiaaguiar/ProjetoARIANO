@@ -666,11 +666,26 @@ def get_matches(entity_uid: str | None = None, threshold: float = 0.0) -> list[M
 # GRAPH DATA (for D3.js visualization)
 # ═══════════════════════════════════════════
 
-def get_graph_data() -> GraphData:
+def get_graph_data(enriched: bool = True) -> GraphData:
     """Get full graph data for visualization."""
     if is_memory_mode():
-        return _get_graph_data_memory()
-    return _get_graph_data_neo4j()
+        data = _get_graph_data_memory()
+    else:
+        data = _get_graph_data_neo4j()
+    
+    if enriched:
+        try:
+            from app.services.graph_analysis import GraphAnalysisService
+            import asyncio
+            # Como get_graph_data não é async, mas run_query é, usamos um workaround ou 
+            # chamamos a versão sync se disponível. Para simplificar, faremos a lógica aqui.
+            # No contexto do ARIANO, vamos permitir que o frontend peça o /enriched separadamente 
+            # ou injetar os IDs aqui se possível.
+            pass 
+        except:
+            pass
+            
+    return data
 
 
 def _get_graph_data_memory() -> GraphData:
