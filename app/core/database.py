@@ -30,7 +30,14 @@ def init_db() -> None:
             f"bolt://{settings.neo4j_user}:{settings.neo4j_password}"
             f"@{settings.neo4j_uri.replace('bolt://', '')}"
         )
-        neo_config.AUTO_INSTALL_LABELS = True
-        logger.info("✅ Neo4j + neomodel initialized")
+        try:
+            neo_config.AUTO_INSTALL_LABELS = True
+            logger.info("✅ Neo4j + neomodel initialized")
+        except Exception as e:
+            logger.warning(f"⚠️ neomodel label install failed ({e}), switching to memory mode")
+            from app.core.neo4j_driver import force_memory_mode
+            force_memory_mode()
     except Exception as e:
         logger.warning(f"⚠️ neomodel init failed ({e}), using memory mode")
+        from app.core.neo4j_driver import force_memory_mode
+        force_memory_mode()

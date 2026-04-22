@@ -481,6 +481,17 @@ def is_memory_mode() -> bool:
     return _use_memory
 
 
+def force_memory_mode():
+    """Manually trigger memory mode if other components (like neomodel) fail."""
+    global _use_memory, _driver
+    if _driver:
+        try: _driver.close()
+        except: pass
+    _driver = None
+    _use_memory = True
+    logger.warning("🚨 Memory Mode FORCED by external component failure.")
+
+
 async def run_query(query: str, params: dict | None = None) -> list[dict]:
     """Async wrapper for run_cypher to support service layer."""
     import asyncio
