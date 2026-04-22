@@ -436,20 +436,30 @@ def get_driver():
             from neo4j import GraphDatabase
             from app.core.config import settings
             
-            # Use a short connection timeout to avoid hanging on Vercel
+            # Detecção rápida: se não houver senha ou for localhost sem Neo4j rodando
+            if not settings.neo4j_password or settings.neo4j_password == "password":
+                 logger.warning("⚠️ Neo4j password not set or placeholder. Falling back to memory mode.")
+                 _use_memory = True
+                 return None
+
             _driver = GraphDatabase.driver(
                 settings.neo4j_uri,
                 auth=(settings.neo4j_user, settings.neo4j_password),
-                connection_timeout=5.0,  # 5 seconds max to connect
-                max_connection_lifetime=600,
+                connection_timeout=2.0,  # 2 seconds max
             )
-            # verify_connectivity can hang if the network is flaky
-            # We skip it or use a try block with timeout if we really want to test
-            logger.info(f"Attempting Neo4j connection to {settings.neo4j_uri}...")
-            # _driver.verify_connectivity() # Skipping blocking call for faster startup
-            logger.info("✅ Neo4j driver initialized (lazy connectivity)")
+            
+            # Verificação REAL e RÁPIDA de conectividade
+            logger.info(f"Probing Neo4j connection at {settings.neo4j_uri}...")
+            with _driver.session() as session:
+                session.run("RETURN 1").single()
+            
+            logger.info("✅ Neo4j connection established")
+            _use_memory = False
         except Exception as e:
-            logger.warning(f"⚠️ Neo4j unavailable ({e}), using in-memory graph store")
+            logger.warning(f"⚠️ Neo4j probe failed ({e}). Falling back to memory mode.")
+            if _driver:
+                try: _driver.close()
+                except: pass
             _driver = None
             _use_memory = True
     return _driver
@@ -469,6 +479,11 @@ def is_memory_mode() -> bool:
     return _use_memory
 
 
+async def run_query(query: str, params: dict | None = None) -> list[dict]:
+    """Async wrapper for run_cypher to support service layer."""
+    import asyncio
+    return run_cypher(query, params)
+
 def run_cypher(query: str, params: dict | None = None) -> list[dict]:
     """Execute a Cypher query. Uses Neo4j if available, memory store otherwise."""
     driver = get_driver()
@@ -483,7 +498,6 @@ def run_cypher(query: str, params: dict | None = None) -> list[dict]:
     except Exception as e:
         logger.error(f"Cypher query failed: {e}")
         return []
-
 
 def run_cypher_single(query: str, params: dict | None = None) -> dict | None:
     """Execute a Cypher query and return a single result."""

@@ -234,11 +234,18 @@ async def get_graph_insight(user_uid: str):
 
 @router.post("/seed", tags=["Admin"])
 def seed_database():
-    """Seed the database with test data (~15 academics + ~8 editais)."""
+    """Força a sementeira do banco de dados (útil para recuperação em memória)."""
     from app.services.seed_native import seed_native
+    from app.agents.eligibility_calculator import EligibilityCalculator
+    from app.core.neo4j_driver import is_memory_mode
+    
     try:
         seed_native()
-        return {"status": "ok", "message": "Database seeded successfully"}
+        if is_memory_mode():
+            calc = EligibilityCalculator()
+            calc.llm = None
+            calc.calculate_all_matches()
+        return {"status": "Database seeded successfully"}
     except Exception as e:
         raise HTTPException(500, f"Seed failed: {str(e)}")
 
