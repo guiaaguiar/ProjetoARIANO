@@ -92,7 +92,7 @@ app.include_router(router, prefix="/api")
 app.include_router(agent_router, prefix="/api")
 
 
-@app.get("/health")
+@app.get("/api/health")
 def health():
     from app.core.neo4j_driver import is_memory_mode
     return {
