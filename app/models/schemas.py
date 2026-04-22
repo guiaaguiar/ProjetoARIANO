@@ -208,3 +208,5 @@ class DashboardStats(BaseModel):
     total_areas: int = 0
     total_matches: int = 0
     avg_match_score: float = 0.0
+    graph_mode: str = "in-memory"
+    is_connected: bool = True

@@ -97,8 +97,13 @@ export default function DashboardPage() {
               <Zap className="w-5 h-5 lg:w-6 lg:h-6 text-accent" />
             </div>
             <div>
-              <h2 className="text-base lg:text-lg font-semibold text-text-primary">
+              <h2 className="text-base lg:text-lg font-semibold text-text-primary flex items-center gap-2">
                 Motor de Matchmaking Inteligente
+                {stats?.graph_mode && (
+                  <span className="px-2 py-0.5 rounded-full bg-teal-500/10 border border-teal-500/20 text-[10px] font-bold text-teal-400">
+                    {stats.graph_mode}
+                  </span>
+                )}
               </h2>
               <p className="text-text-secondary text-xs lg:text-sm mt-0.5">
                 Conectando Academia e Governo através de grafos de conhecimento.

@@ -218,6 +218,28 @@ def _handle_match_return(query: str, params: dict, store: MemoryGraphStore) -> l
     """Handle MATCH...RETURN queries."""
     q = query.upper()
 
+    # --- Generic Node Query (for NetworkX) ---
+    if "MATCH (N)" in q and "RETURN" in q and not any(k in q for k in ["-", "[", "->", ":"]):
+        results = []
+        for node in store.nodes.values():
+            results.append({
+                "uid": node["props"].get("uid"),
+                "name": node["props"].get("name") or node["props"].get("title"),
+                "type": node["labels"][0] if node.get("labels") else "Unknown"
+            })
+        return results
+
+    # --- Generic Edge Query (for NetworkX) ---
+    if "MATCH (S)-[R]->(T)" in q and "RETURN" in q:
+        results = []
+        for edge in store.edges:
+            results.append({
+                "source": edge["source"],
+                "target": edge["target"],
+                "label": edge["type"]
+            })
+        return results
+
     # Stats query: count nodes and edges
     if "COUNT(N)" in q and "COUNT(R)" in q:
         return [{"nodes": store.count_nodes(), "edges": store.count_edges()}]

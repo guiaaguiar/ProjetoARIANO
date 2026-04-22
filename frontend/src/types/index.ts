@@ -89,6 +89,8 @@ export interface GraphNode {
   type: string;
   size: number;
   color: string;
+  cluster_id?: number;
+  influence?: number;
   metadata: Record<string, unknown>;
 }
 
@@ -116,6 +118,8 @@ export interface DashboardStats {
   total_areas: number;
   total_matches: number;
   avg_match_score: number;
+  graph_mode: string;
+  is_connected: boolean;
 }
 
 export type EntityType = 'student' | 'researcher' | 'professor' | 'edital' | 'skill' | 'area';

@@ -789,6 +789,8 @@ def get_dashboard_stats() -> DashboardStats:
             total_areas=store.count_nodes("Area"),
             total_matches=len(edges),
             avg_match_score=round(sum(scores) / len(scores), 2) if scores else 0.0,
+            graph_mode="Memory Fallback (Vercel Ready)",
+            is_connected=True
         )
 
     from neomodel import db
@@ -813,5 +815,7 @@ def get_dashboard_stats() -> DashboardStats:
             total_professors=row[2], total_editais=row[3],
             total_skills=row[4], total_areas=row[5],
             total_matches=row[6], avg_match_score=round(row[7], 2),
+            graph_mode="Neo4j AuraDB (Nativo)",
+            is_connected=True
         )
     return DashboardStats()
