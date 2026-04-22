@@ -71,7 +71,7 @@ O **ARIANO** (**A**rquitetura de **I**nteligência **A**rtificial **N**aturalmen
 - 🚀 **Portal do Usuário:** Perfil, Matches pessoais O(1) e Ecossistema individual em /user/* (Sprint 4)
 - 🚀 **Portal Admin:** Dashboard, Grafo completo e Comunidades em /admin/* (Sprint 4)
 - 🚀 **Campos Inteligentes:** bio, currículo (PDF), maturidade (0-10 IA) e o_que_busco (IA) — determinados automaticamente pela IA (Sprint 4)
-- 🚀 **Comunidades de Pensamento:** Enriquecimento contínuo do grafo via Chain-of-Thought multi-agente (Sprint 4)
+- 🚀 **Comunidades de Pensamento:** Enriquecimento contínuo do grafo via Chain-of-Thought multi-agente e análise de clusters via **NetworkX** (Sprint 4)
 - 🚀 **Engenharia de Prompt Avançada:** Agentes especialistas com contexto profundo do grafo (Sprint 4)
 
 ---

@@ -215,6 +215,18 @@ def get_matches(entity_uid: Optional[str] = None, threshold: float = 0.0):
 def get_graph():
     return crud.get_graph_data()
 
+@router.get("/graph/enriched", tags=["Graph"])
+async def get_enriched_graph():
+    """Retorna o grafo com detecção de comunidades e centralidade via NetworkX."""
+    from app.services.graph_analysis import GraphAnalysisService
+    return await GraphAnalysisService.get_enriched_graph()
+
+@router.get("/graph/insight/{user_uid}", tags=["Graph"])
+async def get_graph_insight(user_uid: str):
+    """Retorna um insight textual sobre a posição do usuário no grafo."""
+    from app.services.graph_analysis import GraphAnalysisService
+    return {"insight": await GraphAnalysisService.get_user_insight(user_uid)}
+
 
 # ═══════════════════════════════════════════
 # SEED & PIPELINE

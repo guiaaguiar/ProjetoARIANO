@@ -21,10 +21,17 @@ export default function UserDashboard() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const [matches, setMatches] = useState<Match[]>([]);
+  const [recommended, setRecommended] = useState<Edital[]>([]);
+  const [insight, setInsight] = useState<string>('O Orquestrador está mapeando sua influência no ecossistema...');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (user?.uid) {
+      // Buscar insight do NetworkX
+      api.getGraphInsight(user.uid)
+        .then(res => setInsight(res.insight))
+        .catch(() => setInsight('Sincronização offline no momento.'));
+
       api.getMatches(user.uid, 0.45)
         .then(setMatches)
         .catch(console.error)
@@ -173,7 +180,7 @@ export default function UserDashboard() {
             
             <div className="absolute bottom-6 left-6 right-6 p-4 rounded-xl bg-gray-900/80 backdrop-blur-md border border-white/5 opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0 duration-300">
                <p className="text-[10px] text-teal-400 font-bold uppercase mb-1">Dica Cognitiva</p>
-               <p className="text-[11px] text-gray-300 leading-relaxed">Você está conectado a 4 consultores da FACEPE através da sua skill em IA aplicada.</p>
+               <p className="text-[11px] text-gray-300 leading-relaxed">{insight}</p>
             </div>
 
             <button onClick={() => navigate('/user/ecossistema')} className="absolute top-4 right-4 p-2 rounded-lg bg-gray-900 shadow-xl border border-white/10 text-gray-400 hover:text-white transition-colors">

@@ -1,36 +1,37 @@
-# Plano de Implementação em Cascata: Estabilização de Ecossistema
+# Plano de Implementação em Cascata: Inteligência Relacional com NetworkX
 
-Este plano descreve a jornada para resolver a inconsistência de dados pós-cadastro e a eliminação definitiva de placeholders, utilizando uma estratégia de persistência híbrida.
+Este plano detalha a reestruturação do ARIANO para integrar a biblioteca **NetworkX** como motor de inteligência analítica, transformando o Grafo de Conhecimento em um sistema de detecção de **Comunidades de Pensamento** e análise de centralidade estratégica.
 
 ---
 
-## 🌊 Fase 1: Análise e Especificação (Requirements)
-- **Objetivo**: Identificar o motivo da perda de dados entre a Cognição e o Dashboard.
-- **Diagnóstico**: O Vercel utiliza Serverless Functions. Como o ARIANO está em `Memory Mode` (sem Neo4j persistente), cada requisição HTTP pode cair em uma instância limpa, perdendo os matches calculados no background.
-- **Solução Proposta**: Hibridização de Persistência. O frontend passará a armazenar os resultados da `CognitionExperience` no `localStorage` como cache de segurança, permitindo exibição imediata enquanto o backend processa.
+## 🌊 Fase 1: Análise e Especificação (NetworkX Intelligence)
+- **Objetivo**: Transmitir inteligência de grafos complexos do backend para a experiência do usuário.
+- **Papel do NetworkX**: Realizar cálculos de **Community Detection** (Louvain/Girvan-Newman) e **Centralidade de Grau/Intermediação** para identificar quem são os "pontes" no ecossistema de Recife.
+- **Impacto no UX**: O usuário não verá apenas matches, mas em qual "Cluster de Inovação" ele está inserido e qual sua influência relativa na rede.
 
-## 🏗️ Fase 2: Projeto da Solução (Design)
-- **Componente 1: `MatchCacheService`**: Pequena abstração para gerenciar o estado dos matches no navegador.
-- **Componente 2: `UserEcosystemPage`**: Desenvolvimento de interface baseada em D3 que consome o grafo real.
-- **Componente 3: `UserCommunitiesPage`**: Implementação de lógica de clusterização visual.
+## 🏗️ Fase 2: Projeto da Solução (Design do Motor Analítico)
+- **Componente 1: `NetworkXService`**: Serviço Python que espelha o grafo (Neo4j ou Memory) em um objeto `nx.Graph()` para cálculos intensivos.
+- **Componente 2: `CommunityEndpoint`**: Nova rota de API `/api/graph/communities` que retorna os nós agrupados por afinidade algorítmica.
+- **Componente 3: `RelationalInsights`**: Módulo de IA que interpreta os clusters do NetworkX e gera explicações em linguagem natural (ex: "Você é um nó conector entre Saúde e IA").
 
 ## 🔨 Fase 3: Desenvolvimento (Implementation) 
 
-### Passo 3.1: Persistência Híbrida (Matches)
-- [x] Modificar `CognitionExperience.tsx` para salvar o `topMatches` no `authStore`.
-- [x] Atualizar `UserMatchesPage.tsx` para ler do cache (Zustand).
+### Passo 3.1: Integração Backend (O Coração Analítico)
+- [ ] Implementar `app/services/graph_analysis.py` utilizando NetworkX.
+- [ ] Criar lógica para converter `MemoryGraphStore` ou Neo4j em `nx.MultiDiGraph`.
+- [ ] Implementar algoritmo de detecção de comunidades para gerar o campo `cluster_id` nos nós.
 
-### Passo 3.2: Desenvolvimento de Páginas Reais
-- [x] Implementar `UserEcosystemPage.tsx` (Resolvido).
-- [x] Implementar `UserCommunitiesPage.tsx` (Resolvido).
-- [x] Restaurar Grafo Dinâmico no Dashboard principal (Resolvido).
+### Passo 3.2: Evolução da Experiência (Frontend)
+- [ ] Atualizar `UserEcosystemPage.tsx` para colorir os nós baseando-se nos clusters do NetworkX.
+- [ ] Implementar visualização de "Clusters de Influência" na `UserCommunitiesPage.tsx`.
+- [ ] Integrar os insights do NetworkX na "Dica Cognitiva" do Dashboard.
 
 ## 🧪 Fase 4: Testes e Verificação (Testing)
-- [ ] Simular um "Cold Start" do Vercel e verificar se os matches persistem via LocalStorage.
-- [ ] Validar responsividade do grafo D3 no dispositivo mobile (Dashboard).
-- [ ] Verificar integridade dos links de navegação na Sidebar.
+- [ ] Validar a performance da conversão Grafo -> NetworkX em tempo de execução no Vercel.
+- [ ] Verificar se a clusterização faz sentido semântico (ex: skills de Python agrupadas).
+- [ ] Testar a persistência do `cluster_id` no cache do usuário.
 
-## 🚀 Fase 5: Implantação e Encerramento (Deployment)
-- [ ] Merge para `main`.
-- [ ] Disparo de build final no Vercel.
-- [ ] Relatório final de conformidade.
+## 🚀 Fase 5: Implantação e Deploy (Branch dev)
+- [ ] Garantir que `networkx` está no `requirements.txt`.
+- [ ] Realizar merge das features na branch `dev`.
+- [ ] Documentar os novos algoritmos no Relatório de Sprint 4.

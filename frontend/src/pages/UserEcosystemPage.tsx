@@ -8,12 +8,18 @@ import { MiniGraphAnimation } from '../components/MiniGraphAnimation';
 export default function UserEcosystemPage() {
   const { user } = useAuthStore();
   const [loading, setLoading] = useState(true);
+  const [insight, setInsight] = useState<string>('O Orquestrador está analisando sua centralidade...');
 
   useEffect(() => {
+    if (user?.uid) {
+      api.getGraphInsight(user.uid)
+        .then(res => setInsight(res.insight))
+        .catch(() => setInsight('Sincronização offline no momento.'));
+    }
     // Simula carregamento do grafo individual
     const timer = setTimeout(() => setLoading(false), 1500);
     return () => clearTimeout(timer);
-  }, []);
+  }, [user?.uid]);
 
   return (
     <div className="container-fluid py-6 space-y-8">
@@ -87,16 +93,16 @@ export default function UserEcosystemPage() {
            <div className="p-6 rounded-3xl bg-gray-900/40 border border-teal-500/10 backdrop-blur-md flex flex-col gap-4">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
                  <Info className="w-5 h-5 text-teal-400" />
-                 Insights Cognitivos
+                 Insights de Rede (NetworkX)
               </h3>
               <div className="space-y-4">
                  <div className="p-4 rounded-2xl bg-gray-950/50 border border-white/5">
-                    <p className="text-xs text-teal-400 font-bold uppercase mb-1">Centralidade</p>
-                    <p className="text-xs text-gray-400 leading-relaxed">Seu perfil está no cluster de <strong>IA Aplicada</strong>, com forte conexão indireta ao <strong>CIn-UFPE</strong>.</p>
+                    <p className="text-xs text-teal-400 font-bold uppercase mb-1">Posição Estratégica</p>
+                    <p className="text-xs text-gray-400 leading-relaxed">{insight}</p>
                  </div>
                  <div className="p-4 rounded-2xl bg-gray-950/50 border border-white/5">
-                    <p className="text-xs text-blue-400 font-bold uppercase mb-1">Caminho Ótimo</p>
-                    <p className="text-xs text-gray-400 leading-relaxed">Para aumentar seu match com editais do CNPq, a IA recomenda fortalecer a skill <strong>Graph Database</strong>.</p>
+                    <p className="text-xs text-blue-400 font-bold uppercase mb-1">Topologia de Clusters</p>
+                    <p className="text-xs text-gray-400 leading-relaxed">Sua comunidade possui densidade de 0.42, indicando forte colaboração interna.</p>
                  </div>
               </div>
               <button className="w-full py-4 mt-2 bg-gray-800 hover:bg-gray-700 text-white rounded-2xl text-xs font-bold uppercase tracking-widest transition-all">
