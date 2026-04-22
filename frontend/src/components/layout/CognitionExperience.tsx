@@ -4,6 +4,7 @@ import { Bot, Cpu, Network, Zap, CheckCircle2, ArrowRight, MessageSquare, Shield
 import { MiniGraphAnimation } from '../MiniGraphAnimation';
 import { MatchResultCards } from '../MatchResultCards';
 import { useAuthStore } from '../../store/authStore';
+import * as api from '../../lib/api';
 
 interface CognitionExperienceProps {
   userName: string;
