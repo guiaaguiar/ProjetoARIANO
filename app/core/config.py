@@ -35,7 +35,7 @@ class Settings(BaseSettings):
 
     # App
     app_name: str = "ARIANO API"
-    app_version: str = "1.0.0"
+    app_version: str = "1.0.1"
     debug: bool = True
     backend_url: str = "http://localhost:8000"
 
