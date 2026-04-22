@@ -427,17 +427,17 @@ def get_driver():
             from app.core.config import settings
             import os
             
-            # Detecção de ambiente Vercel/Produção
-            is_vercel = os.environ.get("VERCEL") is not None
+            # Detecção de ambiente Vercel/Produção (Runtime)
+            is_vercel = any(os.environ.get(k) for k in ["VERCEL", "VERCEL_URL", "VERCEL_REGION"])
             is_localhost = "localhost" in settings.neo4j_uri or "127.0.0.1" in settings.neo4j_uri
 
             if is_vercel and is_localhost:
-                 logger.warning("🚀 Vercel detected + Localhost URI. Forcing Memory Mode immediately.")
+                 logger.warning("🚀 Vercel Runtime detected + Localhost URI. Forcing Memory Mode immediately.")
                  _use_memory = True
                  return None
 
-            # Detecção rápida: se não houver senha ou for senha padrão em produção
-            if not settings.neo4j_password or settings.neo4j_password == "ariano2026" and not is_localhost:
+            # Detecção rápida: se for senha padrão em produção ou não houver senha
+            if (not settings.neo4j_password or settings.neo4j_password == "ariano2026") and not is_localhost:
                  logger.warning("⚠️ Neo4j password not set or placeholder. Falling back to memory mode.")
                  _use_memory = True
                  return None

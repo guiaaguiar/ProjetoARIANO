@@ -64,8 +64,13 @@ class GraphAnalysisService:
 
         except Exception as e:
             logger.error(f"❌ Error in GraphAnalysisService: {str(e)}")
-            # Fallback para dados básicos se o NetworkX falhar
-            return {"error": str(e)}
+            # Fallback para dados básicos (vazio mas com estrutura correta)
+            return {
+                "nodes": [],
+                "edges": [],
+                "summary": {"total_communities": 0, "avg_connectivity": 0},
+                "error": str(e)
+            }
 
     @staticmethod
     async def get_user_insight(user_uid: str):
