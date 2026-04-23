@@ -31,7 +31,7 @@ const CLUSTER_COLORS = [
 export const NetworkXGraphView: React.FC<Props> = ({ onNodeClick }) => {
   const [data, setData] = useState<{ nodes: Node[], links: Edge[] } | null>(null);
   const [loading, setLoading] = useState(true);
-  const fgRef = useRef<any>();
+  const fgRef = useRef<any>(null);
 
   useEffect(() => {
     api.getEnrichedGraph()

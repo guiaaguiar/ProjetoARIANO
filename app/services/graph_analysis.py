@@ -43,7 +43,7 @@ class GraphAnalysisService:
                 enriched_nodes.append({
                     "id": uid,
                     "label": node['name'],
-                    "type": node['type'],
+                    "type": str(node['type']).lower(),
                     "cluster_id": node_communities.get(uid, 0),
                     "influence": round(pagerank.get(uid, 0) * 1000, 2),
                     "connectivity": round(degree_cent.get(uid, 0), 2),
