@@ -3,9 +3,10 @@ import matplotlib.pyplot as plt
 import io
 import base64
 import logging
+from collections import Counter
 from app.core.neo4j_driver import run_query
 
-# Configura o backend do Matplotlib para modo não-interativo (essencial para Vercel/Serverless)
+# Configura o backend do Matplotlib para modo não-interativo
 plt.switch_backend('Agg')
 
 logger = logging.getLogger(__name__)
@@ -14,41 +15,78 @@ class GraphAnalysisService:
     @staticmethod
     async def get_enriched_graph():
         """
-        Consome o grafo, calcula métricas via NetworkX e retorna dados brutos + metadados.
+        Consome o grafo, calcula métricas e detecta Comunidades de Pensamento (CoT)
+        com identificação de temas-chave.
         """
         try:
-            nodes_data = await run_query("MATCH (n) RETURN n.uid as uid, labels(n)[0] as type, n.name as name")
+            # 1. Fetch data with more metadata for theme extraction
+            nodes_data = await run_query("MATCH (n) RETURN n.uid as uid, labels(n)[0] as type, n.name as name, n.bio as bio, n.o_que_busco as goals, n.description as description")
             edges_data = await run_query("MATCH (s)-[r]->(t) RETURN s.uid as source, t.uid as target, type(r) as label")
 
             G = nx.Graph()
+            node_metadata = {}
             for node in nodes_data:
-                G.add_node(node['uid'], name=node['name'], type=node['type'])
+                uid = node['uid']
+                G.add_node(uid, name=node['name'], type=node['type'])
+                # Coleta palavras-chave para o tema do cluster
+                text_content = f"{node.get('name', '')} {node.get('bio', '')} {node.get('goals', '')} {node.get('description', '')}"
+                node_metadata[uid] = {
+                    "name": node['name'],
+                    "type": node['type'],
+                    "text": text_content.lower()
+                }
+
             for edge in edges_data:
                 G.add_edge(edge['source'], edge['target'], label=edge['label'])
 
+            if len(G) == 0:
+                return {"nodes": [], "edges": [], "summary": {"total_communities": 0}}
+
+            # 2. Community Detection (Louvain)
             communities = list(nx.community.louvain_communities(G, seed=42))
+            
+            # 3. Cluster Naming Logic (Graph-CoT Contextualization)
+            cluster_themes = {}
+            stop_words = {'de', 'o', 'a', 'e', 'do', 'da', 'em', 'um', 'uma', 'com', 'para', 'os', 'as', 'dos', 'das', 'no', 'na', 'para', 'pelo', 'pela', 'sobre'}
+            
+            for cluster_id, community in enumerate(communities):
+                words = []
+                for node_uid in community:
+                    meta = node_metadata.get(node_uid, {})
+                    # Extrair palavras significativas
+                    raw_words = meta.get('text', '').split()
+                    words.extend([w for w in raw_words if len(w) > 3 and w not in stop_words])
+                
+                # Pegar as 2 palavras mais frequentes para o tema
+                top_words = [w[0] for w in Counter(words).most_common(2)]
+                theme = " & ".join(top_words).title() if top_words else "Pesquisa Geral"
+                cluster_themes[cluster_id] = theme
+
             node_communities = {}
             for cluster_id, community in enumerate(communities):
                 for node_uid in community:
-                    node_communities[node_uid] = cluster_id
+                    node_communities[node_uid] = {
+                        "id": cluster_id,
+                        "theme": cluster_themes[cluster_id]
+                    }
 
-            pagerank = nx.pagerank(G) if len(G) > 0 else {}
-            degree_cent = nx.degree_centrality(G) if len(G) > 0 else {}
-            pos = nx.spring_layout(G, k=1.0, iterations=50, seed=42)
+            # 4. Centrality Metrics
+            pagerank = nx.pagerank(G)
+            degree_cent = nx.degree_centrality(G)
 
+            # 5. Build Result (Sem X/Y fixos para permitir simulação fluida no frontend)
             enriched_nodes = []
             for node in nodes_data:
                 uid = node['uid']
-                coords = pos.get(uid, [0, 0])
+                comm_info = node_communities.get(uid, {"id": 0, "theme": "Indefinido"})
                 enriched_nodes.append({
                     "id": uid,
                     "label": node['name'],
                     "type": str(node['type']).lower(),
-                    "cluster_id": node_communities.get(uid, 0),
+                    "cluster_id": comm_info["id"],
+                    "cluster_theme": comm_info["theme"],
                     "influence": round(pagerank.get(uid, 0) * 1000, 2),
                     "connectivity": round(degree_cent.get(uid, 0), 2),
-                    "x": float(coords[0]),
-                    "y": float(coords[1]),
                 })
 
             return {
@@ -56,7 +94,7 @@ class GraphAnalysisService:
                 "edges": edges_data,
                 "summary": {
                     "total_communities": len(communities),
-                    "avg_connectivity": sum(degree_cent.values()) / len(G) if len(G) > 0 else 0
+                    "clusters": [{"id": k, "theme": v} for k, v in cluster_themes.items()]
                 }
             }
         except Exception as e:
@@ -65,86 +103,8 @@ class GraphAnalysisService:
 
     @staticmethod
     async def get_networkx_drawing():
-        """
-        Gera uma visualização 100% nativa do NetworkX usando Matplotlib.
-        Retorna a imagem em Base64 para exibição direta no frontend.
-        """
-        try:
-            # 1. Obter dados e montar o grafo NetworkX
-            nodes_data = await run_query("MATCH (n) RETURN n.uid as uid, labels(n)[0] as type, n.name as name")
-            edges_data = await run_query("MATCH (s)-[r]->(t) RETURN s.uid as source, t.uid as target, type(r) as label")
-
-            G = nx.Graph()
-            node_types = {}
-            for node in nodes_data:
-                G.add_node(node['uid'], label=node['name'])
-                node_types[node['uid']] = node['type']
-            for edge in edges_data:
-                G.add_edge(edge['source'], edge['target'])
-
-            if len(G) == 0:
-                return {"image": None, "error": "Grafo vazio"}
-
-            # 2. Cálculos de Comunidades para coloração (Graph Of Thoughts)
-            communities = list(nx.community.louvain_communities(G, seed=42))
-            color_map = []
-            palette = ['#2dd4bf', '#3b82f6', '#a855f7', '#f59e0b', '#ef4444', '#10b981', '#6366f1', '#ec4899']
-            
-            node_colors = {}
-            for i, comm in enumerate(communities):
-                color = palette[i % len(palette)]
-                for node_id in comm:
-                    node_colors[node_id] = color
-            
-            for node in G.nodes():
-                color_map.append(node_colors.get(node, '#64748b'))
-
-            # 3. Desenho Nativo NetworkX
-            plt.figure(figsize=(14, 10), facecolor='#020810')
-            ax = plt.gca()
-            ax.set_facecolor('#020810')
-            
-            # Garante que todos os nós adicionados via arestas também tenham um label padrão
-            for node in G.nodes():
-                if 'label' not in G.nodes[node]:
-                    G.nodes[node]['label'] = str(node)[:8]
-            
-            pos = nx.spring_layout(G, k=0.6, iterations=60, seed=42)
-            
-            # Nodes
-            nx.draw_networkx_nodes(G, pos, 
-                                 node_color=color_map, 
-                                 node_size=1000, 
-                                 alpha=0.95,
-                                 linewidths=1.5,
-                                 edgecolors='#1e293b')
-            
-            # Edges
-            nx.draw_networkx_edges(G, pos, width=1.2, alpha=0.25, edge_color='#475569')
-            
-            # Labels (Nativo NetworkX)
-            labels = {node: G.nodes[node].get('label', str(node)) for node in G.nodes()}
-            nx.draw_networkx_labels(G, pos, labels, 
-                                   font_size=7, 
-                                   font_color='#f1f5f9', 
-                                   font_family='sans-serif',
-                                   font_weight='bold')
-
-            plt.title("ARIANO BRAIN — Native NetworkX 3.6.1 Engine", color='#2dd4bf', pad=25, fontsize=16, fontweight='bold')
-            plt.axis('off')
-
-            # 4. Converter para Base64
-            buf = io.BytesIO()
-            plt.savefig(buf, format='png', dpi=200, bbox_inches='tight', facecolor='#020810', transparent=False)
-            plt.close('all') # Fecha todas as figuras para liberar memória
-            buf.seek(0)
-            img_base64 = base64.b64encode(buf.read()).decode('utf-8')
-            
-            return {"image": f"data:image/png;base64,{img_base64}"}
-
-        except Exception as e:
-            logger.error(f"❌ Error in get_networkx_drawing: {str(e)}")
-            return {"image": None, "error": str(e)}
+        # Método mantido para compatibilidade, mas o interativo é o foco
+        return {"image": None, "error": "Use get_enriched_graph para visualização interativa"}
 
     @staticmethod
     async def get_user_insight(user_uid: str):
@@ -152,5 +112,4 @@ class GraphAnalysisService:
         if "error" in graph: return "Processando..."
         user_node = next((n for n in graph["nodes"] if n["id"] == user_uid), None)
         if not user_node: return "Perfil em indexação."
-        insight = f"Você faz parte do Cluster CoT #{user_node['cluster_id']}."
-        return insight
+        return f"Você está no cluster '{user_node.get('cluster_theme', 'Geral')}', com influência de {user_node['influence']}."
