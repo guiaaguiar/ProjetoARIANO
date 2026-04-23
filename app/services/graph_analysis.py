@@ -53,13 +53,19 @@ class GraphAnalysisService:
                 words = []
                 for node_uid in community:
                     meta = node_metadata.get(node_uid, {})
-                    # Extrair palavras significativas
-                    raw_words = meta.get('text', '').split()
-                    words.extend([w for w in raw_words if len(w) > 3 and w not in stop_words])
+                    raw_words = meta.get('text', '').replace('.', ' ').replace(',', ' ').split()
+                    # Filtra palavras curtas, stop words e nomes próprios muito comuns (opcional)
+                    words.extend([w for w in raw_words if len(w) > 4 and w not in stop_words])
                 
-                # Pegar as 2 palavras mais frequentes para o tema
-                top_words = [w[0] for w in Counter(words).most_common(2)]
-                theme = " & ".join(top_words).title() if top_words else "Pesquisa Geral"
+                # Pegar as 2 palavras mais frequentes para o tema, garantindo que sejam únicas
+                most_common = [w[0] for w in Counter(words).most_common(5)]
+                top_words = []
+                for w in most_common:
+                    if w not in top_words:
+                        top_words.append(w)
+                    if len(top_words) >= 2: break
+                
+                theme = " & ".join(top_words).title() if top_words else "Pesquisa Interdisciplinar"
                 cluster_themes[cluster_id] = theme
 
             node_communities = {}
@@ -74,15 +80,23 @@ class GraphAnalysisService:
             pagerank = nx.pagerank(G)
             degree_cent = nx.degree_centrality(G)
 
-            # 5. Build Result (Sem X/Y fixos para permitir simulação fluida no frontend)
+            # 5. Build Result
             enriched_nodes = []
-            for node in nodes_data:
-                uid = node['uid']
-                comm_info = node_communities.get(uid, {"id": 0, "theme": "Indefinido"})
+            
+            # Usamos o set de todos os nós no grafo NetworkX para garantir que nada escape
+            all_graph_nodes = list(G.nodes())
+            
+            # Mapear nodes_data para acesso rápido
+            nodes_map = {n['uid']: n for n in nodes_data}
+
+            for uid in all_graph_nodes:
+                node_info = nodes_map.get(uid, {})
+                comm_info = node_communities.get(uid, {"id": 0, "theme": "Pesquisa Geral"})
+                
                 enriched_nodes.append({
                     "id": uid,
-                    "label": node['name'],
-                    "type": str(node['type']).lower(),
+                    "label": node_info.get('name') or node_info.get('title') or f"Nó {uid}",
+                    "type": str(node_info.get('type', 'Unknown')).lower(),
                     "cluster_id": comm_info["id"],
                     "cluster_theme": comm_info["theme"],
                     "influence": round(pagerank.get(uid, 0) * 1000, 2),

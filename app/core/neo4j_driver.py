@@ -218,13 +218,28 @@ def _handle_match_return(query: str, params: dict, store: MemoryGraphStore) -> l
     """Handle MATCH...RETURN queries."""
     q = query.upper()
 
-    # --- Generic Node Query (for NetworkX) ---
+    # --- Generic Node Query (for NetworkX Enrichment) ---
+    if "MATCH (N)" in q and "RETURN" in q and "N.UID" in q:
+        results = []
+        for node in store.nodes.values():
+            props = node["props"]
+            results.append({
+                "uid": props.get("uid"),
+                "name": props.get("name") or props.get("title") or props.get("uid"),
+                "type": node["labels"][0] if node.get("labels") else "Unknown",
+                "bio": props.get("bio", ""),
+                "goals": props.get("o_que_busco", ""),
+                "description": props.get("description", "")
+            })
+        return results
+
+    # --- Basic Node Query (fallback) ---
     if "MATCH (N)" in q and "RETURN" in q and not any(k in q for k in ["-", "[", "->", ":"]):
         results = []
         for node in store.nodes.values():
             results.append({
                 "uid": node["props"].get("uid"),
-                "name": node["props"].get("name") or node["props"].get("title"),
+                "name": node["props"].get("name") or node["props"].get("title") or node["props"].get("uid"),
                 "type": node["labels"][0] if node.get("labels") else "Unknown"
             })
         return results

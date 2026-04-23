@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
-import { Loader2, Zap, Info, Maximize2, MousePointer2 } from 'lucide-react';
+import { Loader2, Zap, Info, Maximize2, MousePointer2, Network } from 'lucide-react';
 import * as api from '../lib/api';
 import { NODE_COLORS, type EntityType } from '../types';
 
@@ -136,8 +136,20 @@ export const NetworkXGraphView: React.FC<Props> = ({ onNodeClick }) => {
           enableZoomInteraction={true}
         />
       ) : (
-        <div className="flex items-center justify-center h-full text-text-muted">
-           Nenhum dado de rede localizado.
+        <div className="flex flex-col items-center justify-center h-full text-center p-8">
+           <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-6">
+              <Network className="w-8 h-8 text-gray-600" />
+           </div>
+           <h3 className="text-xl font-bold text-white mb-2">Ecossistema em Silêncio</h3>
+           <p className="text-gray-500 max-w-md mb-8">
+             Nenhum dado de rede localizado. Certifique-se de que existem acadêmicos e editais cadastrados para visualizar as conexões.
+           </p>
+           <button 
+             onClick={() => window.location.reload()}
+             className="px-6 py-2 rounded-full bg-white/5 border border-white/10 text-white text-xs font-bold uppercase tracking-widest hover:bg-white/10 transition-all"
+           >
+             Tentar Novamente
+           </button>
         </div>
       )}
 
