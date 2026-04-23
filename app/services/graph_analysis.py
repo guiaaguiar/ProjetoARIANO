@@ -100,38 +100,43 @@ class GraphAnalysisService:
                 color_map.append(node_colors.get(node, '#64748b'))
 
             # 3. Desenho Nativo NetworkX
-            plt.figure(figsize=(12, 10), facecolor='#020810')
+            plt.figure(figsize=(14, 10), facecolor='#020810')
             ax = plt.gca()
             ax.set_facecolor('#020810')
             
-            pos = nx.spring_layout(G, k=0.5, iterations=50, seed=42)
+            # Garante que todos os nós adicionados via arestas também tenham um label padrão
+            for node in G.nodes():
+                if 'label' not in G.nodes[node]:
+                    G.nodes[node]['label'] = str(node)[:8]
+            
+            pos = nx.spring_layout(G, k=0.6, iterations=60, seed=42)
             
             # Nodes
             nx.draw_networkx_nodes(G, pos, 
                                  node_color=color_map, 
-                                 node_size=800, 
-                                 alpha=0.9,
-                                 linewidths=2,
+                                 node_size=1000, 
+                                 alpha=0.95,
+                                 linewidths=1.5,
                                  edgecolors='#1e293b')
             
             # Edges
-            nx.draw_networkx_edges(G, pos, width=1.5, alpha=0.3, edge_color='#475569')
+            nx.draw_networkx_edges(G, pos, width=1.2, alpha=0.25, edge_color='#475569')
             
             # Labels (Nativo NetworkX)
-            labels = {node: G.nodes[node]['label'] for node in G.nodes()}
+            labels = {node: G.nodes[node].get('label', str(node)) for node in G.nodes()}
             nx.draw_networkx_labels(G, pos, labels, 
-                                   font_size=8, 
-                                   font_color='#cbd5e1', 
+                                   font_size=7, 
+                                   font_color='#f1f5f9', 
                                    font_family='sans-serif',
                                    font_weight='bold')
 
-            plt.title("Cérebro ARIANO — Visualização Nativa NetworkX", color='#2dd4bf', pad=20, fontsize=14)
+            plt.title("ARIANO BRAIN — Native NetworkX 3.6.1 Engine", color='#2dd4bf', pad=25, fontsize=16, fontweight='bold')
             plt.axis('off')
 
             # 4. Converter para Base64
             buf = io.BytesIO()
-            plt.savefig(buf, format='png', dpi=150, bbox_inches='tight', facecolor='#020810')
-            plt.close()
+            plt.savefig(buf, format='png', dpi=200, bbox_inches='tight', facecolor='#020810', transparent=False)
+            plt.close('all') # Fecha todas as figuras para liberar memória
             buf.seek(0)
             img_base64 = base64.b64encode(buf.read()).decode('utf-8')
             
