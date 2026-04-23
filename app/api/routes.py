@@ -221,6 +221,12 @@ async def get_enriched_graph():
     from app.services.graph_analysis import GraphAnalysisService
     return await GraphAnalysisService.get_enriched_graph()
 
+@router.get("/graph/drawing", tags=["Graph"])
+async def get_graph_drawing():
+    """Retorna uma imagem base64 gerada 100% nativamente pelo NetworkX (Matplotlib)."""
+    from app.services.graph_analysis import GraphAnalysisService
+    return await GraphAnalysisService.get_networkx_drawing()
+
 @router.get("/graph/insight/{user_uid}", tags=["Graph"])
 async def get_graph_insight(user_uid: str):
     """Retorna um insight textual sobre a posição do usuário no grafo."""

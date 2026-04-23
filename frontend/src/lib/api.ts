@@ -76,6 +76,7 @@ export const getMatches = (entityUid?: string, threshold?: number) =>
 // ── Graph ──
 export const getGraphData = () => api.get<GraphData>('/graph').then(r => r.data);
 export const getEnrichedGraph = () => api.get<any>('/graph/enriched').then(r => r.data);
+export const getGraphDrawing = () => api.get<{ image: string | null; error?: string }>('/graph/drawing').then(r => r.data);
 export const getGraphInsight = (uid: string) => api.get<{ insight: string }>(`/graph/insight/${uid}`).then(r => r.data);
 
 // ═══════════════════════════════════════════

@@ -16,6 +16,8 @@ neo4j>=5.20.0
 
 # Graph Analysis & Visualization (Sprint 4) — Layout, Community Detection
 networkx>=3.6.1
+matplotlib>=3.9.0
+scipy>=1.13.0
 
 # Auth & PDF
 PyMuPDF>=1.23.0
