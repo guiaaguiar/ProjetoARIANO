@@ -139,7 +139,7 @@ const GraphLoader: React.FC<{ data: any }> = ({ data }) => {
   useEffect(() => {
     const graph = new Graph();
 
-    // 1. Add Nodes
+    // 1. Add Nodes using NetworkX positions from backend
     data.nodes.forEach((node: any) => {
       const clusterColor = CLUSTER_COLORS[(node.cluster_id || 0) % CLUSTER_COLORS.length];
       const typeColor = NODE_COLORS[node.type as EntityType] || '#64748b';
@@ -149,8 +149,9 @@ const GraphLoader: React.FC<{ data: any }> = ({ data }) => {
         size: node.influence ? Math.max(5, Math.min(25, node.influence * 2)) : 5,
         color: node.cluster_id !== undefined ? clusterColor : typeColor,
         type: node.type,
-        x: Math.random() * 100,
-        y: Math.random() * 100,
+        // Use coordinates calculated by NetworkX in the backend
+        x: node.x || Math.random() * 100,
+        y: node.y || Math.random() * 100,
         cluster: node.cluster_id,
         influence: node.influence,
         metadata: node.metadata || {}
@@ -168,21 +169,12 @@ const GraphLoader: React.FC<{ data: any }> = ({ data }) => {
       }
     });
 
-    // 3. Layout: ForceAtlas2 (Professional)
-    const positions = forceAtlas2(graph, {
-      iterations: 150,
-      settings: forceAtlas2.inferSettings(graph),
-    });
-
-    // 4. No Overlap
-    noverlap(graph, {
-      maxIterations: 50,
-    });
-
+    // 3. Layout is now handled by NetworkX (backend)
+    // We just load the graph into Sigma
     loadGraph(graph);
 
-    // Initial animation
-    animateNodes(graph, positions, { duration: 1000, easing: 'quadraticInOut' });
+    // No animation needed since layout is pre-calculated
+    sigma.refresh();
 
   }, [data, loadGraph, sigma]);
 

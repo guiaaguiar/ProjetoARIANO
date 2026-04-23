@@ -40,17 +40,24 @@ class GraphAnalysisService:
             pagerank = nx.pagerank(G) if len(G) > 0 else {}
             degree_cent = nx.degree_centrality(G) if len(G) > 0 else {}
 
-            # 5. Prepare Enriched Result
+            # 5. Layout Calculation (NetworkX Spring Layout)
+            # Isso garante que a visualização seja gerada inteiramente pela lógica da biblioteca NetworkX
+            pos = nx.spring_layout(G, k=1.0, iterations=50, seed=42)
+
+            # 6. Prepare Enriched Result
             enriched_nodes = []
             for node in nodes_data:
                 uid = node['uid']
+                coords = pos.get(uid, [0, 0])
                 enriched_nodes.append({
                     "id": uid,
                     "label": node['name'],
                     "type": node['type'],
                     "cluster_id": node_communities.get(uid, 0),
                     "influence": round(pagerank.get(uid, 0) * 1000, 2), # Scale for visibility
-                    "connectivity": round(degree_cent.get(uid, 0), 2)
+                    "connectivity": round(degree_cent.get(uid, 0), 2),
+                    "x": float(coords[0]) * 1500, # Escala ampliada para o frontend
+                    "y": float(coords[1]) * 1500,
                 })
 
             return {
