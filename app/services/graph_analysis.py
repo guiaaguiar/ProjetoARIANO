@@ -46,6 +46,7 @@ class GraphAnalysisService:
             communities = list(nx.community.louvain_communities(G, seed=42))
             
             # 3. Cluster Naming Logic (Graph-CoT Contextualization)
+            logger.info(f"🔍 Contextualizando {len(communities)} comunidades de pensamento...")
             cluster_themes = {}
             stop_words = {'de', 'o', 'a', 'e', 'do', 'da', 'em', 'um', 'uma', 'com', 'para', 'os', 'as', 'dos', 'das', 'no', 'na', 'para', 'pelo', 'pela', 'sobre'}
             
