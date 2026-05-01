@@ -378,7 +378,7 @@ const Landing = () => {
       <section className="relative z-10 py-24 px-6 overflow-hidden">
         {/* Angular line shading background */}
         <div
-          className="absolute inset-0 pointer-events-none"
+          className="absolute inset-0 pointer-events-none bg-background/70 backdrop-blur-md"
           style={{
             backgroundImage: `repeating-linear-gradient(
               -45deg,
@@ -432,7 +432,7 @@ const Landing = () => {
       </section>
 
       {/* Footer */}
-      <div className="relative z-10 border-t border-border">
+      <div className="relative z-10 border-t border-border bg-background/70 backdrop-blur-md">
         <div className="mx-auto max-w-[1200px] px-6 py-6 flex items-center justify-between">
           <div className="flex items-center gap-2 -ml-0.5">
             <StackedLogo size={16} />
