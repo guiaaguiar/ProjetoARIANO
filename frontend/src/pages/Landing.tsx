@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Moon, Sun } from "lucide-react";
 import { Graph3D } from "@/components/Graph3D";
-import testimonialAvatarAsset from "@/assets/testimonial-avatar.jpg.asset.json";
+import GuiAguiarImg from "@/assets/gui-aguiar.jpeg";
 
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
@@ -386,10 +386,10 @@ const Landing = () => {
               "O motor do ARIANO mudou nossa forma de conectar pesquisadores e editais, permitindo uma transparência jamais vista através do grafo interativo."
             </blockquote>
             <div className="mt-6 flex items-center gap-3">
-              <img src={testimonialAvatarAsset.url} alt="Gui Aguiar" className="h-8 w-8 rounded-full object-cover" />
+              <img src={GuiAguiarImg} alt="Guilherme Aguiar" className="h-8 w-8 rounded-full object-cover" />
               <div>
-                <span className="text-[13px] font-medium text-foreground">Gui Aguiar</span>
-                <span className="text-[13px] text-muted-foreground ml-2">Idealizador, CORETO</span>
+                <span className="text-[13px] font-medium text-foreground">Guilherme Aguiar</span>
+                <span className="text-[13px] text-muted-foreground ml-2">Product Owner, ARIANO</span>
               </div>
             </div>
           </div>
