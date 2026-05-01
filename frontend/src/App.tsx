@@ -18,6 +18,7 @@ import { ThemeProvider } from 'next-themes';
 import Landing from './pages/Landing';
 import { useAuthStore } from './store/authStore';
 import { useEffect } from 'react';
+import { AppBackground } from './components/AppBackground';
 
 function UserPlaceholder({ title }: { title: string }) {
   return <div className="text-white p-4"><h1>{title}</h1><p className="text-gray-400 mt-2 font-mono text-sm opacity-60 italic">{'>'} Agente Orchestrator preparando visualização...</p></div>;
@@ -33,6 +34,7 @@ export default function App() {
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
       <BrowserRouter>
+        <AppBackground />
         <Toaster theme="dark" position="top-right" />
         <Routes>
           <Route path="/login" element={<LoginPage />} />

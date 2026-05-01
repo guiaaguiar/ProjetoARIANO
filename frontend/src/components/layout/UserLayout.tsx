@@ -102,7 +102,7 @@ export default function UserLayout() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen">
       <UserSidebarWrapper />
 
       <div className="flex-1 flex flex-col min-w-0">
