@@ -156,12 +156,12 @@ const Landing = () => {
             </button>
             <Link to="/login">
               <button className="text-[13px] text-foreground/70 hover:text-foreground transition-colors h-8 px-3">
-                Log in
+                Entrar
               </button>
             </Link>
             <Link to="/cadastro">
               <button className="text-[13px] h-8 px-3 border border-foreground/40 text-foreground hover:bg-foreground hover:text-background transition-colors">
-                Sign up
+                Cadastrar-se
               </button>
             </Link>
           </div>
@@ -192,8 +192,8 @@ const Landing = () => {
             </div>
 
             {/* Right column — 3D animated graph */}
-            <div className="hidden md:flex absolute left-0 top-[-60px] z-[1] w-full pointer-events-none items-center justify-start" style={{ height: 'calc(100vh - 80px)' }}>
-              <div className="pointer-events-auto" style={{ width: cubeZoom, height: cubeZoom, transform: 'translate(0%, -15%)' }}>
+            <div className="hidden md:flex absolute left-[30%] top-[-60px] z-[1] w-[70%] pointer-events-none items-center justify-center" style={{ height: 'calc(100vh - 80px)' }}>
+              <div className="pointer-events-auto" style={{ width: cubeZoom, height: cubeZoom, transform: 'translate(0, -15%)' }}>
                 <Graph3D
                   size={cubeZoom}
                   lineHex={theme === "dark" ? "#1aa0b8" : "#0d7a8c"}
