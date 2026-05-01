@@ -1,10 +1,10 @@
 # 📋 PROJETO ARIANO — Documento de Visão e Planejamento do MVP
 
-> **Versão:** 6.0.0  
-> **Data:** 16/04/2026  
-> **Status:** MVP 1.0.0 Online — Sprint 4 em Andamento (Portais, Graph-CoT Híbrido, Cognição Artificial & Experiência)
+> **Versão:** 7.0.0  
+> **Data:** 01/05/2026  
+> **Status:** MVP 1.0.0 Online — Sprint 6 em Andamento (Grafo de Alta Precisão & UX Avançada)
 > **Metodologia:** SCRUM (adaptado para contexto acadêmico)  
-> **Última atualização:** 16/04/2026 — Sprint 4 (Graph-CoT, Cognitive RAG, Autenticação, Portal Usuário, CORETO, Comunidades de Pensamento, Engenharia de Prompt Avançada)
+> **Última atualização:** 01/05/2026 — Sprint 6 (Graph-CoT de Alta Fidelidade, Minkowski Sum, Centralização Viewport, UI/UX Neon Polish)
 
 ---
 
@@ -705,7 +705,7 @@ Finalizamos a integração total E2E, removendo mocks e estabilizando a comunica
 - **Robustez Pydantic:** Configurações de ambiente validadas e corrigidas para suporte a múltiplos contextos (Local vs Prod).
 - **Consolidação de Agentes:** Pipeline completo de análise → interpretação → matchmaking rodando em produção.
 
-### Sprint 4 — Inteligência Profunda, Portais & Experiência (Semana 7-8) 🚀 EM ANDAMENTO
+### Sprint 4 — Inteligência Profunda, Portais & Experiência (Semana 7-8) ✅ CONCLUÍDA
 
 **Foco:** Transformar o ARIANO em um produto completo com dois portais (Usuário e Admin), autenticação, cadastro inteligente com match visível em tempo real, comunidades de pensamento e excelência visual.
 
@@ -767,6 +767,29 @@ Finalizamos a integração total E2E, removendo mocks e estabilizando a comunica
    - Simulação cronometrada da apresentação (5 min)
    - Deploy final na Vercel
 
+### Sprint 5 — Deploy, Bugfixes e Polimento (Semana 9) ✅ CONCLUÍDA
+
+**Foco:** Refinamento geral da plataforma, resolução de débitos técnicos e otimização da experiência do usuário nas camadas de login e cadastro.
+
+**Entregas:**
+- Refatoração profunda do sistema de autenticação via API com proteção de rotas real (ProtectedRoute vs AuthPopup).
+- Ajustes de design global: harmonização do "Teal Neon" em todas as telas, implementação de glassmorphism unificado nos painéis laterais.
+- Atualização do projeto ARIANO Docs, incluindo consolidação da migração do monorepo.
+- Bugfix: Resolução de falhas críticas na criação de usuários com upload de currículo em PDF e conversão instantânea.
+
+### Sprint 6 — Grafo de Alta Precisão & UX Avançada (Semana 10) 🚀 EM ANDAMENTO
+
+**Foco:** Transformar a visualização de comunidades (Graph-CoT) num painel de altíssima fidelidade estética e usabilidade impecável.
+
+**Pilares e Entregas Técnicas:**
+1. **Comunidades Orgânicas (Slime/Blob):** Implementação do cálculo matemático de Minkowski Sum (Convex Hull + arcos circulares) para desenhar clusters de pensamento de formato orgânico (slimes) englobando os nós perfeitamente.
+2. **Textos à Prova de Falhas (Bulletproof Labels):** Uso de `ctx.clip()` no Canvas HTML5 garantindo que nenhum nome de nó transborde seu círculo, com stroke de 2px constante independentemente do zoom.
+3. **Dinâmica de Foco e Glow (Neon Polish):** Nós selecionados recebem aumento de `shadowBlur` (até 70px), anel de aura secundário duplo e bordas destacadas. A cor do glow extra se adequa à cor quente da sua CoT.
+4. **Navegação Inteligente entre Conexões:** No painel de detalhes, clicar numa conexão leva o usuário diretamente ao nó de destino com zoom e auto-center imediatos.
+5. **Centralização Real de Viewport:** Cálculo dinâmico das dimensões baseadas nos painéis abertos (esquerda: filtros, direita: detalhes) garantindo que o nó se posicione precisamente no "centro visual útil" (sem hardcode de px).
+6. **Controle Contextual por Teclado e Fundo:** Escutadores para fechamento progressivo de painéis em cadeia (prioridade: Esc -> Painel Detalhe -> Esc -> Painel Filtros). Clique no fundo do grafo (Vazio) fecha os detalhes.
+7. **Menu de Filtros Interativos do Grafo:** Filtros simultâneos que ocultam os nós irrelevantes e separam por Comunidade, isolando e permitindo o estudo individualizado de cada cluster.
+
 ---
 
 ## 9. Critérios de Aceite (Definition of Done)
@@ -782,14 +805,19 @@ O MVP será considerado **Done** quando:
 - [x] Frontend otimizado com dashboard, cadastro e visualizador de grafo interativo 100% dinâmicos
 - [x] CI/CD testado
 - [x] Design consistente com tema azul neon (Blue Neon Edition)
-- [ ] Campos bio, currículo (upload PDF → texto extraído via PyMuPDF, PDF descartado), maturidade (IA) e o_que_busco (IA) funcionais (Sprint 4)
-- [ ] Autenticação com cookies JWT + dual login (user + admin simultaneamente) (Sprint 4)
-- [ ] Página CORETO com cadastro + match estratégico visível em tempo real (Sprint 4)
-- [ ] Portal Usuário: Profile, Matchs O(1), Ecossistema em /user/* (Sprint 4)
-- [ ] Portal Admin: todas páginas existentes sob /admin/* (Sprint 4)
-- [ ] Graph-CoT Primitives (graph_tools.py) operacionais (Sprint 4)
-- [ ] Comunidades de Pensamento com Graph-CoT iterativo funcional em /admin/comunidades (Sprint 4)
-- [ ] Verificação final de UX/UI aprovada (10+ páginas, desktop + mobile) (Sprint 4)
+- [x] Campos bio, currículo (upload PDF → texto extraído via PyMuPDF, PDF descartado), maturidade (IA) e o_que_busco (IA) funcionais (Sprint 4)
+- [x] Autenticação com cookies JWT + dual login (user + admin simultaneamente) (Sprint 4)
+- [x] Página CORETO com cadastro + match estratégico visível em tempo real (Sprint 4)
+- [x] Portal Usuário: Profile, Matchs O(1), Ecossistema em /user/* (Sprint 4)
+- [x] Portal Admin: todas páginas existentes sob /admin/* (Sprint 4)
+- [x] Graph-CoT Primitives (graph_tools.py) operacionais (Sprint 4)
+- [x] Comunidades de Pensamento com Graph-CoT iterativo funcional em /admin/comunidades (Sprint 4)
+- [x] Verificação final de UX/UI aprovada (10+ páginas, desktop + mobile) (Sprint 4)
+- [x] Auth routes unificadas e login popup non-intrusive (Sprint 5)
+- [x] Bugfixes de sessão e re-estilização global no tema Teal Neon (Sprint 5)
+- [ ] Renderização orgânica de CoTs (Minkowski Sum) e labels contidos via clipping em Canvas (Sprint 6)
+- [ ] Centralização inteligente de nodes com viewport real, zoom contextual e menu em cascata (Esc) (Sprint 6)
+- [ ] Navegação em-grafo via ligações do side panel + filtros dinâmicos de tipo e visibilidade (Sprint 6)
 
 ---
 
