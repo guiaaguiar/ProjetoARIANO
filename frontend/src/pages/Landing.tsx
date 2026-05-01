@@ -62,7 +62,7 @@ const Landing = () => {
   const [cubeZoom, setCubeZoom] = useState(() => {
     const w = window.innerWidth;
     const baseSize = w < 1024 ? 300 : window.innerHeight - 32;
-    return baseSize * 0.4;
+    return baseSize * 0.1;
   });
   
   const [activeTestimonial, setActiveTestimonial] = useState(0);
@@ -92,7 +92,7 @@ const Landing = () => {
     const handleResize = () => {
       const w = window.innerWidth;
       const baseSize = w < 1024 ? 270 : window.innerHeight - 32;
-      setCubeZoom(baseSize * 0.4);
+      setCubeZoom(baseSize * 0.1);
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -193,7 +193,7 @@ const Landing = () => {
 
             {/* Right column — 3D animated graph */}
             <div className="hidden md:flex absolute right-0 top-[-60px] z-[1] w-full pointer-events-none items-center justify-end" style={{ height: 'calc(100vh - 80px)' }}>
-              <div className="pointer-events-auto" style={{ width: cubeZoom, height: cubeZoom, transform: 'translate(0%, -15%)' }}>
+              <div className="pointer-events-auto" style={{ width: cubeZoom, height: cubeZoom, transform: 'translate(-20%, -15%)' }}>
                 <Graph3D
                   size={cubeZoom}
                   lineHex={theme === "dark" ? "#1aa0b8" : "#0d7a8c"}
