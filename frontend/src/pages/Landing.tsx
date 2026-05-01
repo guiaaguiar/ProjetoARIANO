@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Moon, Sun, LayoutDashboard, Zap, Network, Search, Settings } from "lucide-react";
+import { ArrowRight, Moon, Sun, LayoutDashboard, Zap, Network, Search, Settings, ChevronLeft, ChevronRight } from "lucide-react";
 import { Graph3D } from "@/components/Graph3D";
 import GuiAguiarImg from "@/assets/gui-aguiar.jpeg";
 
@@ -24,12 +24,38 @@ const CUBE_SIZE = 720;
 const CUBE_OFFSET_X = -60;
 const CUBE_OFFSET_Y = 0;
 
+const TESTIMONIALS = [
+  {
+    text: "O motor do ARIANO mudou nossa forma de conectar pesquisadores e editais, permitindo uma transparência jamais vista através do grafo interativo.",
+    name: "Guilherme Aguiar",
+    role: "Product Owner, ARIANO",
+    avatar: GuiAguiarImg
+  },
+  {
+    text: "A arquitetura e os pipelines de deploy automatizado transformaram o ciclo de vida do projeto. Temos agora estabilidade garantida em cada release.",
+    name: "Pedro Miranda",
+    role: "DevOps",
+    avatar: "" 
+  },
+  {
+    text: "A integração dos modelos de linguagem e a engenharia de prompts avançada elevaram a precisão dos matches em níveis extraordinários.",
+    name: "Ricardo Cezar",
+    role: "AI Agent Architect",
+    avatar: "" 
+  }
+];
+
 const Landing = () => {
   const { theme, setTheme } = useTheme();
   const [cubeZoom, setCubeZoom] = useState(() => {
     const w = window.innerWidth;
     return w < 1024 ? 300 : window.innerHeight - 32;
   });
+  
+  const [activeTestimonial, setActiveTestimonial] = useState(0);
+
+  const handlePrevTestimonial = () => setActiveTestimonial(prev => (prev === 0 ? TESTIMONIALS.length - 1 : prev - 1));
+  const handleNextTestimonial = () => setActiveTestimonial(prev => (prev === TESTIMONIALS.length - 1 ? 0 : prev + 1));
 
   useEffect(() => {
     const handleResize = () => {
@@ -390,18 +416,67 @@ const Landing = () => {
             backgroundSize: "100% 100%",
           }}
         />
-        <div className="mx-auto max-w-[1200px] relative">
-          <div className="border border-border bg-background/50 backdrop-blur-md rounded-2xl p-10 max-w-[720px] mx-auto shadow-[0_0_40px_rgba(45,212,191,0.05)]">
-            <blockquote className="text-[20px] font-[400] leading-[1.5] tracking-[-0.01em] text-foreground/85">
-              "O motor do ARIANO mudou nossa forma de conectar pesquisadores e editais, permitindo uma transparência jamais vista através do grafo interativo."
-            </blockquote>
-            <div className="mt-6 flex items-center gap-3">
-              <img src={GuiAguiarImg} alt="Guilherme Aguiar" className="h-8 w-8 rounded-full object-cover" />
-              <div>
-                <span className="text-[13px] font-medium text-foreground">Guilherme Aguiar</span>
-                <span className="text-[13px] text-muted-foreground ml-2">Product Owner, ARIANO</span>
-              </div>
+        <div className="w-full relative py-12">
+          <div className="relative w-full max-w-[1400px] mx-auto h-[350px] overflow-hidden flex items-center justify-center">
+            {TESTIMONIALS.map((t, i) => {
+              let position = "center";
+              if (i === activeTestimonial) position = "center";
+              else if (i === (activeTestimonial + 1) % TESTIMONIALS.length) position = "right";
+              else position = "left";
+
+              const isCenter = position === "center";
+              
+              const posClass = 
+                position === "center" ? "left-1/2 -translate-x-1/2 z-20 scale-100 opacity-100" :
+                position === "left" ? "left-0 -translate-x-[40%] md:-translate-x-[20%] z-10 scale-90 opacity-40" :
+                "right-0 translate-x-[40%] md:translate-x-[20%] z-10 scale-90 opacity-40";
+
+              const glowClass = isCenter ? "shadow-[0_0_40px_rgba(45,212,191,0.05)] bg-background/50 backdrop-blur-md" : "bg-background/20 backdrop-blur-sm";
+              
+              return (
+                <div 
+                  key={i}
+                  className={`absolute top-1/2 -translate-y-1/2 w-[85vw] max-w-[720px] transition-all duration-700 ease-in-out border border-border rounded-2xl p-10 cursor-pointer ${posClass} ${glowClass}`}
+                  onClick={() => { if (!isCenter) { if (position === 'left') handlePrevTestimonial(); else handleNextTestimonial(); } }}
+                >
+                  <blockquote className={`text-[18px] md:text-[20px] font-[400] leading-[1.5] tracking-[-0.01em] transition-colors duration-700 ${isCenter ? 'text-foreground/85' : 'text-foreground/50'}`}>
+                    "{t.text}"
+                  </blockquote>
+                  <div className="mt-6 flex items-center gap-3">
+                    {t.avatar ? (
+                      <img src={t.avatar} alt={t.name} className="h-10 w-10 rounded-full object-cover border border-border" />
+                    ) : (
+                      <div className="h-10 w-10 rounded-full bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-400 font-bold text-sm">
+                        {t.name.split(" ").map(n => n[0]).join("").substring(0, 2)}
+                      </div>
+                    )}
+                    <div>
+                      <span className="text-[13px] font-medium text-foreground block">{t.name}</span>
+                      <span className="text-[13px] text-muted-foreground block">{t.role}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Controls */}
+          <div className="flex items-center justify-center gap-6 mt-8 relative z-20">
+            <button onClick={handlePrevTestimonial} className="p-2.5 rounded-full border border-border bg-background/50 hover:bg-accent/50 text-muted-foreground hover:text-foreground transition-colors backdrop-blur-sm">
+              <ChevronLeft size={20} />
+            </button>
+            <div className="flex gap-2.5">
+              {TESTIMONIALS.map((_, i) => (
+                <button 
+                  key={i} 
+                  onClick={() => setActiveTestimonial(i)}
+                  className={`w-2.5 h-2.5 rounded-full transition-all duration-500 ${i === activeTestimonial ? 'bg-teal-500 shadow-[0_0_10px_#2dd4bf] scale-125' : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'}`}
+                />
+              ))}
             </div>
+            <button onClick={handleNextTestimonial} className="p-2.5 rounded-full border border-border bg-background/50 hover:bg-accent/50 text-muted-foreground hover:text-foreground transition-colors backdrop-blur-sm">
+              <ChevronRight size={20} />
+            </button>
           </div>
         </div>
       </section>
