@@ -28,7 +28,7 @@ const Landing = () => {
   const { theme, setTheme } = useTheme();
   const [cubeZoom, setCubeZoom] = useState(() => {
     const w = window.innerWidth;
-    return w < 1024 ? 270 : 360;
+    return w < 1024 ? 300 : 450;
   });
 
   useEffect(() => {
@@ -134,9 +134,9 @@ const Landing = () => {
 
             {/* Right column — 3D animated graph */}
             <div className="hidden md:block flex-1 relative z-[1]" style={{ minWidth: 0 }}>
-              <div className="absolute top-1/2 right-0 -translate-y-1/2" style={{ width: CUBE_SIZE, height: CUBE_SIZE, transform: `translate(${-CUBE_OFFSET_X}px, calc(-50% + ${CUBE_OFFSET_Y}px))` }}>
+              <div className="absolute top-1/2 right-4" style={{ width: cubeZoom, height: cubeZoom, transform: `translateY(-50%)` }}>
                 <Graph3D
-                  size={CUBE_SIZE}
+                  size={cubeZoom}
                   lineHex={theme === "dark" ? "#1aa0b8" : "#0d7a8c"}
                   nodeHex={theme === "dark" ? "#3fd4ec" : "#0d7a8c"}
                   nodeCount={7}
@@ -187,28 +187,36 @@ const Landing = () => {
                   </div>
                   <div className="flex-1">
                     {[
-                      { priority: "bg-destructive", id: "ARI-142", title: "w-[180px]", status: "bg-warning" },
-                      { priority: "bg-destructive", id: "ARI-139", title: "w-[220px]", status: "bg-destructive" },
-                      { priority: "bg-warning", id: "ARI-138", title: "w-[160px]", status: "bg-primary" },
-                      { priority: "bg-primary", id: "ARI-135", title: "w-[200px]", status: "bg-success" },
-                      { priority: "bg-muted-foreground/30", id: "ARI-131", title: "w-[140px]", status: "bg-primary" },
-                      { priority: "bg-warning", id: "ARI-128", title: "w-[190px]", status: "bg-warning" },
-                      { priority: "bg-primary", id: "ARI-125", title: "w-[170px]", status: "bg-success" },
+                      { priority: "bg-destructive", id: "ARI-142", name: "Dra. Ana Silva", area: "Engenharia de Dados", score: "98%", status: "bg-warning" },
+                      { priority: "bg-destructive", id: "ARI-139", name: "Prof. Carlos Mendes", area: "Visão Computacional", score: "95%", status: "bg-destructive" },
+                      { priority: "bg-warning", id: "ARI-138", name: "Inovatech Ltda.", area: "Edital: Smart Cities", score: "89%", status: "bg-primary" },
+                      { priority: "bg-primary", id: "ARI-135", name: "Dr. João Paulo", area: "Redes Neurais", score: "82%", status: "bg-success" },
+                      { priority: "bg-muted-foreground/30", id: "ARI-131", name: "EcoSolutions", area: "Edital: Sustentabilidade", score: "75%", status: "bg-primary" },
+                      { priority: "bg-warning", id: "ARI-128", name: "Mariana Costa", area: "UX/UI & IA", score: "88%", status: "bg-warning" },
+                      { priority: "bg-primary", id: "ARI-125", name: "DataOps Corp", area: "Edital: Big Data", score: "80%", status: "bg-success" },
                     ].map((row, i) => (
-                      <div key={i} className={`relative flex items-center gap-3 px-4 h-9 border-b border-border transition-colors`}>
+                      <div key={i} className={`relative flex items-center gap-4 px-4 h-9 border-b border-border transition-colors hover:bg-accent/30 cursor-pointer`}>
                         {i === 1 && (
                           <div className="absolute inset-0" style={{
                             backgroundImage: `repeating-linear-gradient(-45deg, ${diagonalLineColor} / 0.3) 0px, ${diagonalLineColor} / 0.3) 1px, transparent 1px, transparent 6px)`,
                           }} />
                         )}
-                        <div className="h-3.5 w-3.5 rounded border border-border flex items-center justify-center shrink-0">
+                        <div className="h-3.5 w-3.5 rounded border border-border flex items-center justify-center shrink-0 z-10">
                           <div className={`h-1.5 w-1.5 rounded-sm ${row.priority}`} />
                         </div>
-                        <span className="text-[11px] text-muted-foreground font-mono shrink-0">{row.id}</span>
-                        <div className={`h-1.5 ${row.title} rounded-full bg-foreground/15`} />
-                        <div className="ml-auto flex items-center gap-2">
+                        <span className="text-[11px] text-muted-foreground font-mono shrink-0 z-10">{row.id}</span>
+                        
+                        <div className="flex items-center gap-3 flex-1 min-w-0 z-10">
+                          <span className="text-[12px] font-medium text-foreground truncate">{row.name}</span>
+                          <span className="text-[12px] text-muted-foreground truncate hidden sm:inline-block">{row.area}</span>
+                        </div>
+                        
+                        <div className="ml-auto flex items-center gap-3 z-10">
+                          <span className="text-[11px] font-mono text-muted-foreground">{row.score}</span>
                           <div className={`h-2 w-2 rounded-full ${row.status}`} />
-                          <div className="h-5 w-5 rounded-full bg-muted-foreground/10" />
+                          <div className="h-5 w-5 rounded-full bg-muted-foreground/10 flex items-center justify-center">
+                            <ArrowRight className="h-3 w-3 text-muted-foreground opacity-50" />
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -216,41 +224,46 @@ const Landing = () => {
                 </div>
 
                 {/* Detail panel */}
-                <div className="w-[280px] border-l border-border shrink-0 hidden lg:flex flex-col">
+                <div className="w-[280px] border-l border-border shrink-0 hidden lg:flex flex-col relative z-10 bg-card">
                   <div className="flex items-center justify-between px-4 h-10 border-b border-border">
-                    <div className="h-2 w-20 rounded-full bg-foreground/15" />
+                    <span className="text-[12px] font-medium text-foreground">Detalhes do Match</span>
                     <div className="flex gap-1.5">
                       <div className="h-4 w-4 rounded bg-muted-foreground/10" />
                       <div className="h-4 w-4 rounded bg-muted-foreground/10" />
                     </div>
                   </div>
                   <div className="p-4 space-y-4">
-                    <div className="h-2 w-32 rounded-full bg-foreground/20" />
+                    <div className="font-medium text-[14px]">Prof. Carlos Mendes</div>
                     <div className="space-y-1.5">
-                      <div className="h-1.5 w-full rounded-full bg-muted-foreground/10" />
-                      <div className="h-1.5 w-3/4 rounded-full bg-muted-foreground/10" />
+                      <p className="text-[12px] text-muted-foreground leading-relaxed">
+                        Pesquisador especializado em Visão Computacional com forte aderência ao edital de inovação em Smart Cities.
+                      </p>
                     </div>
                     <div className="h-px bg-border" />
                     {[
-                      { label: "Status do Edital", value: "bg-warning" },
-                      { label: "Score IA", value: "bg-destructive" },
-                      { label: "Pesquisador", value: "bg-primary" },
-                      { label: "Data limite", value: "bg-muted-foreground/15" },
+                      { label: "Status do Edital", value: "Aberto", color: "bg-warning" },
+                      { label: "Score IA", value: "95%", color: "bg-destructive" },
+                      { label: "Tipo", value: "Pesquisador", color: "bg-primary" },
+                      { label: "Data limite", value: "12/06/2026", color: "bg-muted-foreground/40" },
                     ].map((prop) => (
                       <div key={prop.label} className="flex items-center justify-between">
                         <span className="text-[11px] text-muted-foreground">{prop.label}</span>
-                        <div className={`h-2.5 w-2.5 rounded-full ${prop.value}`} />
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] font-medium">{prop.value}</span>
+                          <div className={`h-2.5 w-2.5 rounded-full ${prop.color}`} />
+                        </div>
                       </div>
                     ))}
                     <div className="h-px bg-border" />
                     <div className="space-y-3 pt-1">
-                      <div className="h-1.5 w-14 rounded-full bg-muted-foreground/10" />
-                      {[1, 2].map((n) => (
+                      <span className="text-[11px] text-muted-foreground">Skills em Comum</span>
+                      {["Python", "Machine Learning"].map((skill, n) => (
                         <div key={n} className="flex gap-2">
-                          <div className="h-5 w-5 rounded-full bg-muted-foreground/10 shrink-0 mt-0.5" />
-                          <div className="space-y-1 flex-1">
-                            <div className="h-1.5 w-full rounded-full bg-muted-foreground/8" />
-                            <div className="h-1.5 w-2/3 rounded-full bg-muted-foreground/8" />
+                          <div className="h-5 w-5 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0 mt-0.5 text-[9px] font-bold">
+                            {skill.charAt(0)}
+                          </div>
+                          <div className="flex items-center">
+                            <span className="text-[12px] text-foreground">{skill}</span>
                           </div>
                         </div>
                       ))}
