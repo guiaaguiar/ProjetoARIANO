@@ -8,7 +8,7 @@ import { useAuthStore } from '../store/authStore';
 import { useEffect } from 'react';
 
 export const CadastroPage: React.FC = () => {
-  const { isAuthenticated, isLoading } = useAuthStore();
+  const { isAuthenticated, isLoading, user } = useAuthStore();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [showCognition, setShowCognition] = useState(false);
@@ -17,10 +17,10 @@ export const CadastroPage: React.FC = () => {
 
   // Bloqueio de acesso se já estiver logado
   useEffect(() => {
-    if (!isLoading && isAuthenticated) {
+    if (!isLoading && isAuthenticated && user?.type !== 'admin') {
       navigate('/user');
     }
-  }, [isAuthenticated, isLoading, navigate]);
+  }, [isAuthenticated, isLoading, navigate, user]);
 
   const [formData, setFormData] = useState({
     name: '',

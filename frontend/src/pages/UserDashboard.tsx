@@ -41,25 +41,30 @@ export default function UserDashboard() {
 
   return (
     <div className="space-y-10">
-      {/* Header */}
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div>
-          <motion.h2 
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-4xl font-extrabold text-white mb-2 tracking-tight"
-          >
-            Olá, <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-500">{user?.name}</span>!
-          </motion.h2>
-          <p className="text-gray-400 flex items-center gap-2 font-medium">
-            <GraduationCap className="w-5 h-5 text-teal-500" />
-            {user?.type === 'student' ? 'Estudante' : user?.type === 'researcher' ? 'Pesquisador' : 'Professor'} · Ecossistema CORETO
-          </p>
-        </div>
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-2">
+        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="page-header !mb-0">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-teal-500/10 rounded-xl border border-teal-500/20 shadow-[0_0_20px_rgba(45,212,191,0.1)]">
+              <GraduationCap className="text-teal-400 w-6 h-6" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground tracking-tight">
+                Olá, <span className="text-teal-500">{user?.name?.split(' ')[0]}</span>!
+              </h1>
+              <p className="text-xs text-muted-foreground flex items-center gap-2 mt-1">
+                <span className="text-teal-400 font-mono font-bold px-1.5 py-0.5 bg-teal-400/10 rounded">
+                  {user?.type === 'student' ? 'Estudante' : user?.type === 'researcher' ? 'Pesquisador' : 'Professor'}
+                </span>
+                <span className="w-1 h-1 rounded-full bg-muted-foreground/50" />
+                <span>Ecossistema CORETO</span>
+              </p>
+            </div>
+          </div>
+        </motion.div>
         <div className="flex gap-3">
            <div className="px-4 py-2 rounded-2xl bg-teal-500/10 border border-teal-500/20 flex flex-col items-center">
              <span className="text-[10px] uppercase tracking-widest text-teal-500 font-bold">Maturidade IA</span>
-             <span className="text-xl font-black text-white">{(user as any)?.maturidade || '7.5'}</span>
+             <span className="text-xl font-black text-foreground">{(user as any)?.maturidade || '7.5'}</span>
            </div>
         </div>
       </header>

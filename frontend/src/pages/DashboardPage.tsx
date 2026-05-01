@@ -40,14 +40,20 @@ export default function DashboardPage() {
 
   return (
     <div className="container-fluid py-4">
-      <motion.div
-        initial="hidden"
-        animate="show"
-        variants={container}
-        className="page-header"
-      >
-        <motion.h1 variants={item}>Dashboard</motion.h1>
-        <motion.p variants={item}>Visão geral do ecossistema ARIANO</motion.p>
+      <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="page-header !mb-6">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-teal-500/10 rounded-xl border border-teal-500/20 shadow-[0_0_20px_rgba(45,212,191,0.1)]">
+            <Network className="text-teal-400 w-6 h-6" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">Dashboard ARIANO</h1>
+            <p className="text-xs text-muted-foreground flex items-center gap-2 mt-1">
+              <span className="text-teal-400 font-mono font-bold px-1.5 py-0.5 bg-teal-400/10 rounded">Global Metrics</span>
+              <span className="w-1 h-1 rounded-full bg-muted-foreground/50" />
+              <span>Visão geral do ecossistema e inteligência artificial</span>
+            </p>
+          </div>
+        </div>
       </motion.div>
 
       <motion.div

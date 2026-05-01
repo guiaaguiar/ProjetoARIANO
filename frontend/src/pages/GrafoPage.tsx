@@ -107,10 +107,10 @@ export default function GrafoPage() {
               <Network className="text-teal-400 w-6 h-6" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white tracking-tight">Cérebro CoT ARIANO</h1>
-              <p className="text-xs text-gray-400 flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-foreground tracking-tight">Cérebro CoT ARIANO</h1>
+              <p className="text-xs text-muted-foreground flex items-center gap-2">
                 <span className="text-teal-400 font-mono font-bold px-1.5 py-0.5 bg-teal-400/10 rounded">NetworkX Interactive Engine</span>
-                <span className="w-1 h-1 rounded-full bg-gray-600" />
+                <span className="w-1 h-1 rounded-full bg-muted-foreground/50" />
                 <span>Mapeamento de Comunidades Acadêmicas</span>
               </p>
             </div>
