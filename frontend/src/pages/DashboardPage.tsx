@@ -58,17 +58,17 @@ export default function DashboardPage() {
       >
         {loading ? (
           Array.from({ length: 8 }).map((_, i) => (
-            <motion.div key={i} variants={item} className="kpi-card">
-              <div className="h-16 skeleton" />
+            <motion.div key={i} variants={item} className="rounded-xl border bg-card p-6 shadow">
+              <div className="h-16 animate-pulse bg-muted rounded-md" />
             </motion.div>
           ))
         ) : (
           kpis.map((kpi) => (
-            <motion.div key={kpi.label} variants={item} className="kpi-card group">
+            <motion.div key={kpi.label} variants={item} className="rounded-xl border bg-card text-card-foreground shadow p-6 hover:shadow-md transition-shadow group">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-text-muted text-xs lg:text-sm font-medium">{kpi.label}</p>
-                  <p className="text-2xl lg:text-3xl font-bold mt-1 text-text-primary">
+                  <p className="text-muted-foreground text-xs lg:text-sm font-medium">{kpi.label}</p>
+                  <p className="text-2xl lg:text-3xl font-bold mt-1 text-foreground">
                     {kpi.value}
                   </p>
                 </div>
@@ -90,22 +90,22 @@ export default function DashboardPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="card-glass p-4 lg:p-6"
+          className="rounded-xl border bg-card text-card-foreground shadow p-6"
         >
           <div className="flex items-center gap-3 lg:gap-4">
-            <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center pulse-neon">
-              <Zap className="w-5 h-5 lg:w-6 lg:h-6 text-accent" />
+            <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+              <Zap className="w-5 h-5 lg:w-6 lg:h-6 text-primary" />
             </div>
             <div>
-              <h2 className="text-base lg:text-lg font-semibold text-text-primary flex items-center gap-2">
+              <h2 className="text-base lg:text-lg font-semibold text-foreground flex items-center gap-2">
                 Motor de Matchmaking Inteligente
                 {stats?.graph_mode && (
-                  <span className="px-2 py-0.5 rounded-full bg-teal-500/10 border border-teal-500/20 text-[10px] font-bold text-teal-400">
+                  <span className="px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-bold text-primary">
                     {stats.graph_mode}
                   </span>
                 )}
               </h2>
-              <p className="text-text-secondary text-xs lg:text-sm mt-0.5">
+              <p className="text-muted-foreground text-xs lg:text-sm mt-0.5">
                 Conectando Academia e Governo através de grafos de conhecimento.
                 Agentes IA configuram o grafo — match = query O(1) sobre adjacência.
               </p>

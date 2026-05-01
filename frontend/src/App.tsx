@@ -14,6 +14,8 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import UserMatchesPage from './pages/UserMatchesPage';
 import UserEcosystemPage from './pages/UserEcosystemPage';
 import UserCommunitiesPage from './pages/UserCommunitiesPage';
+import { ThemeProvider } from 'next-themes';
+import Landing from './pages/Landing';
 import { useAuthStore } from './store/authStore';
 import { useEffect } from 'react';
 
@@ -29,37 +31,39 @@ export default function App() {
   }, [checkAuth]);
 
   return (
-    <BrowserRouter>
-      <Toaster theme="dark" position="top-right" />
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/cadastro" element={<CadastroPage />} />
-        <Route path="/user/cadastro" element={<Navigate to="/cadastro" replace />} />
-        
-        {/* Admin Portal */}
-        <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
-          <Route path="/admin" element={<AppLayout />}>
-            <Route index element={<DashboardPage />} />
-            <Route path="academicos" element={<AcademicosPage />} />
-            <Route path="editais" element={<EditaisPage />} />
-            <Route path="matches" element={<MatchesPage />} />
-            <Route path="grafo" element={<GrafoPage />} />
-            <Route path="comunidades" element={<div className="p-8 text-white">Comunidades (Detecção de Clusters NetworkX) - Fase 2</div>} />
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+      <BrowserRouter>
+        <Toaster theme="dark" position="top-right" />
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/cadastro" element={<CadastroPage />} />
+          <Route path="/user/cadastro" element={<Navigate to="/cadastro" replace />} />
+          
+          {/* Admin Portal */}
+          <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+            <Route path="/admin" element={<AppLayout />}>
+              <Route index element={<DashboardPage />} />
+              <Route path="academicos" element={<AcademicosPage />} />
+              <Route path="editais" element={<EditaisPage />} />
+              <Route path="matches" element={<MatchesPage />} />
+              <Route path="grafo" element={<GrafoPage />} />
+              <Route path="comunidades" element={<div className="p-8 text-white">Comunidades (Detecção de Clusters NetworkX) - Fase 2</div>} />
+            </Route>
           </Route>
-        </Route>
 
-        {/* User Portal */}
-        <Route element={<ProtectedRoute allowedRoles={['student', 'researcher', 'professor']} />}>
-          <Route path="/user" element={<UserLayout />}>
-            <Route index element={<UserDashboard />} />
-            <Route path="matches" element={<UserMatchesPage />} />
-            <Route path="ecossistema" element={<UserEcosystemPage />} />
-            <Route path="comunidades" element={<UserCommunitiesPage />} />
+          {/* User Portal */}
+          <Route element={<ProtectedRoute allowedRoles={['student', 'researcher', 'professor']} />}>
+            <Route path="/user" element={<UserLayout />}>
+              <Route index element={<UserDashboard />} />
+              <Route path="matches" element={<UserMatchesPage />} />
+              <Route path="ecossistema" element={<UserEcosystemPage />} />
+              <Route path="comunidades" element={<UserCommunitiesPage />} />
+            </Route>
           </Route>
-        </Route>
 
-        <Route path="/" element={<Navigate to="/cadastro" replace />} />
-      </Routes>
-    </BrowserRouter>
+          <Route path="/" element={<Landing />} />
+        </Routes>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }
