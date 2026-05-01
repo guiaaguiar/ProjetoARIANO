@@ -137,6 +137,9 @@ export default function GrafoPage() {
           activeCoT={activeCoT}
           selectedNodeId={selectedNode?.id ?? null}
           onNavigateToNode={navigateFnRef}
+          panelOffsetX={Math.round(
+            ((filterOpen ? 256 : 0) - (selectedNode ? 320 : 0)) / 2
+          )}
         />
 
         {/* ── Painel de Filtros (esquerda) ─────────────────────────────────── */}

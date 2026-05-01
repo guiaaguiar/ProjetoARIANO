@@ -20,6 +20,7 @@ interface Props {
   activeCoT?: number | null;
   selectedNodeId?: string | null;
   onNavigateToNode?: MutableRefObject<((uid: string) => void) | null>;
+  panelOffsetX?: number; // px offset para compensar painéis sobrepostos
 }
 
 export const COT_COLORS = [
@@ -113,7 +114,7 @@ function drawBlob(ctx: CanvasRenderingContext2D, members: GraphNode[], margin: n
 // ─── Componente ───────────────────────────────────────────────────────────────
 export const NetworkXGraphView: React.FC<Props> = ({
   onNodeClick, hiddenTypes, showCoT = true, activeCoT = null,
-  selectedNodeId, onNavigateToNode,
+  selectedNodeId, onNavigateToNode, panelOffsetX = 0,
 }) => {
   const [rawData, setRawData] = useState<{nodes:GraphNode[],links:GraphLink[]}|null>(null);
   const [clusters, setClusters] = useState<{id:number,theme:string}[]>([]);
@@ -163,26 +164,31 @@ export const NetworkXGraphView: React.FC<Props> = ({
 
   useEffect(() => { if (graphData) dataRef.current = graphData; }, [graphData]);
 
-  // Center on selected node when selectedNodeId changes
+  // Centraliza no nó selecionado, compensando os painéis sobrepostos
+  const centerOnNode = useCallback((node: GraphNode) => {
+    if (!fgRef.current || node.x === undefined) return;
+    const TARGET_ZOOM = 2.5;
+    // panelOffsetX em pixels (positivo = painel à esquerda maior que direita)
+    // converter para unidades do grafo na escala alvo
+    const graphOffsetX = panelOffsetX / TARGET_ZOOM;
+    fgRef.current.centerAt(node.x - graphOffsetX, node.y, 600);
+    fgRef.current.zoom(TARGET_ZOOM, 600);
+  }, [panelOffsetX]);
+
+  // Ao mudar selectedNodeId, centraliza
   useEffect(() => {
-    if (!selectedNodeId || !dataRef.current || !fgRef.current) return;
+    if (!selectedNodeId || !dataRef.current) return;
     const node = dataRef.current.nodes.find(n => n.id === selectedNodeId);
-    if (node?.x !== undefined) {
-      fgRef.current.centerAt(node.x, node.y, 600);
-      fgRef.current.zoom(2.5, 600);
-    }
-  }, [selectedNodeId]);
+    if (node) setTimeout(() => centerOnNode(node), 50); // pequeno delay para painel renderizar
+  }, [selectedNodeId, centerOnNode]);
 
   const navigateToNode = useCallback((uid: string) => {
     if (!dataRef.current || !fgRef.current) return;
     const node = dataRef.current.nodes.find(n => n.id === uid);
     if (!node) return;
-    if (node.x !== undefined) {
-      fgRef.current.centerAt(node.x, node.y, 600);
-      fgRef.current.zoom(2.5, 600);
-    }
+    centerOnNode(node);
     if (onNodeClick) onNodeClick(node);
-  }, [onNodeClick]);
+  }, [onNodeClick, centerOnNode]);
 
   // Expõe navigateToNode via ref para o pai
   useEffect(() => {
@@ -252,15 +258,24 @@ export const NetworkXGraphView: React.FC<Props> = ({
     const nodeColor = NODE_COLORS[node.type as EntityType] || '#888';
     const isSelected = node.id === selectedNodeId;
 
-    // CoT aura ring (always visible)
+    // CoT aura ring — maior e sempre visível
+    const auraSize = isSelected ? size + 14 : size + 5;
     ctx.beginPath();
-    ctx.arc(node.x, node.y, size + (isSelected ? 8 : 4) / globalScale, 0, Math.PI * 2);
-    ctx.fillStyle = `${cotColor}${isSelected ? '30' : '18'}`;
+    ctx.arc(node.x, node.y, auraSize, 0, Math.PI * 2);
+    ctx.fillStyle = `${cotColor}${isSelected ? '35' : '18'}`;
     ctx.fill();
 
-    // Glow (stronger when selected)
+    // Segundo anel externo se selecionado (pulsa)
+    if (isSelected) {
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, size + 22, 0, Math.PI * 2);
+      ctx.fillStyle = `${cotColor}12`;
+      ctx.fill();
+    }
+
+    // Glow (muito mais forte quando selecionado)
     ctx.shadowColor = isSelected ? cotColor : nodeColor;
-    ctx.shadowBlur = (isSelected ? 40 : 18) / globalScale;
+    ctx.shadowBlur = isSelected ? 70 : 20;
 
     // Main circle
     ctx.beginPath();
