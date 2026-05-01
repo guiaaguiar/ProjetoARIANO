@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useCallback } from 'react';
+import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, Info, Network, Zap, Target, Link2, ChevronRight,
@@ -81,6 +81,21 @@ export default function GrafoPage() {
   const activeFiltersCount =
     hiddenTypesList.length + (!showCoT ? 1 : 0) + (activeCoT !== null ? 1 : 0);
 
+  // Fecha menus com Esc (prioridade: painel de detalhes > painel de filtros)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (selectedNode) {
+          setSelectedNode(null);
+        } else if (filterOpen) {
+          setFilterOpen(false);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedNode, filterOpen]);
+
   return (
     <div className="container-fluid py-4 h-[calc(100vh-88px)] lg:h-[calc(100vh-56px)] flex flex-col gap-4 overflow-hidden">
 
@@ -137,9 +152,9 @@ export default function GrafoPage() {
           activeCoT={activeCoT}
           selectedNodeId={selectedNode?.id ?? null}
           onNavigateToNode={navigateFnRef}
-          panelOffsetX={Math.round(
-            ((filterOpen ? 256 : 0) - (selectedNode ? 320 : 0)) / 2
-          )}
+          filterPanelOpen={filterOpen}
+          detailPanelOpen={!!selectedNode}
+          onBackgroundClick={() => setSelectedNode(null)}
         />
 
         {/* ── Painel de Filtros (esquerda) ─────────────────────────────────── */}

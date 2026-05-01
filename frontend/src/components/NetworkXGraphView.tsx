@@ -20,7 +20,9 @@ interface Props {
   activeCoT?: number | null;
   selectedNodeId?: string | null;
   onNavigateToNode?: MutableRefObject<((uid: string) => void) | null>;
-  panelOffsetX?: number; // px offset para compensar painéis sobrepostos
+  filterPanelOpen?: boolean;
+  detailPanelOpen?: boolean;
+  onBackgroundClick?: () => void;
 }
 
 export const COT_COLORS = [
@@ -114,13 +116,16 @@ function drawBlob(ctx: CanvasRenderingContext2D, members: GraphNode[], margin: n
 // ─── Componente ───────────────────────────────────────────────────────────────
 export const NetworkXGraphView: React.FC<Props> = ({
   onNodeClick, hiddenTypes, showCoT = true, activeCoT = null,
-  selectedNodeId, onNavigateToNode, panelOffsetX = 0,
+  selectedNodeId, onNavigateToNode,
+  filterPanelOpen = false, detailPanelOpen = false,
+  onBackgroundClick,
 }) => {
   const [rawData, setRawData] = useState<{nodes:GraphNode[],links:GraphLink[]}|null>(null);
   const [clusters, setClusters] = useState<{id:number,theme:string}[]>([]);
   const [loading, setLoading] = useState(true);
   const fgRef = useRef<any>(null);
   const dataRef = useRef<{nodes:GraphNode[],links:GraphLink[]}|null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     api.getEnrichedGraph()
@@ -164,16 +169,29 @@ export const NetworkXGraphView: React.FC<Props> = ({
 
   useEffect(() => { if (graphData) dataRef.current = graphData; }, [graphData]);
 
-  // Centraliza no nó selecionado, compensando os painéis sobrepostos
+  // Centraliza o nó no CENTRO VISUAL da área entre os painéis
   const centerOnNode = useCallback((node: GraphNode) => {
-    if (!fgRef.current || node.x === undefined) return;
+    if (!fgRef.current || node.x === undefined || node.y === undefined) return;
     const TARGET_ZOOM = 2.5;
-    // panelOffsetX em pixels (positivo = painel à esquerda maior que direita)
-    // converter para unidades do grafo na escala alvo
-    const graphOffsetX = panelOffsetX / TARGET_ZOOM;
-    fgRef.current.centerAt(node.x - graphOffsetX, node.y, 600);
+    const el = containerRef.current;
+    const W = el?.clientWidth || 800;
+    const H = el?.clientHeight || 600;
+
+    // Largura dos painéis em % real do container
+    const leftW = filterPanelOpen ? 256 : 0;
+    const rightW = detailPanelOpen ? 320 : 0;
+
+    // Centro visual em px (fração da área visível)
+    const visibleCenterX = leftW + (W - leftW - rightW) / 2;
+    const visibleCenterY = H / 2;
+
+    // O ForceGraph2D centra em W/2, H/2. Calculamos o delta para corrigir.
+    const deltaX = (visibleCenterX - W / 2) / TARGET_ZOOM; // converter px → graph units
+    const deltaY = (visibleCenterY - H / 2) / TARGET_ZOOM;
+
+    fgRef.current.centerAt(node.x - deltaX, node.y - deltaY, 600);
     fgRef.current.zoom(TARGET_ZOOM, 600);
-  }, [panelOffsetX]);
+  }, [filterPanelOpen, detailPanelOpen]);
 
   // Ao mudar selectedNodeId, centraliza
   useEffect(() => {
@@ -375,7 +393,7 @@ export const NetworkXGraphView: React.FC<Props> = ({
   }
 
   return (
-    <div className="w-full h-full relative rounded-3xl overflow-hidden border border-white/10 shadow-2xl" style={{ background: 'rgba(2,8,16,0.78)', backdropFilter: 'blur(3px)' }}>
+    <div ref={containerRef} className="w-full h-full relative rounded-3xl overflow-hidden border border-white/10 shadow-2xl" style={{ background: 'rgba(2,8,16,0.78)', backdropFilter: 'blur(3px)' }}>
       {graphData && graphData.nodes.length > 0 ? (
         <ForceGraph2D
           ref={fgRef}
@@ -398,6 +416,7 @@ export const NetworkXGraphView: React.FC<Props> = ({
           linkDirectionalParticleSpeed={0.004}
           onRenderFramePre={onRenderFramePre as any}
           onNodeClick={(node) => { if (onNodeClick) onNodeClick(node as GraphNode); }}
+          onBackgroundClick={() => { if (onBackgroundClick) onBackgroundClick(); }}
           onNodeDrag={handleNodeDrag as any}
           onNodeDragEnd={handleNodeDragEnd as any}
           enableNodeDrag={true}
