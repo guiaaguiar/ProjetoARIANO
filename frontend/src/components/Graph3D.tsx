@@ -522,7 +522,7 @@ export function Graph3D({
     <div
       style={{ width: size, height: size, cursor: "grab", touchAction: "none", position: 'relative' }}
     >
-      <div style={{ position: 'absolute', top: -100, left: -100, right: -100, bottom: -100 }}>
+      <div style={{ position: 'absolute', top: -500, left: -500, right: -500, bottom: -500 }}>
         <Canvas
           camera={{ position: [0, 0, 5.2], fov: 50 }}
           gl={{ antialias: true, alpha: true }}
