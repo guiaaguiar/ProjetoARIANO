@@ -61,7 +61,8 @@ const Landing = () => {
   const { theme, setTheme } = useTheme();
   const [cubeZoom, setCubeZoom] = useState(() => {
     const w = window.innerWidth;
-    return w < 1024 ? 300 : window.innerHeight - 32;
+    const baseSize = w < 1024 ? 300 : window.innerHeight - 32;
+    return baseSize * 0.5;
   });
   
   const [activeTestimonial, setActiveTestimonial] = useState(0);
@@ -89,7 +90,9 @@ const Landing = () => {
 
   useEffect(() => {
     const handleResize = () => {
-      setCubeZoom(window.innerWidth < 1024 ? 270 : window.innerHeight - 32);
+      const w = window.innerWidth;
+      const baseSize = w < 1024 ? 270 : window.innerHeight - 32;
+      setCubeZoom(baseSize * 0.5);
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
