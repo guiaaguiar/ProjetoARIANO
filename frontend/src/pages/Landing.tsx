@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Moon, Sun } from "lucide-react";
+import { ArrowRight, Moon, Sun, LayoutDashboard, Zap, Network, Search, Settings } from "lucide-react";
 import { Graph3D } from "@/components/Graph3D";
 import GuiAguiarImg from "@/assets/gui-aguiar.jpeg";
 
@@ -150,28 +150,38 @@ const Landing = () => {
             <div className="relative z-10 rounded-t-xl border border-b-0 border-border bg-card overflow-hidden">
               <div className="flex min-h-[420px]">
                 {/* Sidebar mock */}
-                <div className="w-[200px] border-r border-border p-3 flex flex-col gap-1 shrink-0">
+                <div className="w-[200px] border-r border-border p-3 flex flex-col gap-1 shrink-0 bg-card">
                   <div className="flex items-center gap-2 px-2 h-8 mb-2">
-                    <div className="h-4 w-4 rounded bg-primary/30" />
-                    <div className="h-2 w-16 rounded-full bg-foreground/15" />
+                    <div className="w-5 h-5 flex items-center justify-center">
+                      <img src="/Coreto_LOGO.png" alt="Logo" className="w-full h-full object-contain" />
+                    </div>
+                    <span className="text-[12px] font-bold text-foreground tracking-tight">ARIANO</span>
                   </div>
-                  <div className="h-px bg-border" />
-                  {["w-20", "w-16", "w-24", "w-14"].map((w, i) => (
-                    <div key={i} className={`flex items-center gap-2 px-2 h-7 rounded ${i === 2 ? "bg-accent" : ""}`}>
-                      <div className="h-3 w-3 rounded bg-muted-foreground/15 shrink-0" />
-                      <div className={`h-1.5 ${w} rounded-full ${i === 2 ? "bg-foreground/25" : "bg-muted-foreground/15"}`} />
+                  <div className="h-px bg-border mb-2" />
+                  
+                  <span className="text-[9px] text-muted-foreground uppercase tracking-wider font-semibold mb-1 px-2">
+                    Menu
+                  </span>
+                  
+                  {[
+                    { label: 'Dashboard', icon: LayoutDashboard },
+                    { label: 'Meus Matches', icon: Zap, active: true },
+                    { label: 'Ecossistema', icon: Network },
+                    { label: 'Explorar', icon: Search },
+                  ].map((item, i) => (
+                    <div key={i} className={`flex items-center gap-2.5 px-2.5 h-8 rounded-lg cursor-pointer transition-colors ${item.active ? "bg-accent/20 text-teal-400 border border-teal-500/20" : "text-muted-foreground hover:text-foreground hover:bg-accent/10"}`}>
+                      <item.icon className="w-3.5 h-3.5" />
+                      <span className="text-[12px] font-medium">{item.label}</span>
                     </div>
                   ))}
-                  <div className="h-px bg-border my-1" />
-                  <div className="px-2 mb-1">
-                    <div className="h-1.5 w-14 rounded-full bg-muted-foreground/10" />
-                  </div>
-                  {["w-24", "w-16", "w-20"].map((w, i) => (
-                    <div key={`f-${i}`} className="flex items-center gap-2 px-2 h-7">
-                      <div className="h-2 w-2 rounded-full bg-primary/30 shrink-0" />
-                      <div className={`h-1.5 ${w} rounded-full bg-muted-foreground/12`} />
+                  
+                  <div className="mt-auto pt-2">
+                    <div className="h-px bg-border mb-2" />
+                    <div className="flex items-center gap-2.5 px-2.5 h-8 rounded-lg cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent/10 transition-colors">
+                      <Settings className="w-3.5 h-3.5" />
+                      <span className="text-[12px] font-medium">Configurações</span>
                     </div>
-                  ))}
+                  </div>
                 </div>
 
                 {/* Main content — issue list */}
