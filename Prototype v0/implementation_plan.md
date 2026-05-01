@@ -27,8 +27,9 @@ Esta sprint foca em **mudar radicalmente o Design System do projeto**. O fronten
 - Importar os assets, CSS global (`index.css`), configuração do Tailwind e diretório de componentes (`components/ui` do shadcn/radix, se aplicável) para dentro de `frontend/src/` do ARIANO.
 - Mesclar a configuração do Tailwind (Tailwind V4 ou `tailwind.config.js`) garantindo que as cores neon do grafo (`--color-void`, cores de CoT, etc.) coexistam com as novas variáveis do design system do Lovable.
 
-### Passo 2 — Atualização do Layout Global
+### Passo 2 — Atualização do Layout Global e Landing Page
 - Substituir o wrapper principal do App (`AppLayout`, Sidebars de usuário e admin) pelo novo layout importado.
+- **Landing Page (`/`):** O componente `Landing.tsx` do projeto Lovable será a nova página raiz do ARIANO. O roteamento no `App.tsx` deixará de fazer redirect imediato e passará a exibir essa apresentação.
 - Atualizar a navegação e cabeçalhos para refletir o novo design system.
 - O layout novo deve ser "encaixado" de forma que a área principal (Outlet) ainda receba os componentes das páginas atuais.
 
