@@ -28,12 +28,12 @@ const Landing = () => {
   const { theme, setTheme } = useTheme();
   const [cubeZoom, setCubeZoom] = useState(() => {
     const w = window.innerWidth;
-    return w < 1024 ? 300 : 450;
+    return w < 1024 ? 300 : window.innerHeight - 32;
   });
 
   useEffect(() => {
     const handleResize = () => {
-      setCubeZoom(window.innerWidth < 1024 ? 270 : 360);
+      setCubeZoom(window.innerWidth < 1024 ? 270 : window.innerHeight - 32);
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -110,7 +110,7 @@ const Landing = () => {
       </nav>
 
       {/* Hero */}
-      <section className="relative z-10 pt-16 pb-0 px-6 overflow-hidden">
+      <section className="relative z-10 pt-16 pb-0 px-6">
         <div className="mx-auto max-w-[1200px] relative">
           {/* Two-column hero: text left, cube right */}
           <div className="pt-[52px] pb-16 relative flex">
@@ -133,8 +133,8 @@ const Landing = () => {
             </div>
 
             {/* Right column — 3D animated graph */}
-            <div className="hidden md:block flex-1 relative z-[1]" style={{ minWidth: 0 }}>
-              <div className="absolute top-1/2 right-4" style={{ width: cubeZoom, height: cubeZoom, transform: `translateY(-50%)` }}>
+            <div className="hidden md:flex absolute right-0 top-[-60px] z-[1] w-[60%] pointer-events-none items-center justify-end" style={{ height: 'calc(100vh - 80px)' }}>
+              <div className="pointer-events-auto" style={{ width: cubeZoom, height: cubeZoom }}>
                 <Graph3D
                   size={cubeZoom}
                   lineHex={theme === "dark" ? "#1aa0b8" : "#0d7a8c"}
