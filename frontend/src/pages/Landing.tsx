@@ -187,16 +187,16 @@ const Landing = () => {
                   </div>
                   <div className="flex-1">
                     {[
-                      { priority: "bg-destructive", id: "ARI-142", name: "Dra. Ana Silva", area: "Engenharia de Dados", score: "98%", status: "bg-warning" },
-                      { priority: "bg-destructive", id: "ARI-139", name: "Prof. Carlos Mendes", area: "Visão Computacional", score: "95%", status: "bg-destructive" },
-                      { priority: "bg-warning", id: "ARI-138", name: "Inovatech Ltda.", area: "Edital: Smart Cities", score: "89%", status: "bg-primary" },
-                      { priority: "bg-primary", id: "ARI-135", name: "Dr. João Paulo", area: "Redes Neurais", score: "82%", status: "bg-success" },
-                      { priority: "bg-muted-foreground/30", id: "ARI-131", name: "EcoSolutions", area: "Edital: Sustentabilidade", score: "75%", status: "bg-primary" },
-                      { priority: "bg-warning", id: "ARI-128", name: "Mariana Costa", area: "UX/UI & IA", score: "88%", status: "bg-warning" },
-                      { priority: "bg-primary", id: "ARI-125", name: "DataOps Corp", area: "Edital: Big Data", score: "80%", status: "bg-success" },
+                      { priority: "bg-success", id: "CoT #3", name: "Edital FAPESP: IA na Saúde", area: "Bolsa de Iniciação Científica", score: "98%", status: "bg-success" },
+                      { priority: "bg-success", id: "CoT #1", name: "Hackathon GovTech 2026", area: "Prêmio: R$ 50.000 + Mentoria", score: "95%", status: "bg-success" },
+                      { priority: "bg-primary", id: "CoT #3", name: "Simpósio de Machine Learning", area: "Chamada de Trabalhos (Evento)", score: "92%", status: "bg-warning" },
+                      { priority: "bg-primary", id: "CoT #7", name: "Programa Centelha PE", area: "Fomento à Inovação e Startups", score: "89%", status: "bg-success" },
+                      { priority: "bg-warning", id: "CoT #2", name: "Prof. Dr. Carlos Mendes", area: "Possível Orientador (Visão Computacional)", score: "85%", status: "bg-warning" },
+                      { priority: "bg-warning", id: "CoT #4", name: "Dra. Ana Silva", area: "Pesquisadora Sênior (Data Science)", score: "82%", status: "bg-destructive" },
+                      { priority: "bg-muted-foreground/30", id: "CoT #1", name: "Mariana Costa", area: "Estudante Parceira (Frontend)", score: "78%", status: "bg-success" },
                     ].map((row, i) => (
                       <div key={i} className={`relative flex items-center gap-4 px-4 h-9 border-b border-border transition-colors hover:bg-accent/30 cursor-pointer`}>
-                        {i === 1 && (
+                        {i === 0 && (
                           <div className="absolute inset-0" style={{
                             backgroundImage: `repeating-linear-gradient(-45deg, ${diagonalLineColor} / 0.3) 0px, ${diagonalLineColor} / 0.3) 1px, transparent 1px, transparent 6px)`,
                           }} />
@@ -204,7 +204,7 @@ const Landing = () => {
                         <div className="h-3.5 w-3.5 rounded border border-border flex items-center justify-center shrink-0 z-10">
                           <div className={`h-1.5 w-1.5 rounded-sm ${row.priority}`} />
                         </div>
-                        <span className="text-[11px] text-muted-foreground font-mono shrink-0 z-10">{row.id}</span>
+                        <span className="text-[10px] text-teal-400 font-mono font-bold bg-teal-400/10 px-1.5 rounded shrink-0 z-10">{row.id}</span>
                         
                         <div className="flex items-center gap-3 flex-1 min-w-0 z-10">
                           <span className="text-[12px] font-medium text-foreground truncate">{row.name}</span>
@@ -233,18 +233,18 @@ const Landing = () => {
                     </div>
                   </div>
                   <div className="p-4 space-y-4">
-                    <div className="font-medium text-[14px]">Prof. Carlos Mendes</div>
+                    <div className="font-medium text-[14px]">Edital FAPESP: IA na Saúde</div>
                     <div className="space-y-1.5">
                       <p className="text-[12px] text-muted-foreground leading-relaxed">
-                        Pesquisador especializado em Visão Computacional com forte aderência ao edital de inovação em Smart Cities.
+                        Oportunidade perfeita para aplicar seus conhecimentos em modelos preditivos num projeto de impacto social, com bolsa e mentoria.
                       </p>
                     </div>
                     <div className="h-px bg-border" />
                     {[
-                      { label: "Status do Edital", value: "Aberto", color: "bg-warning" },
-                      { label: "Score IA", value: "95%", color: "bg-destructive" },
-                      { label: "Tipo", value: "Pesquisador", color: "bg-primary" },
-                      { label: "Data limite", value: "12/06/2026", color: "bg-muted-foreground/40" },
+                      { label: "Comunidade", value: "CoT #3 (Healthtech)", color: "bg-success" },
+                      { label: "Score IA", value: "98%", color: "bg-success" },
+                      { label: "Tipo", value: "Bolsa (R$ 800/mês)", color: "bg-primary" },
+                      { label: "Data limite", value: "Amanhã", color: "bg-warning" },
                     ].map((prop) => (
                       <div key={prop.label} className="flex items-center justify-between">
                         <span className="text-[11px] text-muted-foreground">{prop.label}</span>
