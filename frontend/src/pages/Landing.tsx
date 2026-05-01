@@ -4,7 +4,7 @@ import { Graph3D } from "@/components/Graph3D";
 import GuiAguiarImg from "@/assets/gui-aguiar.jpeg";
 
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 import { StackedLogo } from "@/components/StackedLogo";
 
@@ -53,9 +53,27 @@ const Landing = () => {
   });
   
   const [activeTestimonial, setActiveTestimonial] = useState(0);
+  const scrollTimeout = useRef<any>(null);
 
   const handlePrevTestimonial = () => setActiveTestimonial(prev => (prev === 0 ? TESTIMONIALS.length - 1 : prev - 1));
   const handleNextTestimonial = () => setActiveTestimonial(prev => (prev === TESTIMONIALS.length - 1 ? 0 : prev + 1));
+
+  const handleWheel = (e: React.WheelEvent) => {
+    // Only trigger on significant horizontal scroll (trackpad shift+scroll or direct horizontal)
+    if (Math.abs(e.deltaX) > 30) {
+      if (scrollTimeout.current) return;
+      
+      if (e.deltaX > 0) {
+        handleNextTestimonial();
+      } else {
+        handlePrevTestimonial();
+      }
+      
+      scrollTimeout.current = setTimeout(() => {
+        scrollTimeout.current = null;
+      }, 600); // Cooldown to prevent rapid skipping
+    }
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -401,7 +419,7 @@ const Landing = () => {
       <div className="relative z-10 w-full border-t border-border" />
 
       {/* Social proof */}
-      <section className="relative z-10 py-24 px-6 overflow-hidden">
+      <section className="relative z-10 py-10 px-6 overflow-hidden my-10">
         {/* Angular line shading background */}
         <div
           className="absolute inset-0 pointer-events-none bg-background/70 backdrop-blur-md"
@@ -416,8 +434,8 @@ const Landing = () => {
             backgroundSize: "100% 100%",
           }}
         />
-        <div className="w-full relative py-12">
-          <div className="relative w-full max-w-[1400px] mx-auto h-[350px] overflow-hidden flex items-center justify-center">
+        <div className="w-full relative py-8" onWheel={handleWheel}>
+          <div className="relative w-full max-w-[1400px] mx-auto h-[280px] overflow-hidden flex items-center justify-center">
             {TESTIMONIALS.map((t, i) => {
               let position = "center";
               if (i === activeTestimonial) position = "center";
@@ -428,10 +446,10 @@ const Landing = () => {
               
               const posClass = 
                 position === "center" ? "left-1/2 -translate-x-1/2 z-20 scale-100 opacity-100" :
-                position === "left" ? "left-0 -translate-x-[40%] md:-translate-x-[20%] z-10 scale-90 opacity-40" :
-                "right-0 translate-x-[40%] md:translate-x-[20%] z-10 scale-90 opacity-40";
+                position === "left" ? "left-0 -translate-x-[65%] md:-translate-x-[55%] lg:-translate-x-[45%] z-10 scale-[0.85] opacity-20" :
+                "right-0 translate-x-[65%] md:translate-x-[55%] lg:translate-x-[45%] z-10 scale-[0.85] opacity-20";
 
-              const glowClass = isCenter ? "shadow-[0_0_40px_rgba(45,212,191,0.05)] bg-background/50 backdrop-blur-md" : "bg-background/20 backdrop-blur-sm";
+              const glowClass = isCenter ? "shadow-[0_0_40px_rgba(45,212,191,0.05)] bg-background/50 backdrop-blur-md" : "bg-background/10 backdrop-blur-sm pointer-events-none";
               
               return (
                 <div 
