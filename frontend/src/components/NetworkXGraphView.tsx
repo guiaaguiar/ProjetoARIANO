@@ -23,6 +23,7 @@ interface Props {
   filterPanelOpen?: boolean;
   detailPanelOpen?: boolean;
   onBackgroundClick?: () => void;
+  onClustersLoaded?: (clusters: {id: number; theme: string}[]) => void;
 }
 
 export const COT_COLORS = [
@@ -118,7 +119,7 @@ export const NetworkXGraphView: React.FC<Props> = ({
   onNodeClick, hiddenTypes, showCoT = true, activeCoT = null,
   selectedNodeId, onNavigateToNode,
   filterPanelOpen = false, detailPanelOpen = false,
-  onBackgroundClick,
+  onBackgroundClick, onClustersLoaded,
 }) => {
   const [rawData, setRawData] = useState<{nodes:GraphNode[],links:GraphLink[]}|null>(null);
   const [clusters, setClusters] = useState<{id:number,theme:string}[]>([]);
@@ -131,7 +132,9 @@ export const NetworkXGraphView: React.FC<Props> = ({
     api.getEnrichedGraph()
       .then(res => {
         if (res.error) { console.error('Grafo:', res.error); return; }
-        setClusters(res.summary?.clusters || []);
+        const loadedClusters = res.summary?.clusters || [];
+        setClusters(loadedClusters);
+        if (onClustersLoaded) onClustersLoaded(loadedClusters);
         const data = {
           nodes: res.nodes as GraphNode[],
           links: (res.edges as any[]).map(e => ({ source: e.source, target: e.target, label: e.label })),

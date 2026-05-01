@@ -197,13 +197,13 @@ const Landing = () => {
                   </div>
                   <div className="flex-1">
                     {[
-                      { priority: "bg-success", id: "CoT #3", name: "Edital FAPESP: IA na Saúde", area: "Bolsa de Iniciação Científica", score: "98%", status: "bg-success" },
-                      { priority: "bg-success", id: "CoT #1", name: "Hackathon GovTech 2026", area: "Prêmio: R$ 50.000 + Mentoria", score: "95%", status: "bg-success" },
-                      { priority: "bg-primary", id: "CoT #3", name: "Simpósio de Machine Learning", area: "Chamada de Trabalhos (Evento)", score: "92%", status: "bg-warning" },
-                      { priority: "bg-primary", id: "CoT #7", name: "Programa Centelha PE", area: "Fomento à Inovação e Startups", score: "89%", status: "bg-success" },
-                      { priority: "bg-warning", id: "CoT #2", name: "Prof. Dr. Carlos Mendes", area: "Possível Orientador (Visão Computacional)", score: "85%", status: "bg-warning" },
-                      { priority: "bg-warning", id: "CoT #4", name: "Dra. Ana Silva", area: "Pesquisadora Sênior (Data Science)", score: "82%", status: "bg-destructive" },
-                      { priority: "bg-muted-foreground/30", id: "CoT #1", name: "Mariana Costa", area: "Estudante Parceira (Frontend)", score: "78%", status: "bg-success" },
+                      { priority: "bg-teal-500", id: "Healthtech", name: "Edital FAPESP: IA na Saúde", area: "Bolsa de Iniciação Científica", score: "98%", status: "bg-teal-500" },
+                      { priority: "bg-blue-500", id: "GovTech", name: "Hackathon GovTech 2026", area: "Prêmio: R$ 50.000 + Mentoria", score: "95%", status: "bg-blue-500" },
+                      { priority: "bg-purple-500", id: "Machine Learning", name: "Simpósio de Machine Learning", area: "Chamada de Trabalhos (Evento)", score: "92%", status: "bg-purple-500" },
+                      { priority: "bg-amber-500", id: "Startups", name: "Programa Centelha PE", area: "Fomento à Inovação e Startups", score: "89%", status: "bg-amber-500" },
+                      { priority: "bg-rose-500", id: "Visão Computacional", name: "Prof. Dr. Carlos Mendes", area: "Possível Orientador (Visão Computacional)", score: "85%", status: "bg-rose-500" },
+                      { priority: "bg-indigo-500", id: "Data Science", name: "Dra. Ana Silva", area: "Pesquisadora Sênior (Data Science)", score: "82%", status: "bg-indigo-500" },
+                      { priority: "bg-cyan-500", id: "Frontend", name: "Mariana Costa", area: "Estudante Parceira (Frontend)", score: "78%", status: "bg-cyan-500" },
                     ].map((row, i) => (
                       <div key={i} className={`relative flex items-center gap-4 px-4 h-9 border-b border-border transition-colors hover:bg-accent/30 cursor-pointer`}>
                         {i === 0 && (
@@ -251,10 +251,10 @@ const Landing = () => {
                     </div>
                     <div className="h-px bg-border" />
                     {[
-                      { label: "Comunidade", value: "CoT #3 (Healthtech)", color: "bg-success" },
-                      { label: "Score IA", value: "98%", color: "bg-success" },
-                      { label: "Tipo", value: "Bolsa (R$ 800/mês)", color: "bg-primary" },
-                      { label: "Data limite", value: "Amanhã", color: "bg-warning" },
+                      { label: "Comunidade", value: "Healthtech", color: "bg-teal-500" },
+                      { label: "Match (%)", value: "98%", color: "bg-teal-500" },
+                      { label: "Tipo", value: "Bolsa (R$ 800/mês)", color: "bg-teal-500" },
+                      { label: "Data limite", value: "Amanhã", color: "bg-teal-500" },
                     ].map((prop) => (
                       <div key={prop.label} className="flex items-center justify-between">
                         <span className="text-[11px] text-muted-foreground">{prop.label}</span>

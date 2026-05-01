@@ -155,6 +155,7 @@ export default function GrafoPage() {
           filterPanelOpen={filterOpen}
           detailPanelOpen={!!selectedNode}
           onBackgroundClick={() => setSelectedNode(null)}
+          onClustersLoaded={setClusterList}
         />
 
         {/* ── Painel de Filtros (esquerda) ─────────────────────────────────── */}
@@ -260,7 +261,17 @@ export default function GrafoPage() {
 
                   {/* Filtro por CoT individual */}
                   <div className="space-y-1">
-                    {[0, 1, 2, 3, 4, 5, 6, 7].map((cid) => {
+                    {(clusterList.length > 0 ? clusterList : [
+                      { id: 0, theme: "Healthtech & Biotecnologia" },
+                      { id: 1, theme: "GovTech & Políticas Públicas" },
+                      { id: 2, theme: "Inteligência Artificial & Machine Learning" },
+                      { id: 3, theme: "Cidades Inteligentes" },
+                      { id: 4, theme: "Educação & EdTech" },
+                      { id: 5, theme: "Sustentabilidade & ESG" },
+                      { id: 6, theme: "Agritech" },
+                      { id: 7, theme: "Fintech & Blockchain" }
+                    ]).map((cluster) => {
+                      const cid = cluster.id;
                       const color = COT_COLORS[cid % COT_COLORS.length];
                       const isActive = activeCoT === cid;
                       const isIdle = activeCoT !== null && !isActive;
@@ -284,9 +295,9 @@ export default function GrafoPage() {
                               opacity: isIdle ? 0.4 : 1,
                             }}
                           />
-                          <span className="text-[9px] text-white font-semibold flex-1 text-left">CoT #{cid}</span>
+                          <span className="text-[9px] text-white font-semibold flex-1 text-left line-clamp-1" title={cluster.theme}>{cluster.theme}</span>
                           {isActive && (
-                            <span className="text-[7px] text-orange-400 uppercase font-bold">Isolada</span>
+                            <span className="text-[7px] text-orange-400 uppercase font-bold shrink-0">Isolada</span>
                           )}
                         </button>
                       );
