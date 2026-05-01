@@ -42,6 +42,18 @@ const TESTIMONIALS = [
     name: "Ricardo Cezar",
     role: "AI Agent Architect",
     avatar: "" 
+  },
+  {
+    text: "O design do ARIANO foca na usabilidade e na clareza visual, garantindo que cada interação com o grafo seja intuitiva e produtiva.",
+    name: "Marcio Maycom",
+    role: "UX UI Designer",
+    avatar: ""
+  },
+  {
+    text: "Gerenciar a agilidade e o fluxo de trabalho neste projeto é inspirador. A entrega contínua de valor é o nosso norte principal.",
+    name: "Thiago Falcão",
+    role: "Scrum Master",
+    avatar: ""
   }
 ];
 
@@ -415,11 +427,8 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Full-width divider */}
-      <div className="relative z-10 w-full border-t border-border" />
-
       {/* Social proof */}
-      <section className="relative z-10 py-10 px-6 overflow-hidden my-10">
+      <section className="relative z-10 py-10 px-6 overflow-hidden my-10 border-y border-border">
         {/* Angular line shading background */}
         <div
           className="absolute inset-0 pointer-events-none bg-background/70 backdrop-blur-md"
@@ -446,8 +455,8 @@ const Landing = () => {
               
               const posClass = 
                 position === "center" ? "left-1/2 -translate-x-1/2 z-20 scale-100 opacity-100" :
-                position === "left" ? "left-0 -translate-x-[65%] md:-translate-x-[55%] lg:-translate-x-[45%] z-10 scale-[0.85] opacity-20" :
-                "right-0 translate-x-[65%] md:translate-x-[55%] lg:translate-x-[45%] z-10 scale-[0.85] opacity-20";
+                position === "left" ? "left-0 -translate-x-[85%] md:-translate-x-[80%] lg:-translate-x-[75%] z-10 scale-[0.8] opacity-10" :
+                "right-0 translate-x-[85%] md:translate-x-[80%] lg:translate-x-[75%] z-10 scale-[0.8] opacity-10";
 
               const glowClass = isCenter ? "shadow-[0_0_40px_rgba(45,212,191,0.05)] bg-background/50 backdrop-blur-md" : "bg-background/10 backdrop-blur-sm pointer-events-none";
               
@@ -498,9 +507,6 @@ const Landing = () => {
           </div>
         </div>
       </section>
-
-      {/* Full-width divider */}
-      <div className="relative z-10 w-full border-t border-border" />
 
       {/* CTA */}
       <section className="relative z-10 pt-32 pb-40 px-6 overflow-hidden">
