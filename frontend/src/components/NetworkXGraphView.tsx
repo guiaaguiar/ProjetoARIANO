@@ -302,8 +302,9 @@ export const NetworkXGraphView: React.FC<Props> = ({ onNodeClick }) => {
           graphData={graphData}
           backgroundColor="rgba(0,0,0,0)"
           nodeCanvasObject={drawNode as any}
+          nodeCanvasObjectMode={() => 'replace'}
           nodePointerAreaPaint={(node: any, color, ctx) => {
-            const size = getNodeSize(node as GraphNode) + 4;
+            const size = getNodeSize(node as GraphNode) + 6;
             ctx.fillStyle = color;
             ctx.beginPath();
             ctx.arc(node.x, node.y, size, 0, Math.PI * 2);
@@ -316,15 +317,15 @@ export const NetworkXGraphView: React.FC<Props> = ({ onNodeClick }) => {
           linkDirectionalParticleColor={(link: any) => LINK_COLORS[link.label] || '#fff'}
           linkDirectionalParticleSpeed={0.004}
           onRenderFramePre={onRenderFramePre as any}
-          onNodeClick={(node) => onNodeClick?.(node as GraphNode)}
+          onNodeClick={(node) => {
+            if (onNodeClick) onNodeClick(node as GraphNode);
+          }}
           onNodeDrag={handleNodeDrag as any}
           onNodeDragEnd={handleNodeDragEnd as any}
           enableNodeDrag={true}
           enableZoomInteraction={true}
           d3AlphaDecay={0.03}
           d3VelocityDecay={0.35}
-          warmupTicks={80}
-          cooldownTicks={200}
         />
       ) : (
         <div className="flex flex-col items-center justify-center h-full text-center p-8">

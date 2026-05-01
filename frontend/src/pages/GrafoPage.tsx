@@ -39,6 +39,12 @@ const META_LABELS: Record<string, string> = {
 export default function GrafoPage() {
   const [selectedNode, setSelectedNode] = useState<any | null>(null);
 
+  const handleNodeClick = (node: any) => {
+    setSelectedNode(node);
+  };
+
+  const handleClose = () => setSelectedNode(null);
+
   return (
     <div className="container-fluid py-4 h-[calc(100vh-88px)] lg:h-[calc(100vh-56px)] flex flex-col gap-4 overflow-hidden">
 
@@ -65,23 +71,20 @@ export default function GrafoPage() {
         </div>
       </div>
 
-      {/* Main */}
-      <div className="flex-1 flex flex-col lg:flex-row gap-4 min-h-0">
+      {/* Main — canvas toma tela inteira, painel flutua sobre ele */}
+      <div className="flex-1 min-h-0 relative">
+        <NetworkXGraphView onNodeClick={handleNodeClick} />
 
-        {/* Canvas */}
-        <div className="flex-1 min-h-0 relative">
-          <NetworkXGraphView onNodeClick={setSelectedNode} />
-        </div>
-
-        {/* Painel Lateral Rico */}
+        {/* Painel Lateral Rico — overlay absoluto à direita */}
         <AnimatePresence>
           {selectedNode && (
             <motion.div
-              initial={{ x: 24, opacity: 0 }}
+              key={selectedNode.id}
+              initial={{ x: 32, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
-              exit={{ x: 24, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="w-full lg:w-80 flex flex-col rounded-3xl border border-white/10 bg-gray-900/50 backdrop-blur-xl overflow-hidden shadow-2xl"
+              exit={{ x: 32, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 280, damping: 28 }}
+              className="absolute top-0 right-0 h-full w-80 flex flex-col border-l border-white/10 bg-black/70 backdrop-blur-2xl overflow-hidden shadow-2xl z-20"
             >
               {/* Cabeçalho do painel */}
               <div className="p-5 border-b border-white/5">
@@ -105,7 +108,7 @@ export default function GrafoPage() {
                       </span>
                     </div>
                   </div>
-                  <button onClick={() => setSelectedNode(null)} className="p-1.5 text-gray-600 hover:text-white transition-colors shrink-0">
+                  <button onClick={handleClose} className="p-1.5 text-gray-600 hover:text-white transition-colors shrink-0">
                     <X size={18} />
                   </button>
                 </div>
