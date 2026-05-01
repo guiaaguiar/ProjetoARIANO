@@ -520,20 +520,22 @@ export function Graph3D({
 }: Graph3DProps) {
   return (
     <div
-      style={{ width: size, height: size, cursor: "grab", touchAction: "none" }}
+      style={{ width: size, height: size, cursor: "grab", touchAction: "none", position: 'relative' }}
     >
-      <Canvas
-        camera={{ position: [0, 0, 5.2], fov: 50 }}
-        gl={{ antialias: true, alpha: true }}
-        style={{ background: "transparent" }}
-      >
-        <GraphScene
-          lineHex={lineHex}
-          nodeHex={nodeHex ?? lineHex}
-          nodeCount={nodeCount}
-          connectionRadius={connectionRadius}
-        />
-      </Canvas>
+      <div style={{ position: 'absolute', top: -100, left: -100, right: -100, bottom: -100 }}>
+        <Canvas
+          camera={{ position: [0, 0, 5.2], fov: 50 }}
+          gl={{ antialias: true, alpha: true }}
+          style={{ background: "transparent" }}
+        >
+          <GraphScene
+            lineHex={lineHex}
+            nodeHex={nodeHex ?? lineHex}
+            nodeCount={nodeCount}
+            connectionRadius={connectionRadius}
+          />
+        </Canvas>
+      </div>
     </div>
   );
 }
