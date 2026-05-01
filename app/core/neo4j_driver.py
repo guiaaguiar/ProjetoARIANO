@@ -223,14 +223,17 @@ def _handle_match_return(query: str, params: dict, store: MemoryGraphStore) -> l
         results = []
         for node in store.nodes.values():
             props = node["props"]
-            results.append({
+            result = {
                 "uid": props.get("uid"),
                 "name": props.get("name") or props.get("title") or props.get("uid"),
                 "type": node["labels"][0] if node.get("labels") else "Unknown",
-                "bio": props.get("bio", ""),
                 "goals": props.get("o_que_busco", ""),
-                "description": props.get("description", "")
-            })
+            }
+            # Retorna TODOS os props armazenados para permitir extração rica
+            for key, val in props.items():
+                if key not in result:
+                    result[key] = val
+            results.append(result)
         return results
 
     # --- Basic Node Query (fallback) ---
