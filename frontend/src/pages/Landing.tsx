@@ -446,17 +446,15 @@ const Landing = () => {
         <div className="w-full relative py-8" onWheel={handleWheel}>
           <div className="relative w-full max-w-[1400px] mx-auto h-[280px] overflow-hidden flex items-center justify-center">
             {TESTIMONIALS.map((t, i) => {
-              let position = "center";
-              if (i === activeTestimonial) position = "center";
-              else if (i === (activeTestimonial + 1) % TESTIMONIALS.length) position = "right";
-              else position = "left";
-
-              const isCenter = position === "center";
+              const isCenter = i === activeTestimonial;
+              const isRight = i === (activeTestimonial + 1) % TESTIMONIALS.length;
+              const isLeft = i === (activeTestimonial - 1 + TESTIMONIALS.length) % TESTIMONIALS.length;
               
               const posClass = 
-                position === "center" ? "left-1/2 -translate-x-1/2 z-20 scale-100 opacity-100" :
-                position === "left" ? "left-0 -translate-x-[85%] md:-translate-x-[80%] lg:-translate-x-[75%] z-10 scale-[0.8] opacity-10" :
-                "right-0 translate-x-[85%] md:translate-x-[80%] lg:translate-x-[75%] z-10 scale-[0.8] opacity-10";
+                isCenter ? "left-1/2 -translate-x-1/2 z-20 scale-100 opacity-100" :
+                isLeft ? "left-0 -translate-x-[85%] md:-translate-x-[80%] lg:-translate-x-[75%] z-10 scale-[0.8] opacity-10" :
+                isRight ? "right-0 translate-x-[85%] md:translate-x-[80%] lg:translate-x-[75%] z-10 scale-[0.8] opacity-10" :
+                (i < activeTestimonial ? "left-0 -translate-x-[150%] opacity-0 pointer-events-none" : "right-0 translate-x-[150%] opacity-0 pointer-events-none");
 
               const glowClass = isCenter ? "shadow-[0_0_40px_rgba(45,212,191,0.05)] bg-background/50 backdrop-blur-md" : "bg-background/10 backdrop-blur-sm pointer-events-none";
               
@@ -464,7 +462,7 @@ const Landing = () => {
                 <div 
                   key={i}
                   className={`absolute top-1/2 -translate-y-1/2 w-[85vw] max-w-[720px] transition-all duration-700 ease-in-out border border-border rounded-2xl p-10 cursor-pointer ${posClass} ${glowClass}`}
-                  onClick={() => { if (!isCenter) { if (position === 'left') handlePrevTestimonial(); else handleNextTestimonial(); } }}
+                  onClick={() => { if (!isCenter) { if (isLeft) handlePrevTestimonial(); else handleNextTestimonial(); } }}
                 >
                   <blockquote className={`text-[18px] md:text-[20px] font-[400] leading-[1.5] tracking-[-0.01em] transition-colors duration-700 ${isCenter ? 'text-foreground/85' : 'text-foreground/50'}`}>
                     "{t.text}"
