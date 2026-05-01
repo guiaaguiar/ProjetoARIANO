@@ -391,7 +391,7 @@ const Landing = () => {
           }}
         />
         <div className="mx-auto max-w-[1200px] relative">
-          <div className="border border-border bg-background p-10 max-w-[720px] mx-auto">
+          <div className="border border-border bg-background/50 backdrop-blur-md rounded-2xl p-10 max-w-[720px] mx-auto shadow-[0_0_40px_rgba(45,212,191,0.05)]">
             <blockquote className="text-[20px] font-[400] leading-[1.5] tracking-[-0.01em] text-foreground/85">
               "O motor do ARIANO mudou nossa forma de conectar pesquisadores e editais, permitindo uma transparência jamais vista através do grafo interativo."
             </blockquote>
