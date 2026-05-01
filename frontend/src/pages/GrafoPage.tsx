@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, Info, Network, Zap, Target, Link2, ChevronRight,
@@ -48,6 +48,7 @@ const ALL_TYPES: { key: string; label: string }[] = [
 export default function GrafoPage() {
   const [selectedNode, setSelectedNode] = useState<any | null>(null);
   const [filterOpen, setFilterOpen] = useState(false);
+  const navigateFnRef = useRef<((uid: string) => void) | null>(null);
 
   // Filtros de tipo de nó
   const [hiddenTypesList, setHiddenTypesList] = useState<string[]>([]);
@@ -134,6 +135,8 @@ export default function GrafoPage() {
           hiddenTypes={hiddenTypes}
           showCoT={showCoT}
           activeCoT={activeCoT}
+          selectedNodeId={selectedNode?.id ?? null}
+          onNavigateToNode={navigateFnRef}
         />
 
         {/* ── Painel de Filtros (esquerda) ─────────────────────────────────── */}
@@ -378,17 +381,19 @@ export default function GrafoPage() {
                     </p>
                     <div className="space-y-1.5">
                       {selectedNode.connections.slice(0, 12).map((conn: any, i: number) => (
-                        <div key={i} className="flex items-center gap-2 p-2 rounded-xl bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.06] transition-colors">
-                          <div
-                            className="w-1.5 h-1.5 rounded-full shrink-0"
-                            style={{ backgroundColor: NODE_COLORS[conn.type as EntityType] || '#666' }}
-                          />
+                        <button
+                          key={i}
+                          onClick={() => {
+                            // Encontra o nó pelo uid e navega até ele
+                            if (navigateFnRef.current) navigateFnRef.current(conn.uid);
+                          }}
+                          className="w-full flex items-center gap-2 p-2 rounded-xl bg-white/[0.03] border border-white/[0.05] hover:bg-teal-500/10 hover:border-teal-500/30 transition-colors text-left"
+                        >
+                          <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: NODE_COLORS[conn.type as EntityType] || '#666' }} />
                           <span className="text-[9px] text-white truncate flex-1">{conn.label}</span>
-                          <span className="text-[7px] text-gray-600 uppercase font-bold shrink-0">
-                            {EDGE_LABELS[conn.edge_type] || conn.edge_type}
-                          </span>
-                          <ChevronRight size={9} className="text-gray-700 shrink-0" />
-                        </div>
+                          <span className="text-[7px] text-gray-600 uppercase font-bold shrink-0">{EDGE_LABELS[conn.edge_type] || conn.edge_type}</span>
+                          <ChevronRight size={9} className="text-teal-500 shrink-0" />
+                        </button>
                       ))}
                       {selectedNode.connections.length > 12 && (
                         <p className="text-[8px] text-gray-600 text-center pt-1">

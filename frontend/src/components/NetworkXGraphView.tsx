@@ -1,105 +1,62 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo, MutableRefObject } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
 import { Loader2, Zap, Maximize2, Network } from 'lucide-react';
 import * as api from '../lib/api';
 import { NODE_COLORS, type EntityType } from '../types';
 
-// ─── Tipos ───────────────────────────────────────────────────────────────────
 interface GraphNode {
-  id: string;
-  label: string;
-  type: string;
-  cluster_id: number;
-  cluster_theme: string;
-  influence: number;
-  connectivity: number;
+  id: string; label: string; type: string;
+  cluster_id: number; cluster_theme: string;
+  influence: number; connectivity: number;
   connections: { uid: string; label: string; type: string; edge_type: string }[];
   metadata: Record<string, unknown>;
-  x?: number;
-  y?: number;
-  fx?: number;
-  fy?: number;
+  x?: number; y?: number; fx?: number; fy?: number;
 }
-
-interface GraphLink {
-  source: string | GraphNode;
-  target: string | GraphNode;
-  label: string;
-}
-
+interface GraphLink { source: string | GraphNode; target: string | GraphNode; label: string; }
 interface Props {
   onNodeClick?: (node: GraphNode) => void;
   hiddenTypes?: Set<string>;
-  showCoT?: boolean;       // Exibir halos de cluster
-  activeCoT?: number | null; // null = todas; number = isola esse cluster
+  showCoT?: boolean;
+  activeCoT?: number | null;
+  selectedNodeId?: string | null;
+  onNavigateToNode?: MutableRefObject<((uid: string) => void) | null>;
 }
 
-// ─── Cores dos CoT — paleta quente, distinta das cores de nó ──────────────────
-// Cores de nó usam: teal, sky-blue, emerald, yellow, violet, indigo
-// CoT usa: laranja, vermelho, rosa, terracota, magenta — paleta quente/diferente
 export const COT_COLORS = [
-  '#f77f00', // laranja
-  '#e63946', // vermelho
-  '#ff4d6d', // rosa-vermelho
-  '#9d4edd', // violeta vibrante
-  '#f4a261', // salmão
-  '#c77dff', // lilás
-  '#e07a5f', // terracota
-  '#ffd166', // amarelo-âmbar
+  '#f77f00','#e63946','#ff4d6d','#9d4edd',
+  '#f4a261','#c77dff','#e07a5f','#ffd166',
 ];
 
-// ─── Tamanhos base por tipo ───────────────────────────────────────────────────
 const NODE_BASE_SIZE: Record<string, number> = {
-  area: 5,
-  skill: 7,
-  edital: 11,
-  student: 13,
-  researcher: 13,
-  professor: 13,
+  area: 5, skill: 7, edital: 11, student: 13, researcher: 13, professor: 13,
 };
-
 const LINK_COLORS: Record<string, string> = {
-  ELIGIBLE_FOR: '#2dd4bf',
-  SIMILAR_TO: '#a855f7',
-  HAS_SKILL: '#6366f1',
-  REQUIRES_SKILL: '#38bdf8',
-  RESEARCHES_AREA: '#34d399',
-  TARGETS_AREA: '#818cf8',
-  ADVISES: '#fbbf24',
-  RELATED_TO: '#f472b6',
-  OVERLAPS_WITH: '#fb923c',
+  ELIGIBLE_FOR:'#2dd4bf', SIMILAR_TO:'#a855f7', HAS_SKILL:'#6366f1',
+  REQUIRES_SKILL:'#38bdf8', RESEARCHES_AREA:'#34d399', TARGETS_AREA:'#818cf8',
+  ADVISES:'#fbbf24', RELATED_TO:'#f472b6', OVERLAPS_WITH:'#fb923c',
 };
-
 const LINK_WIDTHS: Record<string, number> = {
-  ELIGIBLE_FOR: 3,
-  SIMILAR_TO: 2.5,
-  ADVISES: 2.5,
-  RELATED_TO: 2,
-  HAS_SKILL: 1.5,
-  REQUIRES_SKILL: 1.5,
+  ELIGIBLE_FOR:3, SIMILAR_TO:2.5, ADVISES:2.5, RELATED_TO:2, HAS_SKILL:1.5, REQUIRES_SKILL:1.5,
 };
 
 const getNodeSize = (node: GraphNode): number => {
   const base = NODE_BASE_SIZE[node.type] ?? 10;
   const bonus = Math.min((node.influence / 300) * base * 0.4, base * 0.5);
-  const max = node.type === 'area' ? 8 : 22;
-  return Math.min(base + bonus, max);
+  return Math.min(base + bonus, node.type === 'area' ? 8 : 22);
 };
 
-// ─── Convex Hull (Gift Wrapping) ──────────────────────────────────────────────
-function computeConvexHull(pts: { x: number; y: number }[]) {
-  if (pts.length < 3) return pts;
+// ─── Convex Hull (CCW in canvas) ──────────────────────────────────────────────
+function convexHull(pts: {x:number,y:number}[]) {
+  if (pts.length < 3) return pts.slice();
   let l = 0;
   for (let i = 1; i < pts.length; i++) if (pts[i].x < pts[l].x) l = i;
-  const hull: { x: number; y: number }[] = [];
+  const hull: {x:number,y:number}[] = [];
   let p = l;
   do {
     hull.push(pts[p]);
     let q = (p + 1) % pts.length;
     for (let i = 0; i < pts.length; i++) {
-      const cross =
-        (pts[q].x - pts[p].x) * (pts[i].y - pts[p].y) -
-        (pts[q].y - pts[p].y) * (pts[i].x - pts[p].x);
+      const cross = (pts[q].x-pts[p].x)*(pts[i].y-pts[p].y) - (pts[q].y-pts[p].y)*(pts[i].x-pts[p].x);
       if (cross < 0) q = i;
     }
     p = q;
@@ -107,75 +64,63 @@ function computeConvexHull(pts: { x: number; y: number }[]) {
   return hull;
 }
 
-// Expande cada ponto do hull para fora do centróide
-function expandHull(hull: { x: number; y: number }[], margin: number) {
-  const cx = hull.reduce((s, p) => s + p.x, 0) / hull.length;
-  const cy = hull.reduce((s, p) => s + p.y, 0) / hull.length;
-  return hull.map(p => {
-    const dx = p.x - cx;
-    const dy = p.y - cy;
-    const len = Math.sqrt(dx * dx + dy * dy) || 1;
-    return { x: p.x + (dx / len) * margin, y: p.y + (dy / len) * margin };
-  });
-}
+// ─── Organic blob (Minkowski sum = hull + circle of radius) ──────────────────
+// For CCW hull in canvas: outward normal = (dy/len, -dx/len)
+function drawBlob(ctx: CanvasRenderingContext2D, members: GraphNode[], margin: number) {
+  if (members.length === 0) return;
+  const pts = members.map(n => ({ x: n.x!, y: n.y! }));
 
-// Desenha curva suave (bezier quadrático) por pontos do hull
-function drawSmoothPath(ctx: CanvasRenderingContext2D, pts: { x: number; y: number }[]) {
-  if (pts.length < 2) return;
-  const mids = pts.map((p, i) => {
-    const nx = pts[(i + 1) % pts.length];
-    return { x: (p.x + nx.x) / 2, y: (p.y + nx.y) / 2 };
+  if (pts.length === 1) {
+    ctx.beginPath();
+    ctx.arc(pts[0].x, pts[0].y, margin, 0, Math.PI * 2);
+    return;
+  }
+
+  if (pts.length === 2) {
+    const [a, b] = pts;
+    const ang = Math.atan2(b.y - a.y, b.x - a.x);
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, margin, ang - Math.PI / 2, ang + Math.PI / 2, false);
+    ctx.arc(a.x, a.y, margin, ang + Math.PI / 2, ang - Math.PI / 2 + Math.PI * 2, false);
+    ctx.closePath();
+    return;
+  }
+
+  const hull = convexHull(pts);
+  const n = hull.length;
+
+  // Edge outward normals for CCW canvas hull: (dy, -dx) normalized
+  const normals = hull.map((p, i) => {
+    const q = hull[(i + 1) % n];
+    const dx = q.x - p.x, dy = q.y - p.y;
+    const len = Math.sqrt(dx * dx + dy * dy) || 1;
+    return { x: dy / len, y: -dx / len };
   });
+
   ctx.beginPath();
-  ctx.moveTo(mids[0].x, mids[0].y);
-  for (let i = 0; i < pts.length; i++) {
-    ctx.quadraticCurveTo(pts[i].x, pts[i].y, mids[(i + 1) % pts.length].x, mids[(i + 1) % pts.length].y);
+  for (let i = 0; i < n; i++) {
+    const p = hull[i];
+    const inN = normals[(i - 1 + n) % n];
+    const outN = normals[i];
+    const startA = Math.atan2(inN.y, inN.x);
+    const endA = Math.atan2(outN.y, outN.x);
+    // false = clockwise on screen, sweeps exterior corner correctly for CCW hull
+    ctx.arc(p.x, p.y, margin, startA, endA, false);
   }
   ctx.closePath();
 }
 
-// Desenha texto com quebra de linha, centrado em (x, y)
-function drawWrappedText(
-  ctx: CanvasRenderingContext2D,
-  text: string,
-  x: number,
-  y: number,
-  maxWidth: number,
-  lineHeight: number,
-) {
-  const words = text.split(' ');
-  const lines: string[] = [];
-  let line = '';
-  for (const w of words) {
-    const test = line ? `${line} ${w}` : w;
-    if (ctx.measureText(test).width > maxWidth && line) {
-      lines.push(line);
-      line = w;
-    } else {
-      line = test;
-    }
-  }
-  if (line) lines.push(line);
-  const totalH = lines.length * lineHeight;
-  lines.forEach((l, i) => {
-    ctx.fillText(l, x, y - totalH / 2 + i * lineHeight + lineHeight / 2);
-  });
-}
-
 // ─── Componente ───────────────────────────────────────────────────────────────
 export const NetworkXGraphView: React.FC<Props> = ({
-  onNodeClick,
-  hiddenTypes,
-  showCoT = true,
-  activeCoT = null,
+  onNodeClick, hiddenTypes, showCoT = true, activeCoT = null,
+  selectedNodeId, onNavigateToNode,
 }) => {
-  const [rawData, setRawData] = useState<{ nodes: GraphNode[]; links: GraphLink[] } | null>(null);
-  const [clusters, setClusters] = useState<{ id: number; theme: string }[]>([]);
+  const [rawData, setRawData] = useState<{nodes:GraphNode[],links:GraphLink[]}|null>(null);
+  const [clusters, setClusters] = useState<{id:number,theme:string}[]>([]);
   const [loading, setLoading] = useState(true);
   const fgRef = useRef<any>(null);
-  const dataRef = useRef<{ nodes: GraphNode[]; links: GraphLink[] } | null>(null);
+  const dataRef = useRef<{nodes:GraphNode[],links:GraphLink[]}|null>(null);
 
-  // ─── Fetch ─────────────────────────────────────────────────────────────────
   useEffect(() => {
     api.getEnrichedGraph()
       .then(res => {
@@ -196,22 +141,16 @@ export const NetworkXGraphView: React.FC<Props> = ({
       .finally(() => setLoading(false));
   }, []);
 
-  // ─── Filtragem por tipo (hiddenTypes) ─────────────────────────────────────
   const graphData = useMemo(() => {
     if (!rawData) return null;
     const hidden = hiddenTypes && hiddenTypes.size > 0;
     const filtered = activeCoT !== null;
     if (!hidden && !filtered) return rawData;
-
-    const visibleIds = new Set(
-      rawData.nodes
-        .filter(n => {
-          if (hidden && hiddenTypes!.has(n.type)) return false;
-          if (filtered && n.cluster_id !== activeCoT) return false;
-          return true;
-        })
-        .map(n => n.id)
-    );
+    const visibleIds = new Set(rawData.nodes.filter(n => {
+      if (hidden && hiddenTypes!.has(n.type)) return false;
+      if (filtered && n.cluster_id !== activeCoT) return false;
+      return true;
+    }).map(n => n.id));
     return {
       nodes: rawData.nodes.filter(n => visibleIds.has(n.id)),
       links: rawData.links.filter(l => {
@@ -222,22 +161,44 @@ export const NetworkXGraphView: React.FC<Props> = ({
     };
   }, [rawData, hiddenTypes, activeCoT]);
 
-  // Atualiza dataRef quando graphData muda
+  useEffect(() => { if (graphData) dataRef.current = graphData; }, [graphData]);
+
+  // Center on selected node when selectedNodeId changes
   useEffect(() => {
-    if (graphData) dataRef.current = graphData;
-  }, [graphData]);
+    if (!selectedNodeId || !dataRef.current || !fgRef.current) return;
+    const node = dataRef.current.nodes.find(n => n.id === selectedNodeId);
+    if (node?.x !== undefined) {
+      fgRef.current.centerAt(node.x, node.y, 600);
+      fgRef.current.zoom(2.5, 600);
+    }
+  }, [selectedNodeId]);
+
+  const navigateToNode = useCallback((uid: string) => {
+    if (!dataRef.current || !fgRef.current) return;
+    const node = dataRef.current.nodes.find(n => n.id === uid);
+    if (!node) return;
+    if (node.x !== undefined) {
+      fgRef.current.centerAt(node.x, node.y, 600);
+      fgRef.current.zoom(2.5, 600);
+    }
+    if (onNodeClick) onNodeClick(node);
+  }, [onNodeClick]);
+
+  // Expõe navigateToNode via ref para o pai
+  useEffect(() => {
+    if (onNavigateToNode) onNavigateToNode.current = navigateToNode;
+  }, [navigateToNode, onNavigateToNode]);
 
   const freezeAllNodes = () => {
     if (!dataRef.current) return;
     dataRef.current.nodes.forEach(n => { if (n.x !== undefined) { n.fx = n.x; n.fy = n.y; } });
   };
 
-  // ─── Halos de Cluster (Convex Hull orgânico) ──────────────────────────────
+  // ─── Halos de Cluster ─────────────────────────────────────────────────────
   const onRenderFramePre = useCallback((ctx: CanvasRenderingContext2D, globalScale: number) => {
-    if (!showCoT || !dataRef.current) return; // Ocultar todos os halos
-    const nodes = dataRef.current.nodes;
+    if (!showCoT || !dataRef.current) return;
     const groups: Record<number, GraphNode[]> = {};
-    nodes.forEach(n => {
+    dataRef.current.nodes.forEach(n => {
       if (n.x === undefined) return;
       const cid = n.cluster_id ?? 0;
       if (!groups[cid]) groups[cid] = [];
@@ -247,171 +208,159 @@ export const NetworkXGraphView: React.FC<Props> = ({
     Object.entries(groups).forEach(([cidStr, members]) => {
       const cid = parseInt(cidStr);
       const color = COT_COLORS[cid % COT_COLORS.length];
-      const MARGIN = getNodeSize(members[0]) + 12; // margem ~8-12px + raio do nó
+      // margin = largest node radius in cluster + 8px
+      const margin = Math.max(...members.map(n => getNodeSize(n))) + 8;
 
-      if (members.length === 1) {
-        const n = members[0];
-        ctx.beginPath();
-        ctx.arc(n.x!, n.y!, MARGIN + 4, 0, Math.PI * 2);
-      } else if (members.length === 2) {
-        // Cápsula entre dois nós
-        const pts = expandHull(members.map(n => ({ x: n.x!, y: n.y! })), MARGIN);
-        drawSmoothPath(ctx, pts);
-      } else {
-        // Hull convexo orgânico
-        const pts = computeConvexHull(members.map(n => ({ x: n.x!, y: n.y! })));
-        const expanded = expandHull(pts, MARGIN);
-        drawSmoothPath(ctx, expanded);
-      }
+      ctx.save();
+      drawBlob(ctx, members, margin);
 
-      // Preenchimento suave
-      ctx.fillStyle = `${color}0e`;
+      // Soft fill
+      ctx.fillStyle = `${color}10`;
       ctx.fill();
 
-      // Borda tracejada
-      ctx.strokeStyle = `${color}45`;
+      // Dashed glow border
+      ctx.strokeStyle = `${color}55`;
       ctx.lineWidth = 1.5 / globalScale;
       ctx.setLineDash([7 / globalScale, 4 / globalScale]);
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 8 / globalScale;
       ctx.stroke();
+      ctx.shadowBlur = 0;
       ctx.setLineDash([]);
 
-      // Tema do cluster — acima do hull
-      const theme = members[0]?.cluster_theme || `CoT ${cid}`;
-      const fontSize = Math.max(8, 11 / globalScale);
-      ctx.font = `bold ${fontSize}px Inter, -apple-system, sans-serif`;
+      // Theme label above blob
+      const topY = Math.min(...members.map(n => (n.y ?? 0))) - margin;
+      const cx = members.reduce((s, n) => s + (n.x ?? 0), 0) / members.length;
+      const fontSize = Math.max(9, 12 / globalScale);
+      ctx.font = `bold ${fontSize}px Inter, sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'bottom';
-      const topY = Math.min(...members.map(n => (n.y ?? 0)));
-      const cx = members.reduce((s, n) => s + (n.x ?? 0), 0) / members.length;
-      const textW = ctx.measureText(theme).width;
-      ctx.fillStyle = 'rgba(2,8,16,0.6)';
-      ctx.fillRect(cx - textW / 2 - 3, topY - MARGIN - fontSize - 2, textW + 6, fontSize + 3);
-      ctx.fillStyle = `${color}cc`;
-      ctx.fillText(theme, cx, topY - MARGIN + 2);
+      const tw = ctx.measureText(members[0]?.cluster_theme || '').width;
+      ctx.fillStyle = 'rgba(2,8,16,0.65)';
+      ctx.fillRect(cx - tw / 2 - 4, topY - fontSize - 2, tw + 8, fontSize + 4);
+      ctx.fillStyle = `${color}ee`;
+      ctx.fillText(members[0]?.cluster_theme || `CoT ${cid}`, cx, topY);
+      ctx.restore();
     });
-  }, []);
+  }, [showCoT]);
 
-  // ─── Desenho de Nó ────────────────────────────────────────────────────────
+  // ─── Desenho dos Nós ──────────────────────────────────────────────────────
   const drawNode = useCallback((node: GraphNode, ctx: CanvasRenderingContext2D, globalScale: number) => {
     if (node.x === undefined || node.y === undefined) return;
     const size = getNodeSize(node);
     const cotColor = COT_COLORS[(node.cluster_id ?? 0) % COT_COLORS.length];
     const nodeColor = NODE_COLORS[node.type as EntityType] || '#888';
-    const label = node.label || node.id;
+    const isSelected = node.id === selectedNodeId;
 
-    // Aura do CoT (cor do cluster, anel externo)
+    // CoT aura ring (always visible)
     ctx.beginPath();
-    ctx.arc(node.x, node.y, size + 4 / globalScale, 0, Math.PI * 2);
-    ctx.fillStyle = `${cotColor}18`;
+    ctx.arc(node.x, node.y, size + (isSelected ? 8 : 4) / globalScale, 0, Math.PI * 2);
+    ctx.fillStyle = `${cotColor}${isSelected ? '30' : '18'}`;
     ctx.fill();
 
-    // Glow (cor do tipo de nó)
-    ctx.shadowColor = nodeColor;
-    ctx.shadowBlur = 20 / globalScale;
+    // Glow (stronger when selected)
+    ctx.shadowColor = isSelected ? cotColor : nodeColor;
+    ctx.shadowBlur = (isSelected ? 40 : 18) / globalScale;
 
-    // Círculo principal
+    // Main circle
     ctx.beginPath();
     ctx.arc(node.x, node.y, size, 0, Math.PI * 2);
     ctx.fillStyle = nodeColor;
     ctx.fill();
 
-    // Highlight interno
+    // Inner highlight
     ctx.shadowBlur = 0;
     ctx.beginPath();
     ctx.arc(node.x, node.y - size * 0.22, size * 0.4, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+    ctx.fillStyle = 'rgba(255,255,255,0.18)';
     ctx.fill();
 
-    // Borda do CoT (anel fino com cor do cluster)
+    // CoT border ring
     ctx.beginPath();
     ctx.arc(node.x, node.y, size, 0, Math.PI * 2);
-    ctx.strokeStyle = `${cotColor}80`;
-    ctx.lineWidth = 1.5 / globalScale;
+    ctx.strokeStyle = isSelected ? `${cotColor}ff` : `${cotColor}80`;
+    ctx.lineWidth = (isSelected ? 2.5 : 1.5) / globalScale;
     ctx.stroke();
 
-    // ─── Label ───────────────────────────────────────────────────────────
-    if (size >= 9) {
-      // Tamanho de fonte menor — ~65% do raio, não mais que 10px real
-      const rawPx = (size * 0.65) / globalScale;
-      const fontSize = Math.max(5.5, Math.min(rawPx, 11 / globalScale));
-      ctx.font = `bold ${fontSize}px Inter, -apple-system, sans-serif`;
+    // ─── Label (always clipped inside circle, always outlined, max 2px) ───
+    if (size >= 7) {
+      ctx.save();
+      // Clip to node circle — text NEVER escapes
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, size - 1 / globalScale, 0, Math.PI * 2);
+      ctx.clip();
+
+      const label = node.label || node.id;
+      const fontPx = Math.max(4.5, (size * 0.6) / globalScale);
+      ctx.font = `bold ${fontPx}px Inter, -apple-system, sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
-      // Contorno para legibilidade
-      ctx.strokeStyle = 'rgba(0,0,0,0.9)';
-      ctx.lineWidth = 3 / globalScale;
+      // Outline: always present, max 2px screen
+      const strokeW = Math.min(2, 2.5 / globalScale);
+      ctx.strokeStyle = 'rgba(0,0,0,0.92)';
+      ctx.lineWidth = strokeW;
+      ctx.lineJoin = 'round';
 
       if (globalScale >= 1.8) {
-        // Modo zoom-in: com quebra de linha
-        const lineHeight = fontSize * 1.3;
-        const maxW = size * 1.6;
-        ctx.strokeText('', node.x, node.y); // reset stroke
-        // Stroke
-        ctx.strokeStyle = 'rgba(0,0,0,0.9)';
-        ctx.lineWidth = 3 / globalScale;
-        drawWrappedText(ctx, label, node.x, node.y, maxW, lineHeight);
-        ctx.fillStyle = '#ffffff';
-        drawWrappedText(ctx, label, node.x, node.y, maxW, lineHeight);
+        // Zoom-in: wrap text in multiple lines
+        const maxW = (size * 1.7);
+        const words = label.split(' ');
+        const lines: string[] = [];
+        let cur = '';
+        for (const w of words) {
+          const test = cur ? `${cur} ${w}` : w;
+          if (ctx.measureText(test).width > maxW && cur) { lines.push(cur); cur = w; }
+          else cur = test;
+        }
+        if (cur) lines.push(cur);
+        const lh = fontPx * 1.25;
+        const startY = node.y - ((lines.length - 1) * lh) / 2;
+        lines.forEach((l, i) => {
+          ctx.strokeText(l, node.x!, startY + i * lh);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText(l, node.x!, startY + i * lh);
+        });
       } else {
-        // Modo normal: trunca em 1 linha
+        // Normal: single line, truncate to fit
         let display = label;
         const maxW = size * 1.5;
         while (ctx.measureText(display).width > maxW && display.length > 2) {
           display = display.slice(0, -2) + '…';
         }
-        ctx.strokeStyle = 'rgba(0,0,0,0.9)';
-        ctx.lineWidth = 3 / globalScale;
         ctx.strokeText(display, node.x, node.y);
         ctx.fillStyle = '#ffffff';
         ctx.fillText(display, node.x, node.y);
       }
-    } else {
-      // Nós pequenos: label abaixo
-      const fontSize = Math.max(5, 7.5 / globalScale);
-      ctx.font = `${fontSize}px Inter, sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'top';
-      const tw = ctx.measureText(label).width;
-      ctx.fillStyle = 'rgba(0,0,0,0.55)';
-      ctx.fillRect(node.x - tw / 2 - 1, node.y + size + 1, tw + 2, fontSize + 2);
-      ctx.fillStyle = `${nodeColor}dd`;
-      ctx.fillText(label, node.x, node.y + size + 2);
+      ctx.restore();
     }
-  }, []);
+  }, [selectedNodeId]);
 
-  // ─── Arrastar individual ──────────────────────────────────────────────────
+  // ─── Drag individual ─────────────────────────────────────────────────────
   const handleNodeDrag = useCallback((node: GraphNode) => {
     if (!dataRef.current) return;
     dataRef.current.nodes.forEach(n => {
       if (n.id !== node.id && n.x !== undefined) { n.fx = n.x; n.fy = n.y; }
     });
   }, []);
-
   const handleNodeDragEnd = useCallback((node: GraphNode) => {
     if (!dataRef.current) return;
     dataRef.current.nodes.forEach(n => { if (n.id !== node.id) { delete n.fx; delete n.fy; } });
-    node.fx = node.x;
-    node.fy = node.y;
+    node.fx = node.x; node.fy = node.y;
     setTimeout(() => freezeAllNodes(), 1500);
   }, []);
 
-  // ─── Render ───────────────────────────────────────────────────────────────
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-full rounded-3xl border border-border/40" style={{ background: 'rgba(2,8,16,0.82)' }}>
         <Loader2 className="w-12 h-12 text-teal-400 animate-spin mb-4" />
         <p className="text-white font-bold text-lg">Contextualizando CoTs...</p>
-        <p className="text-gray-500 text-xs mt-1">NetworkX detectando comunidades de pensamento</p>
       </div>
     );
   }
 
   return (
-    <div
-      className="w-full h-full relative rounded-3xl overflow-hidden border border-white/10 shadow-2xl"
-      style={{ background: 'rgba(2,8,16,0.78)', backdropFilter: 'blur(3px)' }}
-    >
+    <div className="w-full h-full relative rounded-3xl overflow-hidden border border-white/10 shadow-2xl" style={{ background: 'rgba(2,8,16,0.78)', backdropFilter: 'blur(3px)' }}>
       {graphData && graphData.nodes.length > 0 ? (
         <ForceGraph2D
           ref={fgRef}
@@ -420,17 +369,15 @@ export const NetworkXGraphView: React.FC<Props> = ({
           nodeCanvasObject={drawNode as any}
           nodeCanvasObjectMode={() => 'replace'}
           nodePointerAreaPaint={(node: any, color, ctx) => {
-            const size = getNodeSize(node as GraphNode) + 6;
+            const s = getNodeSize(node as GraphNode) + 6;
             ctx.fillStyle = color;
             ctx.beginPath();
-            ctx.arc(node.x, node.y, size, 0, Math.PI * 2);
+            ctx.arc(node.x, node.y, s, 0, Math.PI * 2);
             ctx.fill();
           }}
           linkColor={(link: any) => LINK_COLORS[link.label] || 'rgba(255,255,255,0.18)'}
           linkWidth={(link: any) => LINK_WIDTHS[link.label] || 1.5}
-          linkDirectionalParticles={(link: any) =>
-            (link.label === 'ELIGIBLE_FOR' || link.label === 'SIMILAR_TO') ? 3 : 0
-          }
+          linkDirectionalParticles={(link: any) => (link.label === 'ELIGIBLE_FOR' || link.label === 'SIMILAR_TO') ? 3 : 0}
           linkDirectionalParticleWidth={2.5}
           linkDirectionalParticleColor={(link: any) => LINK_COLORS[link.label] || '#fff'}
           linkDirectionalParticleSpeed={0.004}
@@ -445,36 +392,23 @@ export const NetworkXGraphView: React.FC<Props> = ({
         />
       ) : (
         <div className="flex flex-col items-center justify-center h-full text-center p-8">
-          <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-6">
-            <Network className="w-8 h-8 text-gray-600" />
-          </div>
+          <Network className="w-12 h-12 text-gray-600 mb-4" />
           <h3 className="text-xl font-bold text-white mb-2">Ecossistema em Silêncio</h3>
-          <p className="text-gray-500 max-w-md mb-8">
-            Nenhum dado de rede localizado. Certifique-se de que existem acadêmicos e editais cadastrados.
-          </p>
-          <button onClick={() => window.location.reload()} className="px-6 py-2 rounded-full bg-white/5 border border-white/10 text-white text-xs font-bold uppercase tracking-widest hover:bg-white/10 transition-all">
-            Tentar Novamente
-          </button>
+          <p className="text-gray-500 max-w-md mb-6">Nenhum dado de rede localizado.</p>
+          <button onClick={() => window.location.reload()} className="px-6 py-2 rounded-full bg-white/5 border border-white/10 text-white text-xs font-bold uppercase tracking-widest hover:bg-white/10 transition-all">Tentar Novamente</button>
         </div>
       )}
 
-      {/* Legenda CoT — usa COT_COLORS */}
-      <div className="absolute top-4 left-4 pointer-events-none max-w-[230px]">
+      {/* CoT Legend */}
+      <div className="absolute top-4 left-4 pointer-events-none max-w-[220px]">
         <div className="bg-black/65 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl">
           <h4 className="text-[9px] uppercase tracking-[0.2em] text-orange-400 font-black mb-3 flex items-center gap-1.5">
-            <Zap className="w-2.5 h-2.5 animate-pulse" />
-            Comunidades de Pensamento
+            <Zap className="w-2.5 h-2.5 animate-pulse" /> Comunidades de Pensamento
           </h4>
           <div className="space-y-2">
-            {clusters.slice(0, 6).map((c) => (
+            {clusters.slice(0, 6).map(c => (
               <div key={c.id} className="flex items-center gap-2">
-                <div
-                  className="w-2 h-2 rounded-full shrink-0"
-                  style={{
-                    backgroundColor: COT_COLORS[c.id % COT_COLORS.length],
-                    boxShadow: `0 0 8px ${COT_COLORS[c.id % COT_COLORS.length]}`,
-                  }}
-                />
+                <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: COT_COLORS[c.id % COT_COLORS.length], boxShadow: `0 0 8px ${COT_COLORS[c.id % COT_COLORS.length]}` }} />
                 <div>
                   <span className="text-[9px] text-white font-bold truncate block leading-tight">{c.theme}</span>
                   <span className="text-[7px] text-gray-600 font-mono uppercase">CoT #{c.id}</span>
@@ -485,13 +419,9 @@ export const NetworkXGraphView: React.FC<Props> = ({
         </div>
       </div>
 
-      {/* Controles */}
+      {/* Controls */}
       <div className="absolute bottom-4 right-4">
-        <button
-          onClick={() => fgRef.current?.zoomToFit(400)}
-          className="p-2.5 rounded-xl bg-black/60 backdrop-blur-md border border-white/10 text-white hover:bg-orange-500/20 hover:border-orange-500/40 transition-all"
-          title="Ajustar ao ecrã"
-        >
+        <button onClick={() => fgRef.current?.zoomToFit(400)} className="p-2.5 rounded-xl bg-black/60 backdrop-blur-md border border-white/10 text-white hover:bg-orange-500/20 hover:border-orange-500/40 transition-all" title="Ajustar">
           <Maximize2 size={16} />
         </button>
       </div>
