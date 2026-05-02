@@ -175,7 +175,7 @@ const Landing = () => {
           <div className="pt-[52px] pb-16 relative flex">
             {/* Left column — text */}
             <div className="relative z-[3] flex-1 min-w-0 max-w-[540px]">
-              <h1 className="text-[clamp(2rem,4vw,3.2rem)] font-[500] leading-[1.08] tracking-[-0.04em] text-foreground max-w-[540px]">
+              <h1 className="text-[clamp(1.8rem,3.5vw,2.8rem)] font-[500] leading-[1.08] tracking-[-0.04em] text-foreground max-w-[540px]">
                 Conexões estratégicas para o ecossistema de inovação
               </h1>
               <p className="mt-6 text-base leading-relaxed text-muted-foreground max-w-[420px]">
@@ -192,7 +192,7 @@ const Landing = () => {
             </div>
 
             {/* Right column — 3D animated graph */}
-            <div className="hidden md:flex absolute left-[calc(30%+16px)] top-[-76px] z-[1] w-[70%] pointer-events-none items-center justify-center" style={{ height: 'calc(100vh - 80px)' }}>
+            <div className="hidden md:flex absolute left-[calc(30%+32px)] top-[-92px] z-[1] w-[70%] pointer-events-none items-center justify-center" style={{ height: 'calc(100vh - 80px)' }}>
               <div className="pointer-events-auto" style={{ width: cubeZoom, height: cubeZoom, transform: 'translate(45%, -35%)' }}>
                 <Graph3D
                   size={cubeZoom}
