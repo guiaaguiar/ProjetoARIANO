@@ -52,28 +52,40 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
   useEffect(() => {
     let isMounted = true;
 
+    const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
+
     const runPipeline = async () => {
       try {
         setCurrentStep(0);
         setLogs(prev => [...prev, "🧠 Iniciando extração de contexto acadêmico..."]);
         
-        const contextRes = await fetch('/api/agents/v2/analyze-profile', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData)
-        });
+        // Step 1: Analyze Profile
+        const [contextRes] = await Promise.all([
+          fetch('/api/agents/v2/analyze-profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+          }),
+          delay(3500) // Cadência mínima
+        ]);
+        
         const contextData = await contextRes.json();
         if (!isMounted) return;
         
         const profileContext = contextData.data.context;
         setLogs(prev => [...prev, "✅ Contexto processado. Acionando Agente Analista..."]);
         
+        // Step 2: Extract Skills
         setCurrentStep(1);
-        const skillsRes = await fetch('/api/agents/v2/extract-skills', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ context: profileContext })
-        });
+        const [skillsRes] = await Promise.all([
+          fetch('/api/agents/v2/extract-skills', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ context: profileContext })
+          }),
+          delay(4000) // Cadência para o Agente Analista
+        ]);
+        
         const skillsData = await skillsRes.json();
         if (!isMounted) return;
         
@@ -82,28 +94,37 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
         setLogs(prev => [...prev, `🔍 Habilidades encontradas: ${skillsData.data.skills.slice(0,3).join(', ')}...`]);
         setLogs(prev => [...prev, "🧬 Integrando conexões no ecossistema..."]);
         
+        // Step 3: Match Editais
         setCurrentStep(2);
-        const matchesRes = await fetch('/api/agents/v2/match-editais', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ context: profileContext, skills: skillsData.data.skills })
-        });
+        const [matchesRes] = await Promise.all([
+          fetch('/api/agents/v2/match-editais', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ context: profileContext, skills: skillsData.data.skills })
+          }),
+          delay(5000) // Cadência para o Match Engine (mais lenta para "peso")
+        ]);
+        
         const matchesData = await matchesRes.json();
         if (!isMounted) return;
         
         setActiveMatches(matchesData.data.matches);
         setMatches(matchesData.data.matches);
         setCachedMatches(matchesData.data.matches);
+        
+        // Garante sincronização de sessão antes do fim
+        await useAuthStore.getState().checkAuth();
+        
         setCurrentStep(3);
         setLogs(prev => [...prev, "🎯 Otimização de matches concluída com sucesso."]);
         
         setTimeout(() => {
           if (isMounted) setShowFinish(true);
-        }, 2000);
+        }, 2500);
         
       } catch (err) {
         console.error("Pipeline error:", err);
-        setError("Ocorreu um erro no processamento cognitivo.");
+        setError("Ocorreu um erro no processamento cognitivo. Verifique sua conexão.");
       }
     };
 

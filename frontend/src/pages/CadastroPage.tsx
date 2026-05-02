@@ -92,6 +92,10 @@ export const CadastroPage: React.FC = () => {
     }).then(async res => {
       const result = await res.json();
       if (!res.ok) throw new Error(result.detail || 'Falha no cadastro.');
+      
+      // Sincroniza a sessão imediatamente após o registro com sucesso
+      await checkAuth();
+      
       if (result.uid) setRegisteredUid(result.uid);
       if (result.ai_data) setInitialAiData(result.ai_data);
       return result;

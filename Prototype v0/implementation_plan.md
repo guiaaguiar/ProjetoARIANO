@@ -12,20 +12,19 @@
 
 ---
 
-# Implementation Plan - Sprint 13: Pipeline de IA Transparente & Multi-Step (CONCLUÍDO)
-**Data de Conclusão:** 02/05/2026 às 02:35
+# Implementation Plan - Sprint 14: Cadência Cognitiva & Justificativas Reais (EM ANDAMENTO)
 
-## 🎯 Objetivos Alcançados
-1.  **Pipeline V2 (Multi-Step)**: Migração do polling passivo para uma orquestração ativa de endpoints sequenciais (`/v2/analyze`, `/v2/extract`, `/v2/match`).
-2.  **Sincronização Atômica**: A animação no frontend agora é disparada e sustentada pelas respostas reais da LLM em cada etapa.
-3.  **Visualização Dinâmica**: O `MiniGraphAnimation` renderiza nodes (skills, áreas e matches) extraídos em tempo real, sem qualquer dado mockado.
-4.  **Resiliência Stateless**: A passagem de contexto entre chamadas garante que o fluxo não quebre em instâncias efêmeras do Vercel.
-5.  **Refinamento de Sessão**: Delay de 1.5s na navegação final para assegurar a persistência dos cookies JWT.
+## 🎯 Objetivos
+1.  **Cadência Orgânica**: Implementar um `min_delay` de 3-5 segundos por etapa no frontend (`CognitionExperience`), garantindo que o usuário tenha tempo de ler os "pensamentos" da IA, mesmo que a API seja rápida.
+2.  **Justificativas Profundas**: Garantir que as justificativas de match sejam extraídas da LLM e não venham de fallbacks genéricos.
+3.  **Visual Feedback Progressivo**: Melhorar a fluidez das transições no `MiniGraphAnimation` para que os novos nodes surjam com "peso" visual.
+4.  **Debugging de LLM**: Adicionar logs explícitos no Vercel para identificar por que a LLM está (ou não) sendo acionada nos endpoints V2.
 
-## 🛠️ Mudanças Realizadas
-- **Backend**: Implementados endpoints `/v2/*` em `agent_routes.py` e método `generate_profile_context` no `ProfileAnalyzer`.
-- **Frontend**: Refatoração completa de `CognitionExperience.tsx` para orquestração assíncrona e `MiniGraphAnimation.tsx` para suporte a dados dinâmicos.
+## 🛠️ Mudanças Propostas
+- **Backend (`agent_routes.py`)**: Refinar os prompts dos endpoints `/v2/*` para garantir que a justificativa de match seja sempre personalizada. Melhorar logs de inicialização do singleton.
+- **Frontend (`CognitionExperience.tsx`)**: Adicionar um wrapper de `Promise.all([apiCall, delay])` para controlar o ritmo.
+- **Frontend (`MiniGraphAnimation.tsx`)**: Implementar transições de opacidade e escala mais lentas para novos nodes.
 
 ---
 > [!IMPORTANT]
-> A plataforma agora opera com **Transparência Cognitiva Total**. O usuário vê exatamente o que a IA descobriu, no tempo em que ela descobriu.
+> O objetivo é que o usuário sinta que o ARIANO está "processando profundamente" seu perfil, e não apenas respondendo um JSON estático.

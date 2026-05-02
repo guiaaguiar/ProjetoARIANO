@@ -59,9 +59,9 @@ export const MiniGraphAnimation: React.FC<MiniGraphAnimationProps> = ({ step, ac
   const renderNode = (node: MiniGraphNode, delay: number, withPulse: boolean = false) => (
     <motion.g
       key={node.id}
-      initial={{ scale: 0, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ delay, type: 'spring', stiffness: 200, damping: 15 }}
+      initial={{ scale: 0, opacity: 0, filter: 'blur(10px)' }}
+      animate={{ scale: 1, opacity: 1, filter: 'blur(0px)' }}
+      transition={{ delay: delay * 2, duration: 1.5, type: 'spring', stiffness: 50, damping: 20 }}
     >
       {withPulse && (
         <motion.circle
@@ -70,19 +70,19 @@ export const MiniGraphAnimation: React.FC<MiniGraphAnimationProps> = ({ step, ac
           r="16"
           fill={node.color}
           opacity="0.2"
-          animate={{ scale: [1, 1.5, 1], opacity: [0.2, 0, 0.2] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          animate={{ scale: [1, 1.8, 1], opacity: [0.3, 0, 0.3] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
         />
       )}
-      <circle cx={node.x} cy={node.y} r="10" fill={node.color} />
+      <circle cx={node.x} cy={node.y} r="10" fill={node.color} className="filter drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]" />
       <text
         x={node.x}
         y={node.y + 22}
         fill="#e8f0f8"
         fontSize="10"
         textAnchor="middle"
-        className="font-mono font-medium"
-        style={{ textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}
+        className="font-mono font-bold tracking-tighter"
+        style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9)' }}
       >
         {node.label}
       </text>
@@ -100,8 +100,8 @@ export const MiniGraphAnimation: React.FC<MiniGraphAnimationProps> = ({ step, ac
       strokeWidth={isDashed ? "1" : "2"}
       strokeDasharray={isDashed ? "4,4" : undefined}
       initial={{ pathLength: 0, opacity: 0 }}
-      animate={{ pathLength: 1, opacity: isDashed ? 0.3 : 0.6 }}
-      transition={{ duration: 0.8, delay, ease: "easeInOut" }}
+      animate={{ pathLength: 1, opacity: isDashed ? 0.3 : 0.8 }}
+      transition={{ duration: 2, delay: delay * 2, ease: "easeInOut" }}
     />
   );
 

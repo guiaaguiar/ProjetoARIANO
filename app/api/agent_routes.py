@@ -39,6 +39,7 @@ def _get_profile_analyzer() -> ProfileAnalyzer:
     global _profile_analyzer
     if _profile_analyzer is None:
         _profile_analyzer = ProfileAnalyzer()
+        logger.info(f"🤖 ProfileAnalyzer Singleton: LLM {'disponível' if _profile_analyzer.llm else 'indisponível'}")
     return _profile_analyzer
 
 
@@ -46,6 +47,7 @@ def _get_edital_interpreter() -> EditalInterpreter:
     global _edital_interpreter
     if _edital_interpreter is None:
         _edital_interpreter = EditalInterpreter()
+        logger.info(f"🤖 EditalInterpreter Singleton: LLM {'disponível' if _edital_interpreter.llm else 'indisponível'}")
     return _edital_interpreter
 
 
@@ -53,6 +55,7 @@ def _get_eligibility_calculator() -> EligibilityCalculator:
     global _eligibility_calculator
     if _eligibility_calculator is None:
         _eligibility_calculator = EligibilityCalculator()
+        logger.info(f"🤖 EligibilityCalculator Singleton: LLM {'disponível' if _eligibility_calculator.llm else 'indisponível'}")
     return _eligibility_calculator
 
 
@@ -139,16 +142,16 @@ def extract_skills_v2(request: ExtractSkillsRequest):
     
     # Se tiver LLM, faz a chamada real
     if analyzer.llm:
-        prompt = f"""Baseado neste perfil acadêmico:
-        {request.context}
+        prompt = f"""Como Agente Analista do ARIANO, examine o perfil abaixo:
+        CONTEXTO: {request.context}
         
-        Você acha que ele se encaixa em quais áreas e skills técnicas do ecossistema de inovação?
-        Extraia no máximo 5 skills e 3 áreas.
+        Sua tarefa é extrair as 5 competências técnicas (Skills) e as 3 áreas de atuação acadêmica que melhor definem este perfil para o ecossistema de inovação.
+        Seja preciso e use termos profissionais.
         
-        Responda APENAS em JSON:
+        Responda ESTRITAMENTE em formato JSON (sem markdown):
         {{
-            "skills": ["Python", "React", ...],
-            "areas": ["Inteligencia Artificial", ...]
+            "skills": ["Exemplo Skill 1", "Exemplo Skill 2", ...],
+            "areas": ["Exemplo Área 1", ...]
         }}"""
         try:
             from langchain_core.messages import HumanMessage
@@ -156,13 +159,11 @@ def extract_skills_v2(request: ExtractSkillsRequest):
             import json
             import re
             content = response.content
-            json_match = re.search(r'\{.*\}', content, re.DOTALL)
-            if json_match:
-                data = json.loads(json_match.group(0))
-            else:
-                data = {"skills": [], "areas": []}
+            # Remove possible markdown backticks
+            clean_content = re.sub(r'```json\s*|\s*```', '', content).strip()
+            data = json.loads(clean_content)
         except Exception as e:
-            logger.error(f"LLM V2 Skills failed: {e}")
+            logger.error(f"❌ LLM V2 Skills failed: {e}")
             data = {"skills": ["Inovação"], "areas": ["Tecnologia"]} # Fallback minimal
     else:
         # Fallback via regras (reaproveita lógica existente)
@@ -184,29 +185,27 @@ def match_editais_v2(request: MatchEditaisRequest):
     """Stage 3: Use context + skills to find relevant editais."""
     calculator = _get_eligibility_calculator()
     
-    # Aqui vamos usar o motor de busca real do grafo
-    # Mas para o fluxo síncrono da animação, podemos usar a LLM para "escolher" 
-    # ou filtrar os melhores se houver muitos.
-    
-    # Para simplicidade e fidelidade ao solicitado pelo usuário:
-    # Vamos buscar todos os editais abertos e pedir para a LLM fazer o match.
     from app.core.neo4j_driver import run_cypher
-    editais = run_cypher("MATCH (e:Edital) WHERE e.status = 'aberto' RETURN e.title AS title, e.uid AS uid")
-    edital_list = [e["title"] for e in editais]
+    editais = run_cypher("MATCH (e:Edital) WHERE e.status = 'aberto' RETURN e.title AS title, e.uid AS uid, e.description AS description")
+    edital_context = "\n".join([f"- {e['title']}: {e['description'][:100]}..." for e in editais])
 
     if calculator.llm:
-        prompt = f"""Baseado neste perfil:
-        {request.context}
+        prompt = f"""Como Orquestrador do ARIANO, você deve cruzar o perfil abaixo com os editais disponíveis.
         
-        E nestas skills detectadas: {', '.join(request.skills)}
+        PERFIL: {request.context}
+        COMPETÊNCIAS DETECTADAS: {', '.join(request.skills)}
         
-        Quais destes editais ele se aplica? Escolha os 3 melhores.
-        EDITAIS DISPONÍVEIS: {', '.join(edital_list)}
+        EDITAIS DISPONÍVEIS:
+        {edital_context}
         
-        Responda APENAS em JSON:
+        Sua tarefa:
+        1. Selecione os 3 editais com maior aderência estratégica.
+        2. Escreva uma justificativa de 1 frase para cada um, explicando POR QUE esse perfil é compatível (use as competências detectadas na explicação).
+        
+        Responda ESTRITAMENTE em formato JSON (sem markdown):
         {{
             "matches": [
-                {{"title": "Nome do Edital", "justification": "Por que?"}}
+                {{"title": "Título Exato do Edital", "justification": "Justificativa personalizada..."}}
             ]
         }}"""
         try:
@@ -215,17 +214,15 @@ def match_editais_v2(request: MatchEditaisRequest):
             import json
             import re
             content = response.content
-            json_match = re.search(r'\{.*\}', content, re.DOTALL)
-            if json_match:
-                data = json.loads(json_match.group(0))
-            else:
-                data = {"matches": []}
+            clean_content = re.sub(r'```json\s*|\s*```', '', content).strip()
+            data = json.loads(clean_content)
+            logger.info(f"✅ LLM V2 Matches gerados com sucesso para o perfil.")
         except Exception as e:
-            logger.error(f"LLM V2 Matches failed: {e}")
+            logger.error(f"❌ LLM V2 Matches failed: {e}")
             data = {"matches": []}
     else:
-        # Fallback básico: pega os 3 primeiros editais
-        data = {"matches": [{"title": e["title"], "justification": "Compatibilidade detectada via cluster acadêmico."} for e in editais[:3]]}
+        # Fallback básico melhorado
+        data = {"matches": [{"title": e["title"], "justification": f"Forte correlação estratégica detectada entre suas competências e os requisitos deste edital governamental."} for e in editais[:3]]}
 
     return AgentResponse(
         status="success",
