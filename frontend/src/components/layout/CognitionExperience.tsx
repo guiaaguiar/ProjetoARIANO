@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bot, Cpu, Network, Zap, CheckCircle2, ArrowRight, MessageSquare, ShieldCheck } from 'lucide-react';
@@ -121,7 +122,6 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
       return lastLog;
     }
     
-    // Sequence based on a simple timer if no logs yet
     return "A IA está extraindo suas informações e ";
   };
 
