@@ -58,7 +58,11 @@ export default function UserDashboard() {
   }, [user]);
 
   return (
-    <div className="space-y-12 pb-12">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-12 pb-12"
+    >
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="space-y-2">
           <div className="flex items-center gap-2 text-primary font-bold uppercase tracking-[0.2em] text-[10px]">
@@ -201,6 +205,6 @@ export default function UserDashboard() {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

@@ -59,6 +59,14 @@ export const MatchResultCards: React.FC<MatchResultCardsProps> = ({ matches }) =
             </div>
             
             <div className="flex flex-col items-end gap-2">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3].map(dot => (
+                    <div key={dot} className={`w-1 h-1 rounded-full ${match.score > 80 ? 'bg-primary' : 'bg-warning'} animate-pulse`} style={{ animationDelay: `${dot * 200}ms` }} />
+                  ))}
+                </div>
+                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Reliability: High</span>
+              </div>
               <div className="flex items-center gap-1.5 bg-primary/10 border border-primary/20 px-3 py-1.5 rounded-full">
                 <Award className="w-3.5 h-3.5 text-primary" />
                 <span className="text-primary text-[12px] font-black uppercase tracking-tighter">{match.score}% Score</span>
