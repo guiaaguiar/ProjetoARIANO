@@ -7,6 +7,7 @@ import { useTheme } from "next-themes";
 import { useEffect, useState, useRef } from "react";
 
 import { StackedLogo } from "@/components/StackedLogo";
+import { ThemeToggleButton } from "@/components/ThemeToggleButton";
 
 /** Teal accent matched to wallpaper topographic lines */
 const TEAL_HSL = "190 80% 38%";
