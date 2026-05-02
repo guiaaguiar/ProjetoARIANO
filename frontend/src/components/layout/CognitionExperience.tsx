@@ -64,7 +64,7 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
           fetch('/api/agents/v2/analyze-profile', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
+            body: JSON.stringify({ ...formData, entity_uid: userId })
           }),
           delay(3500) // Cadência mínima
         ]);
@@ -81,7 +81,7 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
           fetch('/api/agents/v2/extract-skills', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ context: profileContext })
+            body: JSON.stringify({ context: profileContext, entity_uid: userId })
           }),
           delay(4000) // Cadência para o Agente Analista
         ]);
@@ -100,7 +100,7 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
           fetch('/api/agents/v2/match-editais', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ context: profileContext, skills: skillsData.data.skills })
+            body: JSON.stringify({ context: profileContext, skills: skillsData.data.skills, entity_uid: userId })
           }),
           delay(4000)
         ]);
@@ -117,7 +117,8 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
             body: JSON.stringify({ 
               context: profileContext, 
               skills: skillsData.data.skills,
-              matches: matchesData.data.matches
+              matches: matchesData.data.matches,
+              entity_uid: userId
             })
           }),
           delay(5000) // Cadência para o raciocínio profundo

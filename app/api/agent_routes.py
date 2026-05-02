@@ -98,6 +98,7 @@ class AgentResponse(BaseModel):
 
 
 class ProfileContextRequest(BaseModel):
+    entity_uid: str
     name: str
     bio: str = ""
     institution: str = ""
@@ -107,15 +108,18 @@ class ProfileContextRequest(BaseModel):
 
 
 class ExtractSkillsRequest(BaseModel):
+    entity_uid: str
     context: str
 
 
 class MatchEditaisRequest(BaseModel):
+    entity_uid: str
     context: str
     skills: list[str]
 
 
 class ExplainMatchesRequest(BaseModel):
+    entity_uid: str
     context: str
     skills: list[str]
     matches: list[dict] # list of {title, uid}
@@ -131,59 +135,102 @@ def analyze_profile_v2(request: ProfileContextRequest):
     analyzer = _get_profile_analyzer()
     context = analyzer.generate_profile_context(request.dict())
     
-    # Simula um resumo rápido
-    summary = f"Perfil acadêmico de {request.name} detectado."
+    # Save partial progress to graph
+    from app.core.neo4j_driver import run_cypher
+    run_cypher(
+        """
+        MATCH (u) WHERE u.uid = $uid
+        SET u.ai_context = $context,
+            u.last_ai_analysis = datetime()
+        """,
+        {"uid": request.entity_uid, "context": context}
+    )
+    
+    summary = f"Perfil acadêmico de {request.name} detectado e contextualizado."
     
     return AgentResponse(
         status="success",
-        message="Contexto gerado",
+        message="Contexto gerado e persistido",
         data={"context": context, "summary": summary}
     )
 
 
 @router.post("/v2/extract-skills", response_model=AgentResponse)
 def extract_skills_v2(request: ExtractSkillsRequest):
-    """Stage 2: Use LLM to find real nodes for skills and areas."""
+    """Stage 2: Use LLM to find real nodes for skills and areas + PERSIST."""
     analyzer = _get_profile_analyzer()
     
-    # Se tiver LLM, faz a chamada real
     if analyzer.llm:
         prompt = f"""Como Agente Analista do ARIANO, examine o perfil abaixo:
         CONTEXTO: {request.context}
         
-        Sua tarefa é extrair as 5 competências técnicas (Skills) e as 3 áreas de atuação acadêmica que melhor definem este perfil para o ecossistema de inovação.
-        Seja preciso e use termos profissionais.
+        Sua tarefa:
+        1. Extrair as 5 competências técnicas (Skills).
+        2. Extrair as 3 áreas de atuação acadêmica.
+        3. Gerar um scratchpad de raciocínio (Chain-of-Thought) de 3 steps.
         
-        Responda ESTRITAMENTE em formato JSON (sem markdown):
+        Responda ESTRITAMENTE em formato JSON:
         {{
-            "skills": ["Exemplo Skill 1", "Exemplo Skill 2", ...],
-            "areas": ["Exemplo Área 1", ...]
+            "scratchpad": "Step 1: ... Step 2: ... Step 3: ...",
+            "skills": ["Skill 1", ...],
+            "areas": ["Area 1", ...]
         }}"""
         try:
             from langchain_core.messages import HumanMessage
+            import json, re
             response = analyzer.llm.invoke([HumanMessage(content=prompt)])
-            import json
-            import re
-            content = response.content
-            # Remove possible markdown backticks
-            clean_content = re.sub(r'```json\s*|\s*```', '', content).strip()
+            clean_content = re.sub(r'```json\s*|\s*```', '', response.content).strip()
             data = json.loads(clean_content)
         except Exception as e:
             logger.error(f"❌ LLM V2 Skills failed: {e}")
-            data = {"skills": ["Inovação"], "areas": ["Tecnologia"]} # Fallback minimal
+            data = {"scratchpad": "Erro na análise profunda.", "skills": ["Inovação"], "areas": ["Tecnologia"]}
     else:
-        # Fallback via regras (reaproveita lógica existente)
         analysis = analyzer._analyze_rule_based({"bio": request.context, "curriculo_texto": ""})
         data = {
+            "scratchpad": "Análise via motor de regras estáticas.",
             "skills": [s["name"] for s in analysis["extracted_skills"]][:5],
             "areas": analysis["classified_areas"][:3]
         }
-        
-    return AgentResponse(
-        status="success",
-        message="Skills extraídas",
-        data=data
+    
+    # PERSISTENCE IN NEO4J
+    from app.core.neo4j_driver import run_cypher
+    import uuid, datetime
+    
+    # Update User with scratchpad
+    run_cypher(
+        "MATCH (u) WHERE u.uid = $uid SET u.scratchpad = $scratch, u.last_step = 'skills'",
+        {"uid": request.entity_uid, "scratch": data.get("scratchpad")}
     )
+    
+    # Create Skills & Connections
+    for s_name in data["skills"]:
+        run_cypher(
+            """
+            MERGE (s:Skill {name: $name})
+            ON CREATE SET s.uid = $suid, s.created_at = timestamp()
+            WITH s
+            MATCH (u) WHERE u.uid = $uid
+            MERGE (u)-[r:HAS_SKILL]->(s)
+            SET r.source = 'v2_pipeline', r.confidence = 0.95
+            """,
+            {"name": s_name, "suid": str(uuid.uuid4())[:8], "uid": request.entity_uid}
+        )
+        
+    # Create Areas & Connections
+    for a_name in data["areas"]:
+        run_cypher(
+            """
+            MERGE (a:Area {name: $name})
+            ON CREATE SET a.uid = $auid, a.created_at = timestamp()
+            WITH a
+            MATCH (u) WHERE u.uid = $uid
+            MERGE (u)-[r:WORKS_IN_AREA]->(a)
+            SET r.source = 'v2_pipeline'
+            """,
+            {"name": a_name, "auid": str(uuid.uuid4())[:8], "uid": request.entity_uid}
+        )
+        
+    return AgentResponse(status="success", message="Skills persistidas no grafo", data=data)
 
 
 @router.post("/v2/match-editais", response_model=AgentResponse)
@@ -228,43 +275,62 @@ def match_editais_v2(request: MatchEditaisRequest):
 
 @router.post("/v2/explain-matches", response_model=AgentResponse)
 def explain_matches_v2(request: ExplainMatchesRequest):
-    """Stage 4: Generate DEEP justifications for each selected match."""
+    """Stage 4: Generate DEEP justifications for each selected match + PERSIST."""
     calculator = _get_eligibility_calculator()
     
     if not calculator.llm:
-        return AgentResponse(
-            status="success",
-            message="Justificativas baseadas em regras",
-            data={"matches": [{**m, "justification": f"Match estratégico baseado em {request.skills[0] if request.skills else 'perfil acadêmico'}."} for m in request.matches]}
+        data = {"matches": [{**m, "justification": f"Match estratégico baseado em {request.skills[0] if request.skills else 'perfil acadêmico'}."} for m in request.matches]}
+    else:
+        prompt = f"""Como Analista Sênior do ARIANO, você deve justificar por que estes editais são perfeitos para o acadêmico.
+        
+        PERFIL: {request.context}
+        SKILLS DETECTADAS: {', '.join(request.skills)}
+        
+        EDITAIS SELECIONADOS:
+        {chr(10).join([f"- {m['title']}" for m in request.matches])}
+        
+        Para cada edital, escreva 1 frase impactante e técnica que explique a conexão real. Use as skills detectadas na explicação.
+        
+        Responda APENAS em JSON:
+        {{
+            "matches": [
+                {{ "title": "Título Exato", "uid": "uid", "justification": "Sua bio converge com..." }}
+            ]
+        }}"""
+        
+        try:
+            from langchain_core.messages import HumanMessage
+            import json, re
+            response = calculator.llm.invoke([HumanMessage(content=prompt)])
+            clean_content = re.sub(r'```json\s*|\s*```', '', response.content).strip()
+            data = json.loads(clean_content)
+        except Exception as e:
+            logger.error(f"❌ Explain matches failed: {e}")
+            return AgentResponse(status="error", message="Falha ao gerar justificativas", data={})
+
+    # PERSISTENCE IN NEO4J
+    from app.core.neo4j_driver import run_cypher
+    
+    for match in data.get("matches", []):
+        run_cypher(
+            """
+            MATCH (u) WHERE u.uid = $uid
+            MATCH (e:Edital) WHERE e.uid = $euid OR e.title = $title
+            MERGE (u)-[r:ELIGIBLE_FOR]->(e)
+            SET r.justification = $just,
+                r.score = 0.9,
+                r.source = 'v2_pipeline',
+                r.created_at = timestamp()
+            """,
+            {
+                "uid": request.entity_uid,
+                "euid": match.get("uid"),
+                "title": match["title"],
+                "just": match["justification"]
+            }
         )
 
-    prompt = f"""Como Analista Sênior do ARIANO, você deve justificar por que estes editais são perfeitos para o acadêmico.
-    
-    PERFIL: {request.context}
-    SKILLS DETECTADAS: {', '.join(request.skills)}
-    
-    EDITAIS SELECIONADOS:
-    {chr(10).join([f"- {m['title']}" for m in request.matches])}
-    
-    Para cada edital, escreva 1 frase impactante e técnica que explique a conexão real. Use as skills detectadas na explicação.
-    
-    Responda APENAS em JSON:
-    {{
-        "matches": [
-            {{ "title": "Título Exato", "uid": "uid", "justification": "Sua bio converge com..." }}
-        ]
-    }}"""
-    
-    try:
-        from langchain_core.messages import HumanMessage
-        import json, re
-        response = calculator.llm.invoke([HumanMessage(content=prompt)])
-        clean_content = re.sub(r'```json\s*|\s*```', '', response.content).strip()
-        data = json.loads(clean_content)
-        return AgentResponse(status="success", message="Justificativas geradas via LLM", data=data)
-    except Exception as e:
-        logger.error(f"❌ Explain matches failed: {e}")
-        return AgentResponse(status="error", message="Falha ao gerar justificativas", data={})
+    return AgentResponse(status="success", message="Matches e justificativas salvos no grafo", data=data)
 
 
 # ═══════════════════════════════════════════
