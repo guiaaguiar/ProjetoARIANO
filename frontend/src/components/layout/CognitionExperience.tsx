@@ -64,9 +64,11 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
             setError(null); // Clear error if we get new logs
           }
 
-          if (data.status === 'completed' && data.matches?.length > 0) {
-            setMatches(data.matches);
-            setCachedMatches(data.matches);
+          if (data.status === 'completed') {
+            if (data.matches && data.matches.length > 0) {
+              setMatches(data.matches);
+              setCachedMatches(data.matches);
+            }
             clearInterval(pollInterval);
             setTimeout(() => setShowFinish(true), 2000);
           }
@@ -137,7 +139,7 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
   }, [logs.length, error]);
 
   return (
-    <div className="fixed inset-0 z-50 bg-gray-950 flex flex-col items-center justify-center p-6 lg:p-12 overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-background/60 backdrop-blur-[80px] flex flex-col items-center justify-center p-6 lg:p-12 overflow-hidden">
       {/* Background Glows */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/4 -left-20 w-96 h-96 bg-teal-500/10 rounded-full blur-[120px] animate-pulse" />

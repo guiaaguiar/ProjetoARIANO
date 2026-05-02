@@ -204,7 +204,7 @@ export const CadastroPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 relative">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 relative bg-background/20 backdrop-blur-3xl">
       <AnimatePresence>
         {showCognition && (
           <CognitionExperience 

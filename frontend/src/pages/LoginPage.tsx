@@ -75,7 +75,7 @@ export const LoginPage: React.FC = () => {
   const labelClasses = "block text-[13px] font-medium text-muted-foreground mb-1.5 ml-1";
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative">
+    <div className="min-h-screen flex items-center justify-center p-4 relative bg-background/20 backdrop-blur-3xl">
       <motion.div 
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
