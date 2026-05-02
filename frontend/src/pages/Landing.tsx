@@ -141,7 +141,7 @@ const Landing = () => {
       {/* Nav */}
       <nav className="fixed top-0 z-50 w-full bg-background/70 backdrop-blur-md border-b border-border px-6">
         <div className="mx-auto flex h-[56px] max-w-[1200px] items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 -ml-0.5">
+          <Link to="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="flex items-center gap-2 -ml-0.5">
             <StackedLogo size={16} />
             <span className="text-[14px] font-bold text-foreground tracking-[0.08em] uppercase">ARIANO</span>
           </Link>
@@ -176,15 +176,15 @@ const Landing = () => {
             {/* Left column — text */}
             <div className="relative z-[3] flex-1 min-w-0 max-w-[540px]">
               <h1 className="text-[clamp(2rem,4vw,3.2rem)] font-[500] leading-[1.08] tracking-[-0.04em] text-foreground max-w-[540px]">
-                Conexões inteligentes para o ecossistema de inovação
+                Conexões estratégicas para o ecossistema de inovação
               </h1>
               <p className="mt-6 text-base leading-relaxed text-muted-foreground max-w-[420px]">
                 O projeto ARIANO une Governo, Academia e Iniciativa Privada através de IA generativa. Construa o seu ecossistema e encontre os matches perfeitos.
               </p>
               <div className="mt-10 flex items-center gap-4">
-                <Link to="/admin/grafo">
+                <Link to="/cadastro">
                   <button className="group relative inline-flex items-center gap-2 px-6 py-3 text-[14px] font-medium bg-foreground text-background transition-all duration-200 hover:bg-foreground/90">
-                    Conhecer o Grafo
+                    Crie sua conta
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                   </button>
                 </Link>
@@ -192,7 +192,7 @@ const Landing = () => {
             </div>
 
             {/* Right column — 3D animated graph */}
-            <div className="hidden md:flex absolute left-[30%] top-[-60px] z-[1] w-[70%] pointer-events-none items-center justify-center" style={{ height: 'calc(100vh - 80px)' }}>
+            <div className="hidden md:flex absolute left-[calc(30%+16px)] top-[-76px] z-[1] w-[70%] pointer-events-none items-center justify-center" style={{ height: 'calc(100vh - 80px)' }}>
               <div className="pointer-events-auto" style={{ width: cubeZoom, height: cubeZoom, transform: 'translate(45%, -35%)' }}>
                 <Graph3D
                   size={cubeZoom}
