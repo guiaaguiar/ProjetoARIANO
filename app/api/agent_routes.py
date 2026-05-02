@@ -115,6 +115,12 @@ class MatchEditaisRequest(BaseModel):
     skills: list[str]
 
 
+class ExplainMatchesRequest(BaseModel):
+    context: str
+    skills: list[str]
+    matches: list[dict] # list of {title, uid}
+
+
 # ═══════════════════════════════════════════
 # V2 MULTI-STEP PIPELINE (FOR ANIMATION)
 # ═══════════════════════════════════════════
@@ -182,53 +188,83 @@ def extract_skills_v2(request: ExtractSkillsRequest):
 
 @router.post("/v2/match-editais", response_model=AgentResponse)
 def match_editais_v2(request: MatchEditaisRequest):
-    """Stage 3: Use context + skills to find relevant editais."""
+    """Stage 3: Find relevant editais using graph topology + LLM filtering."""
     calculator = _get_eligibility_calculator()
     
     from app.core.neo4j_driver import run_cypher
     editais = run_cypher("MATCH (e:Edital) WHERE e.status = 'aberto' RETURN e.title AS title, e.uid AS uid, e.description AS description")
-    edital_context = "\n".join([f"- {e['title']}: {e['description'][:100]}..." for e in editais])
+    
+    if not editais:
+        return AgentResponse(status="success", message="Nenhum edital disponível", data={"matches": []})
 
     if calculator.llm:
-        prompt = f"""Como Orquestrador do ARIANO, você deve cruzar o perfil abaixo com os editais disponíveis.
+        # Prompt simplificado para filtragem rápida
+        edital_list = [f"- {e['title']} (ID: {e['uid']})" for e in editais]
+        prompt = f"""Como Orquestrador do ARIANO, selecione os 3 editais mais compatíveis.
         
         PERFIL: {request.context}
-        COMPETÊNCIAS DETECTADAS: {', '.join(request.skills)}
+        SKILLS: {', '.join(request.skills)}
         
-        EDITAIS DISPONÍVEIS:
-        {edital_context}
+        EDITAIS:
+        {chr(10).join(edital_list)}
         
-        Sua tarefa:
-        1. Selecione os 3 editais com maior aderência estratégica.
-        2. Escreva uma justificativa de 1 frase para cada um, explicando POR QUE esse perfil é compatível (use as competências detectadas na explicação).
+        Responda APENAS em JSON:
+        {{ "matches": [ {{ "title": "Título", "uid": "uid" }} ] }}"""
         
-        Responda ESTRITAMENTE em formato JSON (sem markdown):
-        {{
-            "matches": [
-                {{"title": "Título Exato do Edital", "justification": "Justificativa personalizada..."}}
-            ]
-        }}"""
         try:
             from langchain_core.messages import HumanMessage
+            import json, re
             response = calculator.llm.invoke([HumanMessage(content=prompt)])
-            import json
-            import re
-            content = response.content
-            clean_content = re.sub(r'```json\s*|\s*```', '', content).strip()
+            clean_content = re.sub(r'```json\s*|\s*```', '', response.content).strip()
             data = json.loads(clean_content)
-            logger.info(f"✅ LLM V2 Matches gerados com sucesso para o perfil.")
         except Exception as e:
-            logger.error(f"❌ LLM V2 Matches failed: {e}")
-            data = {"matches": []}
+            logger.error(f"❌ Match filtering failed: {e}")
+            data = {"matches": [{"title": e["title"], "uid": e["uid"]} for e in editais[:3]]}
     else:
-        # Fallback básico melhorado
-        data = {"matches": [{"title": e["title"], "justification": f"Forte correlação estratégica detectada entre suas competências e os requisitos deste edital governamental."} for e in editais[:3]]}
+        data = {"matches": [{"title": e["title"], "uid": e["uid"]} for e in editais[:3]]}
 
-    return AgentResponse(
-        status="success",
-        message="Matches identificados",
-        data=data
-    )
+    return AgentResponse(status="success", message="Matches filtrados", data=data)
+
+
+@router.post("/v2/explain-matches", response_model=AgentResponse)
+def explain_matches_v2(request: ExplainMatchesRequest):
+    """Stage 4: Generate DEEP justifications for each selected match."""
+    calculator = _get_eligibility_calculator()
+    
+    if not calculator.llm:
+        return AgentResponse(
+            status="success",
+            message="Justificativas baseadas em regras",
+            data={"matches": [{**m, "justification": f"Match estratégico baseado em {request.skills[0] if request.skills else 'perfil acadêmico'}."} for m in request.matches]}
+        )
+
+    prompt = f"""Como Analista Sênior do ARIANO, você deve justificar por que estes editais são perfeitos para o acadêmico.
+    
+    PERFIL: {request.context}
+    SKILLS DETECTADAS: {', '.join(request.skills)}
+    
+    EDITAIS SELECIONADOS:
+    {chr(10).join([f"- {m['title']}" for m in request.matches])}
+    
+    Para cada edital, escreva 1 frase impactante e técnica que explique a conexão real. Use as skills detectadas na explicação.
+    
+    Responda APENAS em JSON:
+    {{
+        "matches": [
+            {{ "title": "Título Exato", "uid": "uid", "justification": "Sua bio converge com..." }}
+        ]
+    }}"""
+    
+    try:
+        from langchain_core.messages import HumanMessage
+        import json, re
+        response = calculator.llm.invoke([HumanMessage(content=prompt)])
+        clean_content = re.sub(r'```json\s*|\s*```', '', response.content).strip()
+        data = json.loads(clean_content)
+        return AgentResponse(status="success", message="Justificativas geradas via LLM", data=data)
+    except Exception as e:
+        logger.error(f"❌ Explain matches failed: {e}")
+        return AgentResponse(status="error", message="Falha ao gerar justificativas", data={})
 
 
 # ═══════════════════════════════════════════

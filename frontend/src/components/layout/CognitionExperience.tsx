@@ -94,7 +94,7 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
         setLogs(prev => [...prev, `🔍 Habilidades encontradas: ${skillsData.data.skills.slice(0,3).join(', ')}...`]);
         setLogs(prev => [...prev, "🧬 Integrando conexões no ecossistema..."]);
         
-        // Step 3: Match Editais
+        // Step 3: Match Editais (Filtering)
         setCurrentStep(2);
         const [matchesRes] = await Promise.all([
           fetch('/api/agents/v2/match-editais', {
@@ -102,15 +102,33 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ context: profileContext, skills: skillsData.data.skills })
           }),
-          delay(5000) // Cadência para o Match Engine (mais lenta para "peso")
+          delay(4000)
         ]);
         
         const matchesData = await matchesRes.json();
         if (!isMounted) return;
         
-        setActiveMatches(matchesData.data.matches);
-        setMatches(matchesData.data.matches);
-        setCachedMatches(matchesData.data.matches);
+        // Step 4: Explain Matches (Deep Reasoning)
+        setLogs(prev => [...prev, "🧠 Analisando aderência profunda com editais selecionados..."]);
+        const [explainRes] = await Promise.all([
+          fetch('/api/agents/v2/explain-matches', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              context: profileContext, 
+              skills: skillsData.data.skills,
+              matches: matchesData.data.matches
+            })
+          }),
+          delay(5000) // Cadência para o raciocínio profundo
+        ]);
+        
+        const explainData = await explainRes.json();
+        if (!isMounted) return;
+        
+        setActiveMatches(explainData.data.matches);
+        setMatches(explainData.data.matches);
+        setCachedMatches(explainData.data.matches);
         
         // Garante sincronização de sessão antes do fim
         await useAuthStore.getState().checkAuth();

@@ -1,10 +1,10 @@
 # 📋 PROJETO ARIANO — Documento de Visão e Planejamento do MVP
 
-> **Versão:** 11.0.0  
+> **Versão:** 12.0.0  
 > **Data:** 02/05/2026  
-> **Status:** MVP 1.0.0 Online — Sprint 8 Especial (IA Transparente & Pipeline Multi-Step)
+> **Status:** MVP 1.0.0 Online — Sprint 14 (UX Premium, Cadência Cognitiva & Justificativas Reais)
 > **Metodologia:** SCRUM (adaptado para contexto acadêmico)  
-> **Última atualização:** 02/05/2026 — Sprint 8 (Pipeline Síncrono, IA Transparente, Fix de Sessão)
+> **Última atualização:** 02/05/2026 — Sprint 14 (Cadência Cognitiva, Justificativas Profundas, Fix de Sessão)
 
 ---
 
@@ -73,6 +73,8 @@ O **ARIANO** (**A**rquitetura de **I**nteligência **A**rtificial **N**aturalmen
 - 🚀 **Campos Inteligentes:** bio, currículo (PDF), maturidade (0-10 IA) e o_que_busco (IA) — determinados automaticamente pela IA (Sprint 4)
 - 🚀 **Comunidades de Pensamento:** Enriquecimento contínuo do grafo via Chain-of-Thought multi-agente e análise de clusters via **NetworkX** (Sprint 4)
 - 🚀 **Engenharia de Prompt Avançada:** Agentes especialistas com contexto profundo do grafo (Sprint 4)
+- 🚀 **Cadência Cognitiva:** Fluxo de IA síncrono com ritmo humano e justificativas profundas personalizadas (Sprint 14)
+- 🚀 **Persistência Atômica:** Sincronização de sessão em tempo real pós-cadastro (Sprint 14)
 
 ---
 
