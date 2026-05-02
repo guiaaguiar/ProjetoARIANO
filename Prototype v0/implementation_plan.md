@@ -1,50 +1,49 @@
-# 🚀 ARIANO — Plano de Reestruturação (IA Real & Auto-Auth)
+# 🚀 ARIANO — Estabilidade Final & UX Premium (Sprint 11)
 
-> **Versão:** 10.0.0 (Sprint Especial)
-> **Foco:** Substituir mocks por inteligência real rastreável e garantir persistência de sessão.
-
----
-
-## 1. Problema Identificado
-Apesar das animações estarem fluidas, os dados exibidos são estáticos (placeholders) e a IA não está "falando" com o front. Além disso, o auto-login após o cadastro está falhando, forçando o usuário a logar novamente.
+> **Versão:** 11.0.0
+> **Foco:** Resolver travamentos no fluxo de cadastro, isolamento visual da IA e correção de alertas de segurança.
 
 ---
 
-## 2. Reestruturação do Backend (IA Transparente)
-
-### 2.1. Rastreamento de Estado da IA
-- **Mudança:** Adicionar propriedades `ai_status` e `ai_logs` ao nó de Usuário no Neo4j.
-- **Ação:** O `OrchestratorAgent` atualizará o status em tempo real (ex: "Analisando Currículo", "Mapeando Grafo", "Finalizado").
-- **Novo Endpoint:** `/api/users/{uid}/status` para permitir que o frontend faça polling da evolução da IA.
-
-### 2.2. Pipeline de IA (Audit & Fix)
-- Garantir que o `ProfileAnalyzer` e `EligibilityCalculator` persistam os dados CORRETAMENTE no Neo4j.
-- Verificar se as arestas `HAS_SKILL` e `ELIGIBLE_FOR` estão sendo criadas com os pesos calculados pela LLM.
+## 1. Diagnóstico de Erros & UX
+- **Travamento:** O componente `CognitionExperience` ficava preso em modo de polling se o backend terminasse muito rápido ou sem matches.
+- **Visual Overlap:** O formulário de cadastro ficava visível por trás da animação de IA, criando poluição visual ("bizarro").
+- **Security:** O Vercel logava avisos sobre `InsecureKeyLengthWarning` no JWT.
 
 ---
 
-## 3. Reestruturação do Frontend (Cognição Real)
+## 2. Ações de Backend (Segurança & Robustez)
 
-### 3.1. Polling de Cognição
-- **Componente:** `CognitionExperience.tsx`
-- **Lógica:** Substituir a animação de tempo fixo (15s) por um loop de polling que consulta o backend.
-- **Visual:** Exibir o `scratchpad` (pensamentos da IA) em tempo real conforme são gerados pela LLM NVIDIA.
-- **Matches:** Só exibir a tela de sucesso quando o backend confirmar que os matches estão prontos.
+### 2.1. Reforço de Segurança (JWT)
+- **Arquivo:** `app/core/security.py`
+- **Ação:** Aumentar a `SECRET_KEY` padrão para mais de 32 bytes para silenciar o aviso de segurança do HMAC SHA256.
 
-### 3.2. Fix de Autenticação
-- Investigar a persistência do cookie `auth_token`.
-- Ajustar `checkAuth` para garantir que o estado do Zustand seja atualizado de forma síncrona antes do redirecionamento.
+### 2.2. Otimização de Resposta de Status
+- Garantir que o endpoint `/api/users/{uid}/status` retorne o status `completed` de forma consistente, mesmo em ambientes de memória volátil (Vercel cold starts).
 
 ---
 
-## 4. Cronograma de Execução (Cascata)
+## 3. Ações de Frontend (UX de Alta Fidelidade)
 
-1.  **Back:** Criar API de status e logs de processamento.
-2.  **Back:** Adaptar `OrchestratorAgent` para escrever logs no banco.
-3.  **Front:** Implementar polling no `CognitionExperience`.
-4.  **Front:** Mapear resultados REAIS do polling nos cards de match.
-5.  **Front:** Ajustar fluxo de autenticação e redirecionamento.
+### 3.1. Isolamento Visual do Cadastro
+- **Arquivo:** `CadastroPage.tsx`
+- **Ação:** Ocultar o formulário (`z-10`) quando `showCognition` for verdadeiro. Exibir apenas a animação de IA sobre o fundo desfocado.
+
+### 3.2. Refinamento do CognitionExperience
+- **Blur:** Aumentar a opacidade do fundo e o nível de blur (`backdrop-blur-[120px]`) para garantir foco total na animação.
+- **Lógica de Polling:** 
+    - Garantir que o polling inicie corretamente mesmo com cold-start da API.
+    - Transição forçada para a tela de resultados ao receber `completed`, independentemente do número de matches (usar placeholders se necessário).
+
+---
+
+## 4. Cronograma de Execução
+
+1.  **Segurança:** Atualizar `SECRET_KEY` no backend.
+2.  **UX:** Ocultar formulário de cadastro durante processamento.
+3.  **Visual:** Intensificar blur e opacidade na tela de IA.
+4.  **Lógica:** Validar transição de status no polling.
 
 ---
 > [!IMPORTANT]
-> Nenhuma linha de código deve ser alterada antes da aprovação deste plano estratégico.
+> Este plano visa entregar a experiência "tinindo" conforme solicitado, eliminando a confusão visual entre a animação e o formulário.

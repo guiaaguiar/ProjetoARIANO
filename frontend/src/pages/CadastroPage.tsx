@@ -219,49 +219,57 @@ export const CadastroPage: React.FC = () => {
         )}
       </AnimatePresence>
 
-      <div className="w-full max-w-[420px] space-y-8 z-10">
-        <div className="flex flex-col items-center text-center space-y-4">
-          <StackedLogo size={40} className="text-primary" />
-          <div className="space-y-1">
-            <h1 className="text-2xl font-bold tracking-tight uppercase tracking-[0.1em]">Portal de Acesso</h1>
-            <p className="text-[14px] text-muted-foreground">Inicie sua jornada no ecossistema de inovação.</p>
-          </div>
-        </div>
-
-        <div className="bg-card/40 border border-border backdrop-blur-xl rounded-[2rem] shadow-2xl overflow-hidden">
-          <div className="flex bg-muted/20 border-b border-border">
-             {[1, 2, 3].map(s => (
-               <div key={s} className={`flex-1 py-3 text-center text-[11px] font-bold uppercase tracking-widest transition-all ${step === s ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground/40'}`}>
-                 Fase {s}
-               </div>
-             ))}
-          </div>
-
-          <form onSubmit={step === 3 ? handleSubmit(onSubmit) : e => { e.preventDefault(); onNext(); }} className="p-8">
-            <div className="min-h-[280px]">
-              <AnimatePresence mode="wait">
-                {renderStep()}
-              </AnimatePresence>
+      <AnimatePresence>
+        {!showCognition && (
+          <motion.div 
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="w-full max-w-[420px] space-y-8 z-10"
+          >
+            <div className="flex flex-col items-center text-center space-y-4">
+              <StackedLogo size={40} className="text-primary" />
+              <div className="space-y-1">
+                <h1 className="text-2xl font-bold tracking-tight uppercase tracking-[0.1em]">Portal de Acesso</h1>
+                <p className="text-[14px] text-muted-foreground">Inicie sua jornada no ecossistema de inovação.</p>
+              </div>
             </div>
 
-            <div className="mt-8 flex gap-3">
-              {step > 1 && (
-                <button type="button" onClick={() => setStep(s => s - 1)} className="flex-1 py-3 px-4 rounded-2xl bg-muted/30 hover:bg-muted/50 text-foreground text-[14px] font-semibold transition-all flex items-center justify-center gap-2 border border-border">
-                  <ArrowLeft className="h-4 w-4" /> Voltar
-                </button>
-              )}
-              <button type="submit" className="flex-[2] py-3 px-4 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground text-[14px] font-bold shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-2">
-                {loading ? <Settings className="h-4 w-4 animate-spin" /> : step === 3 ? 'Finalizar' : 'Avançar'}
-                {!loading && step < 3 && <ArrowRight className="h-4 w-4" />}
-              </button>
-            </div>
-          </form>
-        </div>
+            <div className="bg-card/40 border border-border backdrop-blur-xl rounded-[2rem] shadow-2xl overflow-hidden">
+              <div className="flex bg-muted/20 border-b border-border">
+                 {[1, 2, 3].map(s => (
+                   <div key={s} className={`flex-1 py-3 text-center text-[11px] font-bold uppercase tracking-widest transition-all ${step === s ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground/40'}`}>
+                     Fase {s}
+                   </div>
+                 ))}
+              </div>
 
-        <p className="text-center text-[13px] text-muted-foreground">
-          Já possui conta? <Link to="/login" className="text-primary font-bold hover:underline">Fazer Login</Link>
-        </p>
-      </div>
+              <form onSubmit={step === 3 ? handleSubmit(onSubmit) : e => { e.preventDefault(); onNext(); }} className="p-8">
+                <div className="min-h-[280px]">
+                  <AnimatePresence mode="wait">
+                    {renderStep()}
+                  </AnimatePresence>
+                </div>
+
+                <div className="mt-8 flex gap-3">
+                  {step > 1 && (
+                    <button type="button" onClick={() => setStep(s => s - 1)} className="flex-1 py-3 px-4 rounded-2xl bg-muted/30 hover:bg-muted/50 text-foreground text-[14px] font-semibold transition-all flex items-center justify-center gap-2 border border-border">
+                      <ArrowLeft className="h-4 w-4" /> Voltar
+                    </button>
+                  )}
+                  <button type="submit" className="flex-[2] py-3 px-4 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground text-[14px] font-bold shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-2">
+                    {loading ? <Settings className="h-4 w-4 animate-spin" /> : step === 3 ? 'Finalizar' : 'Avançar'}
+                    {!loading && step < 3 && <ArrowRight className="h-4 w-4" />}
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <p className="text-center text-[13px] text-muted-foreground">
+              Já possui conta? <Link to="/login" className="text-primary font-bold hover:underline">Fazer Login</Link>
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

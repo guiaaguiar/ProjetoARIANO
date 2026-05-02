@@ -5,7 +5,7 @@ import jwt
 import bcrypt
 
 # Secret keys
-SECRET_KEY = os.getenv("JWT_SECRET", "super-secret-ariano-key-dev")
+SECRET_KEY = os.getenv("JWT_SECRET", "super-secret-ariano-key-dev-2026-global-security-key")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 # 7 days
 
