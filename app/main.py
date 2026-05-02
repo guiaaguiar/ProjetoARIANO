@@ -11,6 +11,7 @@ from app.api.routes import router
 from app.api.agent_routes import router as agent_router
 from app.api.auth import router as auth_router
 from app.api.user_routes import router as user_router
+from app.api.status_routes import router as status_router
 from app.core.config import settings
 from app.core.database import init_db
 
@@ -82,6 +83,7 @@ app.add_middleware(
 # Include routers
 app.include_router(auth_router, prefix="/api/auth")
 app.include_router(user_router, prefix="/api/users")
+app.include_router(status_router, prefix="/api/users")
 app.include_router(router, prefix="/api")
 app.include_router(agent_router, prefix="/api")
 

@@ -1,55 +1,50 @@
-# 🚀 ARIANO — Plano de Implementação (Integração Real de IA)
+# 🚀 ARIANO — Plano de Reestruturação (IA Real & Auto-Auth)
 
-> **Versão:** 9.0.0 (Sprint Atual)
-> **Data:** 01/05/2026
-> **Foco:** Transição de dados mock para integração real com NVIDIA Nemotron-3 via OpenRouter e automação do ecossistema.
-
----
-
-## 1. Visão Geral
-
-Esta sprint marca a transição do ARIANO de uma interface de simulação para um sistema de matchmaking real e produtivo. Substituiremos todos os dados mockados da animação de cadastro por resultados gerados em tempo real pela nossa pipeline de agentes IA, além de implementar o auto-login após o registro.
+> **Versão:** 10.0.0 (Sprint Especial)
+> **Foco:** Substituir mocks por inteligência real rastreável e garantir persistência de sessão.
 
 ---
 
-## 2. Pilares de Execução
-
-### Passo 1 — Estabilização do Backend (Python)
-- Refinar o `OrchestratorAgent` para garantir que a análise de perfil, configuração de grafo e cálculo de elegibilidade ocorram de forma atômica ou sequencial rastreável.
-- Mapear chamadas de LLM para utilizar o modelo NVIDIA Nemotron-3 Super (120B) via OpenRouter com prompts otimizados para o ecossistema de Recife.
-- Garantir que o endpoint `/api/users/register` retorne o contexto necessário para o frontend.
-
-### Passo 2 — Refinamento da Experiência de Cognição (UI/UX)
-- **Atualização de Textos:** Alterar de "O ARIANO está processando seu futuro" para "Nosso motor de IA está realizando os matches estratégicos para seu perfil...".
-- **Limpeza Visual:** Remover o badge "Sincronização ativa" para um visual mais limpo e focado.
-- **Dados Reais:** O componente `CognitionExperience` deve consumir o resultado real da `apiPromise`, exibindo o Top 3 Matches calculados pela IA com justificativas geradas pelo agente.
-
-### Passo 3 — Automação e Fluxo de Autenticação
-- **Auto-Login:** Implementar a chamada automática ao `checkAuth()` após o sucesso do cadastro, garantindo que o usuário entre no dashboard já autenticado sem precisar de um novo login manual.
-- **Botões Funcionais:** Garantir que todos os botões da tela final ("Ver cada match", "Explorar Meu Perfil") redirecionem corretamente para as rotas funcionais do app.
-
-### Passo 4 — Design System & Micro-interações
-- **Theme Toggle:** Atualizar o botão de alternância de tema (Sol/Lua) com animações fluidas via `framer-motion`, garantindo consistência em todas as páginas (Landing e Dashboard).
-- **Polimento de Cards:** Ajustar os `MatchResultCards` para exibir as justificativas da LLM com a estética premium do projeto.
+## 1. Problema Identificado
+Apesar das animações estarem fluidas, os dados exibidos são estáticos (placeholders) e a IA não está "falando" com o front. Além disso, o auto-login após o cadastro está falhando, forçando o usuário a logar novamente.
 
 ---
 
-## 3. Arquitetura da Pipeline IA (Mapeamento)
+## 2. Reestruturação do Backend (IA Transparente)
 
-1. **ProfileAnalyzer (Fase 1):** Extração de skills + Classificação de áreas + Cálculo de Maturidade (0-10).
-2. **EditalInterpreter (Fase 1):** Interpretação de requisitos e fomento.
-3. **EligibilityCalculator (Fase 2):** Scoring (45% Skill, 25% Area, 15% Maturidade, 15% Priority) + Justificativa LLM.
-4. **ContextualAnalyzer (Fase 3 - 24h):** Ciclo diário de configuração de nodes e montagem de Chain-of-Thought (CoT) para evolução do grafo.
+### 2.1. Rastreamento de Estado da IA
+- **Mudança:** Adicionar propriedades `ai_status` e `ai_logs` ao nó de Usuário no Neo4j.
+- **Ação:** O `OrchestratorAgent` atualizará o status em tempo real (ex: "Analisando Currículo", "Mapeando Grafo", "Finalizado").
+- **Novo Endpoint:** `/api/users/{uid}/status` para permitir que o frontend faça polling da evolução da IA.
+
+### 2.2. Pipeline de IA (Audit & Fix)
+- Garantir que o `ProfileAnalyzer` e `EligibilityCalculator` persistam os dados CORRETAMENTE no Neo4j.
+- Verificar se as arestas `HAS_SKILL` e `ELIGIBLE_FOR` estão sendo criadas com os pesos calculados pela LLM.
+
+---
+
+## 3. Reestruturação do Frontend (Cognição Real)
+
+### 3.1. Polling de Cognição
+- **Componente:** `CognitionExperience.tsx`
+- **Lógica:** Substituir a animação de tempo fixo (15s) por um loop de polling que consulta o backend.
+- **Visual:** Exibir o `scratchpad` (pensamentos da IA) em tempo real conforme são gerados pela LLM NVIDIA.
+- **Matches:** Só exibir a tela de sucesso quando o backend confirmar que os matches estão prontos.
+
+### 3.2. Fix de Autenticação
+- Investigar a persistência do cookie `auth_token`.
+- Ajustar `checkAuth` para garantir que o estado do Zustand seja atualizado de forma síncrona antes do redirecionamento.
 
 ---
 
-## 4. Critérios de Aceite (DoD)
+## 4. Cronograma de Execução (Cascata)
 
-- [ ] Cadastro gera nós reais no Neo4j com skills e maturidade extraídas por IA.
-- [ ] Usuário é autenticado automaticamente via cookie após o cadastro.
-- [ ] Animação de processamento exibe matches reais gerados pela pipeline.
-- [ ] Botão de tema animado e funcional em toda a plataforma.
-- [ ] Documentação do projeto (`01_DOCUMENTO_PROJETO_ARIANO.md`) atualizada com o novo status.
+1.  **Back:** Criar API de status e logs de processamento.
+2.  **Back:** Adaptar `OrchestratorAgent` para escrever logs no banco.
+3.  **Front:** Implementar polling no `CognitionExperience`.
+4.  **Front:** Mapear resultados REAIS do polling nos cards de match.
+5.  **Front:** Ajustar fluxo de autenticação e redirecionamento.
 
 ---
-> **Próxima Ação:** Iniciar a implementação do auto-login no frontend e atualização da `CognitionExperience`.
+> [!IMPORTANT]
+> Nenhuma linha de código deve ser alterada antes da aprovação deste plano estratégico.

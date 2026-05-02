@@ -1,10 +1,10 @@
 # 📋 PROJETO ARIANO — Documento de Visão e Planejamento do MVP
 
-> **Versão:** 8.0.0  
+> **Versão:** 10.0.0  
 > **Data:** 01/05/2026  
-> **Status:** MVP 1.0.0 Online — Sprint 8 em Andamento (Integração Real de IA & Refinamento UI/UX)
+> **Status:** MVP 1.0.0 Online — Sprint 8 Especial (IA Transparente & Auto-Auth Robusto)
 > **Metodologia:** SCRUM (adaptado para contexto acadêmico)  
-> **Última atualização:** 01/05/2026 — Sprint 8 (Integração Real de IA, Auto-Auth, Refinamento de Cognição, UI Polish)
+> **Última atualização:** 01/05/2026 — Sprint 8 (Polling de IA, Status Real-Time, Fix de Sessão)
 
 ---
 
@@ -795,15 +795,15 @@ Finalizamos a integração total E2E, removendo mocks e estabilizando a comunica
 - Otimização de builds e code-splitting para performance máxima (Vercel).
 - Refinamento de tipografia e paleta de cores teal neon.
 
-### Sprint 8 — Integração Real de IA & Auto-Auth (Semana 12) 🚀 EM ANDAMENTO
+### Sprint 8 — IA Transparente & Auto-Auth Robusto (Semana 12) 🚀 EM ANDAMENTO
 
-**Foco:** Transição final para inteligência real e fluxo de usuário sem fricção.
+**Foco:** Garantir que a inteligência artificial seja visível em tempo real e que a autenticação seja infalível.
 
 **Pilares e Entregas Técnicas:**
-1. **Pipeline de IA Real:** Substituição de mocks por chamadas reais via NVIDIA Nemotron-3 (OpenRouter) no fluxo de cadastro.
-2. **Auto-Auth:** Login automático via cookies JWT imediatamente após a conclusão do cadastro.
-3. **Refinamento de Cognição:** Atualização da `CognitionExperience` para exibir matches reais com justificativas da LLM.
-4. **Micro-interações:** Botão de tema (Sol/Lua) com animações fluidas via Framer Motion.
+1. **Status API:** Endpoint para rastrear o progresso dos agentes em tempo real.
+2. **Polling de Cognição:** O frontend agora "escuta" os pensamentos da IA (scratchpad) e os exibe dinamicamente.
+3. **Persistência de Sessão:** Refatoração do fluxo de cookies para garantir auto-login estável pós-cadastro.
+4. **Matches Dinâmicos:** Substituição total de mocks por resultados injetados pela IA em tempo real.
 
 ---
 

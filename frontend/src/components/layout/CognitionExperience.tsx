@@ -9,6 +9,7 @@ import * as api from '../../lib/api';
 
 interface CognitionExperienceProps {
   userName: string;
+  userId: string | null;
   apiPromise: Promise<any> | null;
   onComplete: () => void;
 }
@@ -34,7 +35,7 @@ const AGENT_ICON_COLORS: Record<string, string> = {
   match: 'bg-gray-950 border-amber-500 shadow-amber-500/20',
 };
 
-export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userName, apiPromise, onComplete }) => {
+export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userName, userId, apiPromise, onComplete }) => {
   const navigate = useNavigate();
   const { setCachedMatches } = useAuthStore();
   const [currentStep, setCurrentStep] = useState(0);
@@ -44,70 +45,53 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // ARIANO: Cognition Experience v2.0 Cinematic Edition
-    let animationDone = false;
-    let apiData: any = null;
+    if (!userId) return;
+    let pollInterval: any;
     
-    // Logs estruturados para diálogo
-    const logMessages = [
-      { agent: 'orchestrator', msg: `Olá! Identificamos sua chegada ao ecossistema ARIANO.` },
-      { agent: 'analyzer', msg: 'Estou analisando seu currículo para entender seus diferenciais...' },
-      { agent: 'analyzer', msg: 'Encontrei competências incríveis! Estou mapeando-as no grafo agora.' },
-      { agent: 'knowledge', msg: 'Sincronizando suas conexões com a rede de conhecimento Recife.' },
-      { agent: 'orchestrator', msg: 'Calculando como você se integra às oportunidades estratégicas...' },
-      { agent: 'match', msg: 'Detectamos matches que fazem sentido para sua carreira.' },
-      { agent: 'match', msg: 'Sua elegibilidade para editais ativos foi validada!' },
-      { agent: 'knowledge', msg: 'Consolidando sua posição única neste ecossistema...' },
-      { agent: 'orchestrator', msg: 'Tudo pronto. Seja bem-vindo ao futuro da pesquisa.' }
-    ];
+    const startPolling = () => {
+      pollInterval = setInterval(async () => {
+        try {
+          const res = await fetch(`/api/users/${userId}/status`, {
+            credentials: 'include'
+          });
+          if (!res.ok) return;
+          const data = await res.json();
 
-    let logIdx = 0;
-    const logInterval = setInterval(() => {
-      if (logIdx < logMessages.length) {
-        setLogs(prev => [...prev, JSON.stringify(logMessages[logIdx])]);
-        logIdx++;
-      }
-    }, 1800);
-
-    const stepInterval = setInterval(() => {
-      setCurrentStep(prev => (prev < AGENT_STEPS.length - 1 ? prev + 1 : prev));
-    }, 4000);
-
-    // Tempo mínimo de animação para imersão total (15s)
-    const minTimePromise = new Promise(resolve => setTimeout(resolve, 15000));
-
-    if (apiPromise) {
-      Promise.all([apiPromise, minTimePromise])
-        .then(async ([result]) => {
-          // Se o backend retornou matches, salva. 
-          // Se não (comum em background tasks), tentamos uma busca rápida pelo uid
-          let finalMatches = result.topMatches || [];
-          
-          if (finalMatches.length === 0 && result.uid) {
-             try {
-               const fresh = await api.getMatches(result.uid, 0.3);
-               finalMatches = fresh;
-             } catch(e) { /* silent fail */ }
+          if (data.logs && data.logs.length > logs.length) {
+            setLogs(data.logs);
           }
-          
-          setMatches(finalMatches);
-          setCachedMatches(finalMatches);
-          
-          // Transição automática para o sucesso
-          setTimeout(() => setShowFinish(true), 1000);
-        })
-        .catch(err => {
-          console.error("❌ ARIANO: Pipeline Error:", err);
-          setError('Tivemos uma pequena instabilidade na conexão, mas seu perfil está sendo processado.');
-          setTimeout(() => setShowFinish(true), 3000);
-        });
-    }
+
+          if (data.status === 'completed' && data.matches?.length > 0) {
+            setMatches(data.matches);
+            setCachedMatches(data.matches);
+            clearInterval(pollInterval);
+            setTimeout(() => setShowFinish(true), 2000);
+          }
+
+          const statusMap: Record<string, number> = {
+            'started': 0,
+            'retrieving': 1,
+            'analyzing': 1,
+            'configuring': 2,
+            'matching': 3,
+            'completed': 3
+          };
+          if (data.status in statusMap) {
+            setCurrentStep(statusMap[data.status]);
+          }
+        } catch (err) {
+          console.error("Polling error:", err);
+        }
+      }, 2000);
+    };
+
+    const startTimer = setTimeout(startPolling, 1000);
 
     return () => {
-      clearInterval(logInterval);
-      clearInterval(stepInterval);
+      clearTimeout(startTimer);
+      if (pollInterval) clearInterval(pollInterval);
     };
-  }, [userName, apiPromise]);
+  }, [userId, logs.length]);
 
   return (
     <div className="fixed inset-0 z-50 bg-gray-950 flex flex-col items-center justify-center p-6 lg:p-12 overflow-hidden">
@@ -129,9 +113,11 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
             >
               {/* Central Title */}
               <div className="text-center space-y-4">
-                 <h1 className="text-4xl lg:text-5xl font-bold text-white tracking-tight leading-tight">
-                   Nosso motor de IA está realizando os matches estratégicos para seu perfil...
-                 </h1>
+                  <h1 className="text-4xl lg:text-5xl font-bold text-white tracking-tight leading-tight">
+                    {logs.length > 0 
+                      ? logs[logs.length - 1].replace(/\[.*\]\s/, '') 
+                      : "O motor de IA está iniciando a análise do seu futuro..."}
+                  </h1>
               </div>
 
               {/* Central Graph & Agent Orbit */}

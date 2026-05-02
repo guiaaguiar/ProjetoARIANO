@@ -12,6 +12,7 @@ export const CadastroPage: React.FC = () => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [showCognition, setShowCognition] = useState(false);
+  const [registeredUid, setRegisteredUid] = useState<string | null>(null);
   const [apiPromise, setApiPromise] = useState<Promise<any> | null>(null);
   const navigate = useNavigate();
 
@@ -103,9 +104,11 @@ export const CadastroPage: React.FC = () => {
     const promise = fetch('/api/users/register', {
       method: 'POST',
       body: data,
+      credentials: 'include',
     }).then(async res => {
       const result = await res.json();
       if (!res.ok) throw new Error(result.detail || 'Falha ao realizar cadastro.');
+      if (result.uid) setRegisteredUid(result.uid);
       return result;
     });
 
@@ -293,6 +296,7 @@ export const CadastroPage: React.FC = () => {
         {showCognition && (
           <CognitionExperience 
             userName={formData.name || 'Acadêmico'} 
+            userId={registeredUid}
             apiPromise={apiPromise}
             onComplete={async () => {
               await checkAuth();
