@@ -230,6 +230,26 @@ Responda APENAS em JSON válido com a estrutura exata:
                 return category
         return "general"
 
+    def generate_profile_context(self, profile_data: dict) -> str:
+        """Extract all profile data into a rich temporary string for LLM context."""
+        name = profile_data.get("name", "N/A")
+        bio = profile_data.get("bio", "")
+        institution = profile_data.get("institution", "")
+        course = profile_data.get("course", "")
+        level = profile_data.get("level", "")
+        curriculo = profile_data.get("curriculo_texto", "")
+        
+        context = f"""
+        PERFIL ACADÊMICO:
+        - Nome: {name}
+        - Instituição: {institution}
+        - Curso: {course}
+        - Nível: {level}
+        - Resumo/Bio: {bio}
+        - Experiências Extraídas: {curriculo[:2000]}
+        """
+        return context.strip()
+
     def configure_graph(self, entity_uid: str, entity_type: str, analysis: dict) -> dict:
         """Write analysis results to Neo4j graph.
 

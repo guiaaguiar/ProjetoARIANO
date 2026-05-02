@@ -37,7 +37,7 @@ const AGENT_ICON_COLORS: Record<string, string> = {
   match: 'bg-gray-950 border-amber-500 shadow-amber-500/20',
 };
 
-export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userName, userId, apiPromise, initialData, onComplete }) => {
+export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userName, userId, formData, onComplete }) => {
   const navigate = useNavigate();
   const { setCachedMatches } = useAuthStore();
   const [currentStep, setCurrentStep] = useState(0);
@@ -45,108 +45,77 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
   const [showFinish, setShowFinish] = useState(false);
   const [matches, setMatches] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
+  
+  const [activeSkills, setActiveSkills] = useState<string[]>([]);
+  const [activeAreas, setActiveAreas] = useState<string[]>([]);
+  const [activeMatches, setActiveMatches] = useState<any[]>([]);
 
   useEffect(() => {
-    // Caso 1: Já recebemos os dados no cadastro (Fluxo Síncrono/Vercel)
-    if (initialData && initialData.status === 'completed') {
-      console.log("🚀 Usando dados síncronos (InitialData)");
-      setLogs(initialData.logs || ["Processamento instantâneo concluído."]);
-      if (initialData.matches?.length > 0) {
-        setMatches(initialData.matches);
-        setCachedMatches(initialData.matches);
+    let isMounted = true;
+
+    const runPipeline = async () => {
+      try {
+        setCurrentStep(0);
+        setLogs(prev => [...prev, "🧠 Iniciando extração de contexto acadêmico..."]);
+        
+        const contextRes = await fetch('/api/agents/v2/analyze-profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+        const contextData = await contextRes.json();
+        if (!isMounted) return;
+        
+        const profileContext = contextData.data.context;
+        setLogs(prev => [...prev, "✅ Contexto processado. Acionando Agente Analista..."]);
+        
+        setCurrentStep(1);
+        const skillsRes = await fetch('/api/agents/v2/extract-skills', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ context: profileContext })
+        });
+        const skillsData = await skillsRes.json();
+        if (!isMounted) return;
+        
+        setActiveSkills(skillsData.data.skills);
+        setActiveAreas(skillsData.data.areas);
+        setLogs(prev => [...prev, `🔍 Habilidades encontradas: ${skillsData.data.skills.slice(0,3).join(', ')}...`]);
+        setLogs(prev => [...prev, "🧬 Integrando conexões no ecossistema..."]);
+        
+        setCurrentStep(2);
+        const matchesRes = await fetch('/api/agents/v2/match-editais', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ context: profileContext, skills: skillsData.data.skills })
+        });
+        const matchesData = await matchesRes.json();
+        if (!isMounted) return;
+        
+        setActiveMatches(matchesData.data.matches);
+        setMatches(matchesData.data.matches);
+        setCachedMatches(matchesData.data.matches);
+        setCurrentStep(3);
+        setLogs(prev => [...prev, "🎯 Otimização de matches concluída com sucesso."]);
+        
+        setTimeout(() => {
+          if (isMounted) setShowFinish(true);
+        }, 2000);
+        
+      } catch (err) {
+        console.error("Pipeline error:", err);
+        setError("Ocorreu um erro no processamento cognitivo.");
       }
-      
-      // Simula progressão mais lenta para efeito de "pensamento profundo"
-      let step = 0;
-      const interval = setInterval(() => {
-        step++;
-        setCurrentStep(step);
-        if (step >= 3) {
-          clearInterval(interval);
-          setTimeout(() => setShowFinish(true), 2500); // 2.5s de espera final
-        }
-      }, 2000); // 2s por etapa
-      return () => clearInterval(interval);
-    }
-
-    // Caso 2: Fluxo assíncrono padrão (Polling)
-    if (!userId) return;
-    let pollInterval: any;
-    let retryTimeout: any;
-    let errorCount = 0;
-    
-    const startPolling = () => {
-      pollInterval = setInterval(async () => {
-        try {
-          const res = await fetch(`/api/users/${userId}/status`, {
-            credentials: 'include'
-          });
-          
-          if (!res.ok) {
-            errorCount++;
-            if (errorCount > 5) { // Se der muito 404, assume que a instância resetou
-               console.warn("⚠️ Muitas falhas no polling. A instância pode ter reiniciado.");
-            }
-            return;
-          }
-
-          errorCount = 0;
-          const data = await res.json();
-          console.log("🤖 AI Polling Status:", data.status, "Logs:", data.logs?.length);
-
-          if (data.logs && data.logs.length > logs.length) {
-            setLogs(data.logs);
-            setError(null);
-          }
-
-          if (data.status === 'completed') {
-            if (data.matches && data.matches.length > 0) {
-              setMatches(data.matches);
-              setCachedMatches(data.matches);
-            }
-            clearInterval(pollInterval);
-            setTimeout(() => setShowFinish(true), 2000);
-          }
-
-          if (data.status === 'failed') {
-            setError("O orquestrador encontrou um obstáculo técnico.");
-            clearInterval(pollInterval);
-            toast.info("A IA está recalibrando os sensores... Reiniciando em 5s.");
-            retryTimeout = setTimeout(async () => {
-              try {
-                if (userId) await api.orchestrate(userId);
-                startPolling();
-              } catch (retryErr) {
-                setError("Falha crítica na recalibração.");
-              }
-            }, 5000);
-          }
-
-          const statusMap: Record<string, number> = {
-            'started': 0, 'retrieving': 1, 'analyzing': 1,
-            'configuring': 2, 'matching': 3, 'completed': 3
-          };
-          if (data.status in statusMap) setCurrentStep(statusMap[data.status]);
-        } catch (err) {
-          console.error("Polling error:", err);
-        }
-      }, 2000);
     };
 
-    const startTimer = setTimeout(startPolling, 1000);
-
-    return () => {
-      clearTimeout(startTimer);
-      clearTimeout(retryTimeout);
-      if (pollInterval) clearInterval(pollInterval);
-    };
-  }, [userId, logs.length, initialData]);
+    runPipeline();
+    return () => { isMounted = false; };
+  }, [formData]);
 
   const getProcessingMessage = () => {
     if (error) return error;
     if (logs.length > 0) {
       const lastLog = logs[logs.length - 1].replace(/\[.*\]\s/, '');
-      // Custom transformation for requested messages if needed
       return lastLog;
     }
     
@@ -197,7 +166,12 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
                  
                  {/* The Graph */}
                  <div className="relative z-10 w-full h-full scale-125">
-                    <MiniGraphAnimation step={currentStep} />
+                    <MiniGraphAnimation 
+                      step={currentStep} 
+                      activeSkills={activeSkills}
+                      activeAreas={activeAreas}
+                      activeMatches={activeMatches}
+                    />
                  </div>
 
                  {/* Agent Floating Bubbles */}

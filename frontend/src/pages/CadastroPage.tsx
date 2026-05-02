@@ -36,6 +36,7 @@ export const CadastroPage: React.FC = () => {
   const [showCognition, setShowCognition] = useState(false);
   const [registeredUid, setRegisteredUid] = useState<string | null>(null);
   const [initialAiData, setInitialAiData] = useState<any>(null);
+  const [submittedData, setSubmittedData] = useState<any>(null);
   const [apiPromise, setApiPromise] = useState<Promise<any> | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const navigate = useNavigate();
@@ -76,6 +77,7 @@ export const CadastroPage: React.FC = () => {
     }
 
     setLoading(true);
+    setSubmittedData(data);
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
       if (value) formData.append(key, value);
@@ -212,14 +214,13 @@ export const CadastroPage: React.FC = () => {
           <CognitionExperience 
             userName={watch('name') || 'Acadêmico'} 
             userId={registeredUid}
-            apiPromise={apiPromise}
-            initialData={initialAiData}
+            formData={submittedData}
             onComplete={async () => {
               await checkAuth();
-              // Pequeno delay para garantir que a sessão e os estados do browser/Zustand estão assentados
+              // Delay de segurança para garantir persistência do JWT no Vercel
               setTimeout(() => {
                 navigate('/user', { replace: true });
-              }, 1000);
+              }, 1500);
             }} 
           />
         )}

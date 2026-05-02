@@ -1,34 +1,62 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-interface MiniGraphAnimationProps {
-  step: number;
+interface MiniGraphNode {
+  id: string;
+  x: number;
+  y: number;
+  color: string;
+  label: string;
 }
 
-export const MiniGraphAnimation: React.FC<MiniGraphAnimationProps> = ({ step }) => {
+interface MiniGraphAnimationProps {
+  step: number;
+  activeSkills?: string[];
+  activeAreas?: string[];
+  activeMatches?: { title: string }[];
+}
+
+export const MiniGraphAnimation: React.FC<MiniGraphAnimationProps> = ({ step, activeSkills = [], activeAreas = [], activeMatches = [] }) => {
   const centerX = 200;
   const centerY = 200;
   
-  // Nodos Mockados e Estilizados
-  const userNode = { id: 'u1', x: centerX, y: centerY, color: '#0ea5e9', label: 'Você' };
+  const userNode: MiniGraphNode = { id: 'user', x: centerX, y: centerY, color: '#0ea5e9', label: 'Você' };
   
-  const skillNodes = [
-    { id: 's1', x: 100, y: 130, color: '#a78bfa', label: 'IA' },
-    { id: 's2', x: 300, y: 130, color: '#818cf8', label: 'Python' },
-    { id: 's3', x: 200, y: 280, color: '#a78bfa', label: 'ML' },
-  ];
+  // Posicionamento dinâmico baseado no que a IA encontrou
+  const skillNodes: MiniGraphNode[] = activeSkills.map((s, i) => {
+    const angle = (i * (360 / Math.max(activeSkills.length, 1))) * (Math.PI / 180);
+    return {
+      id: `s-${i}`,
+      x: centerX + Math.cos(angle) * 100,
+      y: centerY + Math.sin(angle) * 100,
+      color: '#a78bfa',
+      label: s
+    };
+  });
   
-  const similarNodes = [
-    { id: 'p1', x: 80, y: 50, color: '#34d399', label: 'Maria (Neo4j)' },
-    { id: 'p2', x: 320, y: 50, color: '#34d399', label: 'João (Pesquisa)' },
-  ];
+  const areaNodes: MiniGraphNode[] = activeAreas.map((a, i) => {
+    const angle = (i * (360 / Math.max(activeAreas.length, 1)) + 45) * (Math.PI / 180);
+    return {
+      id: `a-${i}`,
+      x: centerX + Math.cos(angle) * 160,
+      y: centerY + Math.sin(angle) * 160,
+      color: '#34d399',
+      label: a
+    };
+  });
   
-  const editalNodes = [
-    { id: 'e1', x: 60, y: 320, color: '#2563eb', label: 'FACEPE IA' },
-    { id: 'e2', x: 340, y: 320, color: '#0ea5e9', label: 'CNPq Dados' },
-  ];
+  const matchNodes: MiniGraphNode[] = activeMatches.map((m, i) => {
+    const angle = (i * 60 + 180) * (Math.PI / 180);
+    return {
+      id: `m-${i}`,
+      x: centerX + Math.cos(angle) * 180,
+      y: centerY + Math.sin(angle) * 180,
+      color: '#f59e0b',
+      label: m.title.substring(0, 12) + '...'
+    };
+  });
 
-  const renderNode = (node: any, delay: number, withPulse: boolean = false) => (
+  const renderNode = (node: MiniGraphNode, delay: number, withPulse: boolean = false) => (
     <motion.g
       key={node.id}
       initial={{ scale: 0, opacity: 0 }}
@@ -51,7 +79,7 @@ export const MiniGraphAnimation: React.FC<MiniGraphAnimationProps> = ({ step }) 
         x={node.x}
         y={node.y + 22}
         fill="#e8f0f8"
-        fontSize="11"
+        fontSize="10"
         textAnchor="middle"
         className="font-mono font-medium"
         style={{ textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}
@@ -61,7 +89,7 @@ export const MiniGraphAnimation: React.FC<MiniGraphAnimationProps> = ({ step }) 
     </motion.g>
   );
 
-  const drawEdge = (source: any, target: any, color: string, delay: number, isDashed: boolean = false) => (
+  const drawEdge = (source: MiniGraphNode, target: MiniGraphNode, color: string, delay: number, isDashed: boolean = false) => (
     <motion.line
       key={`${source.id}-${target.id}`}
       x1={source.x}
@@ -72,44 +100,42 @@ export const MiniGraphAnimation: React.FC<MiniGraphAnimationProps> = ({ step }) 
       strokeWidth={isDashed ? "1" : "2"}
       strokeDasharray={isDashed ? "4,4" : undefined}
       initial={{ pathLength: 0, opacity: 0 }}
-      animate={{ pathLength: 1, opacity: isDashed ? 0.4 : 0.6 }}
-      transition={{ duration: 1, delay, ease: "easeInOut" }}
+      animate={{ pathLength: 1, opacity: isDashed ? 0.3 : 0.6 }}
+      transition={{ duration: 0.8, delay, ease: "easeInOut" }}
     />
   );
 
   return (
     <div className="w-full h-full flex items-center justify-center relative">
       <svg width="400" height="400" viewBox="0 0 400 400" className="overflow-visible drop-shadow-2xl">
-        {/* Step 1: HAS_SKILL */}
-        {step >= 1 && skillNodes.map((s, i) => drawEdge(userNode, s, s.color, i * 0.2))}
+        {/* Step 1 & 2: Skills & Areas */}
+        {(step >= 1 || activeSkills.length > 0) && skillNodes.map((s, i) => drawEdge(userNode, s, s.color, i * 0.1))}
+        {(step >= 2 || activeAreas.length > 0) && areaNodes.map((a, i) => drawEdge(skillNodes[i % skillNodes.length] || userNode, a, a.color, i * 0.1, true))}
         
-        {/* Step 2: SIMILAR_TO / RELATED_TO */}
-        {step >= 2 && similarNodes.map((sim, i) => drawEdge(skillNodes[i % skillNodes.length], sim, '#34d399', i * 0.3, true))}
-        
-        {/* Step 3: ELIGIBLE_FOR (Match) */}
-        {step >= 3 && editalNodes.map((e, i) => (
+        {/* Step 3: Matches */}
+        {(step >= 3 || activeMatches.length > 0) && matchNodes.map((m, i) => (
           <motion.path
             key={`match-${i}`}
-            d={`M ${userNode.x} ${userNode.y} Q ${200} ${300} ${e.x} ${e.y}`}
+            d={`M ${userNode.x} ${userNode.y} Q ${m.x - 20} ${m.y + 20} ${m.x} ${m.y}`}
             fill="transparent"
             stroke="url(#matchGradient)"
-            strokeWidth="3"
+            strokeWidth="2"
             initial={{ pathLength: 0, opacity: 0 }}
             animate={{ pathLength: 1, opacity: 0.8 }}
-            transition={{ duration: 1.5, delay: i * 0.4, ease: "easeOut" }}
+            transition={{ duration: 1, delay: i * 0.2, ease: "easeOut" }}
           />
         ))}
 
         {/* Nodes */}
         {renderNode(userNode, 0, true)}
-        {step >= 1 && skillNodes.map((s, i) => renderNode(s, i * 0.2))}
-        {step >= 2 && similarNodes.map((sim, i) => renderNode(sim, i * 0.3))}
-        {step >= 3 && editalNodes.map((e, i) => renderNode(e, i * 0.4, true))}
+        {skillNodes.map((s, i) => renderNode(s, i * 0.1))}
+        {areaNodes.map((a, i) => renderNode(a, i * 0.1))}
+        {matchNodes.map((m, i) => renderNode(m, i * 0.1, true))}
         
         <defs>
           <linearGradient id="matchGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#0ea5e9" />
-            <stop offset="100%" stopColor="#38bdf8" />
+            <stop offset="0%" stopColor="#f59e0b" />
+            <stop offset="100%" stopColor="#fbbf24" />
           </linearGradient>
         </defs>
       </svg>
