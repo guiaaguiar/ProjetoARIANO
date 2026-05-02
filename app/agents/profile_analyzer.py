@@ -13,6 +13,7 @@ Part of PHASE 1 (Graph Configuration) — runs offline/async.
 import json
 import logging
 import uuid
+import datetime
 from typing import Optional
 
 from app.core.config import settings
@@ -232,7 +233,7 @@ Responda APENAS em JSON válido com a estrutura exata:
                     "name": skill_data["name"], 
                     "category": skill_data.get("category", "general"),
                     "skill_uid": str(uuid.uuid4())[:8],
-                    "created_at": datetime.now().isoformat()
+                    "created_at": datetime.datetime.now().isoformat()
                 },
             )
             skills_created += 1
@@ -253,7 +254,7 @@ Responda APENAS em JSON válido com a estrutura exata:
                     "uid": entity_uid,
                     "skill_name": skill_data["name"],
                     "confidence": skill_data.get("confidence", 0.8),
-                    "created_at": datetime.now().isoformat()
+                    "created_at": datetime.datetime.now().isoformat()
                 },
             )
             edges_created += 1
@@ -268,7 +269,7 @@ Responda APENAS em JSON válido com a estrutura exata:
                 {
                     "name": area_name,
                     "area_uid": str(uuid.uuid4())[:8],
-                    "created_at": datetime.now().isoformat()
+                    "created_at": datetime.datetime.now().isoformat()
                 },
             )
 
@@ -281,7 +282,7 @@ Responda APENAS em JSON válido com a estrutura exata:
                     ON CREATE SET r.source = 'agent:ProfileAnalyzer',
                                   r.created_at = $created_at
                     """,
-                    {"uid": entity_uid, "area_name": area_name, "created_at": datetime.now().isoformat()},
+                    {"uid": entity_uid, "area_name": area_name, "created_at": datetime.datetime.now().isoformat()},
                 )
                 
         # Update entity with maturidade and o_que_busco

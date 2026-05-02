@@ -214,6 +214,40 @@ def calculate_matches(request: CalculateRequest = CalculateRequest()):
         raise HTTPException(500, f"Calculation failed: {str(e)}")
 
 
+@router.post("/orchestrate/{uid}", response_model=AgentResponse)
+def orchestrate_user(uid: str, background_tasks: BackgroundTasks):
+    """Re-trigger the full Orchestrator pipeline for a user."""
+    from app.agents.orchestrator import OrchestratorAgent
+    from app.core.neo4j_driver import run_cypher
+
+    query = """
+    MATCH (u)
+    WHERE (u:Student OR u:Researcher OR u:Professor) AND u.uid = $uid
+    RETURN u.name AS name, labels(u)[0] AS type, u.bio AS bio, 
+           u.institution AS institution, u.course AS course, 
+           u.level AS level, u.semester AS semester, u.curriculo_texto AS curriculo_texto
+    """
+    results = run_cypher(query, {"uid": uid})
+    if not results:
+        raise HTTPException(404, "Usuário não encontrado")
+    
+    user_data = results[0]
+    orchestrator = OrchestratorAgent()
+    
+    background_tasks.add_task(
+        orchestrator.process_new_entity,
+        uid,
+        user_data["type"],
+        user_data
+    )
+    
+    return AgentResponse(
+        status="success",
+        message=f"Pipeline reiniciado para {user_data['name']}",
+        data={"uid": uid}
+    )
+
+
 @router.post("/recalculate-all", response_model=AgentResponse)
 def recalculate_all_matches():
     """Clear all existing matches and recalculate everything from scratch."""

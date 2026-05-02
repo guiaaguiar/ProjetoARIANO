@@ -47,6 +47,7 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
   useEffect(() => {
     if (!userId) return;
     let pollInterval: any;
+    let retryTimeout: any;
     
     const startPolling = () => {
       pollInterval = setInterval(async () => {
@@ -59,6 +60,7 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
 
           if (data.logs && data.logs.length > logs.length) {
             setLogs(data.logs);
+            setError(null); // Clear error if we get new logs
           }
 
           if (data.status === 'completed' && data.matches?.length > 0) {
@@ -66,6 +68,23 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
             setCachedMatches(data.matches);
             clearInterval(pollInterval);
             setTimeout(() => setShowFinish(true), 2000);
+          }
+
+          if (data.status === 'failed') {
+            setError("O orquestrador encontrou um obstáculo técnico.");
+            clearInterval(pollInterval);
+            
+            // Refazer chamadas após 5 segundos conforme solicitado
+            toast.info("A IA está recalibrando os sensores... Reiniciando em 5s.");
+            retryTimeout = setTimeout(async () => {
+              try {
+                if (userId) await api.orchestrate(userId);
+                startPolling();
+              } catch (retryErr) {
+                console.error("Retry failed:", retryErr);
+                setError("Falha crítica na recalibração.");
+              }
+            }, 5000);
           }
 
           const statusMap: Record<string, number> = {
@@ -89,9 +108,33 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
 
     return () => {
       clearTimeout(startTimer);
+      clearTimeout(retryTimeout);
       if (pollInterval) clearInterval(pollInterval);
     };
   }, [userId, logs.length]);
+
+  const getProcessingMessage = () => {
+    if (error) return error;
+    if (logs.length > 0) {
+      const lastLog = logs[logs.length - 1].replace(/\[.*\]\s/, '');
+      // Custom transformation for requested messages if needed
+      return lastLog;
+    }
+    
+    // Sequence based on a simple timer if no logs yet
+    return "A IA está extraindo suas informações e ";
+  };
+
+  const [secondaryMessage, setSecondaryMessage] = useState("A IA está extraindo suas informações e ");
+  
+  useEffect(() => {
+    if (logs.length === 0 && !error) {
+       const timer = setTimeout(() => {
+         setSecondaryMessage("o ARIANO está fazendo conexões estratégicas...");
+       }, 4000);
+       return () => clearTimeout(timer);
+    }
+  }, [logs.length, error]);
 
   return (
     <div className="fixed inset-0 z-50 bg-gray-950 flex flex-col items-center justify-center p-6 lg:p-12 overflow-hidden">
@@ -114,9 +157,7 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
               {/* Central Title */}
               <div className="text-center space-y-4">
                   <h1 className="text-4xl lg:text-5xl font-bold text-white tracking-tight leading-tight">
-                    {logs.length > 0 
-                      ? logs[logs.length - 1].replace(/\[.*\]\s/, '') 
-                      : "O motor de IA está iniciando a análise do seu futuro..."}
+                    {logs.length > 0 ? getProcessingMessage() : secondaryMessage}
                   </h1>
               </div>
 

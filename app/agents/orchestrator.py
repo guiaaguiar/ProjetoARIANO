@@ -1,11 +1,11 @@
 import logging
+import datetime
 from typing import Dict, Any
 
 from app.core.graph_tools import get_entity_deep_context
 from app.agents.profile_analyzer import ProfileAnalyzer
 from app.agents.eligibility_calculator import EligibilityCalculator
 from app.core.neo4j_driver import run_cypher
-from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ class OrchestratorAgent:
         SET ent.ai_status = $status,
             ent.ai_logs = coalesce(ent.ai_logs, []) + $log_list
         """
-        log_list = [f"[{datetime.now().strftime('%H:%M:%S')}] {log}"] if log else []
+        log_list = [f"[{datetime.datetime.now().strftime('%H:%M:%S')}] {log}"] if log else []
         run_cypher(query, {"uid": entity_uid, "status": status, "log_list": log_list})
         if log:
             logger.info(f"🤖 AI Status [{entity_uid}]: {log}")

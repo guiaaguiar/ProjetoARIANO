@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Award, Zap, Bot, ArrowRight } from 'lucide-react';
+import { Award, Zap, Bot, ArrowRight, Target, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export interface MatchData {
@@ -20,53 +20,71 @@ export const MatchResultCards: React.FC<MatchResultCardsProps> = ({ matches }) =
   if (!matches || matches.length === 0) {
     return (
       <motion.div 
-        initial={{ opacity: 0, scale: 0.95 }}
+        initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="empty-state bg-gray-900/50 rounded-xl p-8 border border-gray-800 w-full col-span-full max-w-2xl mx-auto"
+        className="bg-card/30 backdrop-blur-xl rounded-[2rem] p-12 border border-dashed border-border flex flex-col items-center text-center max-w-2xl mx-auto"
       >
-        <Bot className="w-12 h-12 text-teal-500 opacity-50 mx-auto mb-4" />
-        <h3 className="text-white font-bold text-lg mb-2">Seu perfil é extremamente singular!</h3>
-        <p className="text-gray-400 mt-2 text-sm leading-relaxed">Nossa inteligência está trabalhando nas fronteiras do ecossistema. Assim que novos editais institucionais convergirem com suas habilidades únicas, você será notificado no seu painel.</p>
+        <div className="p-4 rounded-3xl bg-primary/10 mb-6">
+          <Bot className="w-10 h-10 text-primary opacity-50" />
+        </div>
+        <h3 className="text-xl font-bold text-foreground mb-3">Seu perfil é singular no ecossistema</h3>
+        <p className="text-muted-foreground text-sm leading-relaxed max-w-md">
+          Nossa inteligência está processando as fronteiras do ecossistema. Assim que editais estratégicos convergirem com sua trajetória, você será notificado.
+        </p>
       </motion.div>
     );
   }
+
   return (
-    <div className="grid gap-4 mt-6 w-full">
+    <div className="grid gap-6 w-full">
       {matches.map((match, i) => (
         <motion.div
           key={i}
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: i * 0.2 }}
+          transition={{ delay: i * 0.1 }}
           onClick={() => navigate('/user/ecossistema')}
-          className="bg-gray-900/60 backdrop-blur-md border border-gray-800 rounded-xl p-4 flex flex-col gap-3 card-glass cursor-pointer group hover:bg-gray-800/80 transition-colors"
+          className="bg-card/40 backdrop-blur-xl border border-border rounded-[2rem] p-6 flex flex-col gap-4 group cursor-pointer hover:border-primary/40 transition-all duration-500 overflow-hidden relative"
         >
-          <div className="flex justify-between items-start">
-            <div>
-              <h4 className="text-white font-bold text-lg">{match.title}</h4>
-              <p className="text-xs text-gray-400 capitalize">{match.instituicao}</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1 bg-teal-500/10 border border-teal-500/20 px-2 py-1 rounded-full">
-                <Award className="w-3 h-3 text-teal-400" />
-                <span className="text-teal-400 text-xs font-bold">{match.score}% Score</span>
+          {/* Subtle background glow on hover */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity" />
+
+          <div className="flex justify-between items-start relative z-10">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-primary font-bold uppercase tracking-[0.15em] text-[10px] mb-1">
+                <Target className="w-3 h-3" /> Oportunidade Identificada
               </div>
-              <ArrowRight className="w-4 h-4 text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <h4 className="text-lg font-bold text-foreground leading-tight group-hover:text-primary transition-colors">{match.title}</h4>
+              <p className="text-[12px] text-muted-foreground font-medium uppercase tracking-wider">{match.instituicao}</p>
+            </div>
+            
+            <div className="flex flex-col items-end gap-2">
+              <div className="flex items-center gap-1.5 bg-primary/10 border border-primary/20 px-3 py-1.5 rounded-full">
+                <Award className="w-3.5 h-3.5 text-primary" />
+                <span className="text-primary text-[12px] font-black uppercase tracking-tighter">{match.score}% Score</span>
+              </div>
+              <div className="p-2 rounded-full bg-muted/50 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all">
+                <ArrowRight className="w-4 h-4" />
+              </div>
             </div>
           </div>
           
-          <div className="w-full bg-gray-800 rounded-full h-1.5 mt-1 overflow-hidden">
+          <div className="w-full bg-muted/30 rounded-full h-1 relative overflow-hidden">
             <motion.div 
               initial={{ width: 0 }} 
               animate={{ width: `${match.score}%` }} 
-              transition={{ duration: 1.5, delay: i * 0.2 + 0.3, ease: 'easeOut' }}
-              className="bg-gradient-to-r from-teal-500 to-sky-400 h-1.5 rounded-full"
+              transition={{ duration: 1.5, delay: i * 0.1 + 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="bg-primary h-full rounded-full shadow-[0_0_10px_rgba(45,212,191,0.5)]"
             />
           </div>
           
-          <div className="flex items-start gap-2 bg-gray-950/50 p-3 rounded-lg mt-2 border border-gray-800/50">
-            <Zap className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-gray-300 italic leading-relaxed">{match.justification}</p>
+          <div className="flex items-start gap-3 bg-muted/20 p-4 rounded-2xl border border-border/40 relative z-10 group-hover:bg-muted/40 transition-colors">
+            <div className="mt-1 p-1 rounded-md bg-warning/10 text-warning">
+              <Sparkles className="w-3 h-3" />
+            </div>
+            <p className="text-[13px] text-foreground leading-relaxed italic opacity-80">
+              "{match.justification}"
+            </p>
           </div>
         </motion.div>
       ))}

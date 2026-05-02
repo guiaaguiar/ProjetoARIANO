@@ -123,6 +123,9 @@ export const calculateMatches = (data?: {
 export const recalculateAllMatches = () =>
   api.post<AgentResponse>('/agents/recalculate-all').then(r => r.data);
 
+export const orchestrate = (uid: string) =>
+  api.post<AgentResponse>(`/agents/orchestrate/${uid}`).then(r => r.data);
+
 // Run full pipeline
 export const runPipeline = () =>
   api.post<AgentResponse>('/agents/run-pipeline').then(r => r.data);
@@ -134,6 +137,15 @@ export const getMatchStats = () =>
 // Entity connections
 export const getEntityConnections = (uid: string) =>
   api.get<AgentResponse>(`/agents/connections/${uid}`).then(r => r.data);
+
+// ── AI Status (Real-time polling) ──
+export const getUserStatus = (uid: string) =>
+  api.get<{ 
+    status: string; 
+    logs: string[]; 
+    matches: any[];
+    name?: string;
+  }>(`/users/${uid}/status`).then(r => r.data);
 
 // ── Admin ──
 export const seedDatabase = () => api.post('/seed').then(r => r.data);
