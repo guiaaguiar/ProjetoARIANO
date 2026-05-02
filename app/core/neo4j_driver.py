@@ -132,6 +132,10 @@ def _interpret_cypher(query: str, params: dict | None = None) -> list[dict]:
     if "MATCH" in query_upper and "RETURN" in query_upper:
         return _handle_match_return(query_clean, params, store)
 
+    # ── SET (updates) ──
+    if "SET" in query_upper:
+        return _handle_set(query_clean, params, store)
+
     # ── DELETE edges ──
     if "DELETE" in query_upper:
         return _handle_delete(query_clean, params, store)
@@ -140,6 +144,36 @@ def _interpret_cypher(query: str, params: dict | None = None) -> list[dict]:
     if "COUNT" in query_upper:
         return _handle_count(query_clean, params, store)
 
+    return []
+
+
+def _handle_set(query: str, params: dict, store: MemoryGraphStore) -> list[dict]:
+    """Handle SET operations for nodes."""
+    import re
+    # Extract node label and uid from MATCH: MATCH (ent:Label {uid: $uid})
+    match = re.search(r'\((\w+):(\w+)\s*\{uid:\s*\$uid\}', query)
+    if match:
+        label = match.group(2)
+        uid = params.get("uid")
+        
+        node = store.nodes.get(uid)
+        if node and label in node["labels"]:
+            # Basic support for ent.prop = $val
+            # Handles ent.ai_status = $status, ent.ai_logs = coalesce(ent.ai_logs, []) + $log_list
+            if "ai_status" in query:
+                node["props"]["ai_status"] = params.get("status")
+            
+            if "ai_logs" in query:
+                current_logs = node["props"].get("ai_logs", [])
+                new_logs = params.get("log_list", [])
+                node["props"]["ai_logs"] = current_logs + new_logs
+                
+            # Generic SET support for other props if needed
+            set_matches = re.findall(r'(\w+)\.(\w+)\s*=\s*\$(\w+)', query)
+            for _, prop, param in set_matches:
+                if prop not in ["ai_status", "ai_logs"]: # already handled specifically
+                    node["props"][prop] = params.get(param)
+            
     return []
 
 
