@@ -179,7 +179,7 @@ const Landing = () => {
                 Conexões estratégicas para o ecossistema de inovação
               </h1>
               <p className="mt-6 text-base leading-relaxed text-muted-foreground max-w-[420px]">
-                O projeto ARIANO une Governo, Academia e Iniciativa Privada através de IA generativa. Construa o seu ecossistema e encontre os matches perfeitos.
+                Encontre o seu lugar no ecossistema e faça os matches perfeitos para seu perfil.
               </p>
               <div className="mt-10 flex items-center gap-4">
                 <Link to="/cadastro">
