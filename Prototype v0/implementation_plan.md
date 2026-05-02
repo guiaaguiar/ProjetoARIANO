@@ -12,37 +12,22 @@
 
 ---
 
-## 2. Ações de Backend (Segurança & Robustez)
+# Implementation Plan - Sprint 12: Resiliência Serverless & Refinamento Cognitivo (CONCLUÍDO)
 
-### 2.1. Reforço de Segurança (JWT)
-- **Arquivo:** `app/core/security.py`
-- **Ação:** Aumentar a `SECRET_KEY` padrão para mais de 32 bytes para silenciar o aviso de segurança do HMAC SHA256.
+## 🎯 Objetivos Concluídos
+1.  **Onboarding Síncrono**: Implementado processamento imediato em `is_memory_mode()` para evitar 404s no Vercel.
+2.  **Inteligência Fallback**: Melhorada a extração de skills e áreas via regras (regex) para quando a LLM estiver offline.
+3.  **Justificativas Realistas**: Substituídas as frases genéricas por explicações baseadas em competências detectadas.
+4.  **Ritmo Cognitivo**: Ajustada a cadência da animação para 2s por etapa (total ~10s) para dar peso à análise.
+5.  **Sessão Blindada**: Adicionado delay de segurança no redirecionamento para garantir persistência do JWT.
 
-### 2.2. Otimização de Resposta de Status
-- Garantir que o endpoint `/api/users/{uid}/status` retorne o status `completed` de forma consistente, mesmo em ambientes de memória volátil (Vercel cold starts).
+## 🛠️ Detalhes Técnicos
+- **Backend**: `user_routes.py` agora orquestra o fluxo síncrono. `ProfileAnalyzer` e `EligibilityCalculator` possuem fallbacks robustos.
+- **Frontend**: `CognitionExperience.tsx` removeu mocks e agora reflete 100% o dado real do backend.
 
----
-
-## 3. Ações de Frontend (UX de Alta Fidelidade)
-
-### 3.1. Isolamento Visual do Cadastro
-- **Arquivo:** `CadastroPage.tsx`
-- **Ação:** Ocultar o formulário (`z-10`) quando `showCognition` for verdadeiro. Exibir apenas a animação de IA sobre o fundo desfocado.
-
-### 3.2. Refinamento do CognitionExperience
-- **Blur:** Aumentar a opacidade do fundo e o nível de blur (`backdrop-blur-[120px]`) para garantir foco total na animação.
-- **Lógica de Polling:** 
-    - Garantir que o polling inicie corretamente mesmo com cold-start da API.
-    - Transição forçada para a tela de resultados ao receber `completed`, independentemente do número de matches (usar placeholders se necessário).
-
----
-
-## 4. Cronograma de Execução
-
-1.  **Segurança:** Atualizar `SECRET_KEY` no backend.
-2.  **UX:** Ocultar formulário de cadastro durante processamento.
-3.  **Visual:** Intensificar blur e opacidade na tela de IA.
-4.  **Lógica:** Validar transição de status no polling.
+> [!WARNING]
+> **Próximo Passo Crítico**: Para ativar a inteligência profunda (Nemotron 3 Super), é obrigatório configurar a `OPENROUTER_API_KEY` no painel de Environment Variables do Vercel. Sem isso, o sistema opera em modo de "Busca de Palavras-chave".
+ling.
 
 ---
 > [!IMPORTANT]

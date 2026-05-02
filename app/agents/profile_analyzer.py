@@ -166,6 +166,7 @@ Responda APENAS em JSON válido com a estrutura exata:
         extracted_skills = []
         classified_areas = []
 
+        # 1. Map declared skills
         for skill_name in declared_skills:
             category = self._categorize_skill(skill_name)
             extracted_skills.append({
@@ -174,22 +175,28 @@ Responda APENAS em JSON válido com a estrutura exata:
                 "confidence": 0.9,
             })
 
+        # 2. Extract implicit skills from text
         all_skills = {s: cat for cat, skills in SKILL_CATEGORIES.items() for s in skills}
         for skill_name, category in all_skills.items():
-            if (skill_name.lower() in bio or skill_name.lower() in curriculo) and skill_name not in declared_skills:
+            # Match word boundaries for better accuracy
+            import re
+            pattern = rf'\b{re.escape(skill_name.lower())}\b'
+            if (re.search(pattern, bio) or re.search(pattern, curriculo)) and skill_name not in declared_skills:
                 extracted_skills.append({
                     "name": skill_name,
                     "category": category,
-                    "confidence": 0.7,
+                    "confidence": 0.8,
                 })
 
+        # 3. Detect Areas with broader keywords
         area_keywords = {
-            "Inteligencia Artificial": ["ia", "inteligencia artificial", "machine learning", "deep learning", "ml"],
-            "Ciencia de Dados": ["dados", "data science", "estatistic", "analytics"],
-            "Engenharia de Software": ["software", "desenvolvimento", "web", "sistemas"],
-            "Sistemas Embarcados": ["embarcado", "iot", "arduino", "hardware"],
-            "Computacao em Nuvem": ["cloud", "nuvem", "aws", "azure"],
-            "Processamento de Linguagem Natural": ["nlp", "pln", "linguagem natural", "texto"],
+            "Inteligencia Artificial": ["ia", "inteligencia artificial", "machine learning", "deep learning", "ml", "nlp"],
+            "Ciencia de Dados": ["dados", "data science", "estatistic", "analytics", "big data"],
+            "Engenharia de Software": ["software", "desenvolvimento", "web", "sistemas", "fullstack"],
+            "Sistemas Embarcados": ["embarcado", "iot", "arduino", "hardware", "robotica"],
+            "Computacao em Nuvem": ["cloud", "nuvem", "aws", "azure", "devops", "docker", "kubernetes"],
+            "Saude Digital": ["saude", "medicina", "health", "hospitalar", "clinica"],
+            "Gestao e Inovacao": ["gestao", "inovacao", "projetos", "business", "estrategia"],
         }
 
         text_to_search = f"{bio} {course} {curriculo}"
@@ -197,13 +204,23 @@ Responda APENAS em JSON válido com a estrutura exata:
             if any(kw in text_to_search for kw in keywords):
                 classified_areas.append(area)
 
+        # 4. Better maturity estimation
+        semester = profile_data.get("semester", 1)
+        base_mat = 2.0
+        if semester > 8: base_mat = 6.0
+        elif semester > 4: base_mat = 4.0
+        
+        # Add bonus for skills
+        skill_bonus = min(len(extracted_skills) * 0.3, 3.0)
+        final_maturidade = min(base_mat + skill_bonus, 10.0)
+
         return {
-            "scratchpad": "[SCRATCHPAD] Execução via regras estáticas sem LLM.",
-            "maturidade": profile_data.get("semester", 1) * 0.8 + 2.0,
-            "o_que_busco": "Oportunidades de colaboração e pesquisa.",
+            "scratchpad": "[SCRATCHPAD] Execução via regras estáticas (LLM Indisponível). Detectamos habilidades baseadas em palavras-chave do perfil.",
+            "maturidade": round(final_maturidade, 1),
+            "o_que_busco": f"Oportunidades de crescimento acadêmico em {', '.join(classified_areas[:2]) if classified_areas else 'tecnologia'}.",
             "extracted_skills": extracted_skills,
             "classified_areas": classified_areas,
-            "profile_summary": f"Perfil acadêmico em {profile_data.get('institution', 'N/A')}",
+            "profile_summary": f"Perfil de {profile_data.get('name', 'Estudante')} focado em {classified_areas[0] if classified_areas else 'Engenharia'}.",
         }
 
     def _categorize_skill(self, skill_name: str) -> str:

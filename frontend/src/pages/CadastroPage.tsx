@@ -216,7 +216,10 @@ export const CadastroPage: React.FC = () => {
             initialData={initialAiData}
             onComplete={async () => {
               await checkAuth();
-              navigate('/user', { replace: true });
+              // Pequeno delay para garantir que a sessão e os estados do browser/Zustand estão assentados
+              setTimeout(() => {
+                navigate('/user', { replace: true });
+              }, 1000);
             }} 
           />
         )}

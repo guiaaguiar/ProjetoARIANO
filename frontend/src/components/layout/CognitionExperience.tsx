@@ -56,16 +56,16 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
         setCachedMatches(initialData.matches);
       }
       
-      // Simula progressão rápida para efeito visual premium
+      // Simula progressão mais lenta para efeito de "pensamento profundo"
       let step = 0;
       const interval = setInterval(() => {
         step++;
         setCurrentStep(step);
         if (step >= 3) {
           clearInterval(interval);
-          setTimeout(() => setShowFinish(true), 1500);
+          setTimeout(() => setShowFinish(true), 2500); // 2.5s de espera final
         }
-      }, 800);
+      }, 2000); // 2s por etapa
       return () => clearInterval(interval);
     }
 
@@ -292,11 +292,7 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
 
               {!error && (
                 <MatchResultCards 
-                  matches={matches.length > 0 ? matches : [
-                    { title: 'Edital FACEPE IA 2026', instituicao: 'FACEPE', score: 92, justification: 'Alinhamento forte devido à sobreposição em Python e NLP detectada pela IA.' },
-                    { title: 'Bolsa Pesquisa Dados', instituicao: 'CNPq', score: 85, justification: 'Perfil atende à maturidade exigida (7.5) e compartilha áreas de Saúde Digital.' },
-                    { title: 'Inovação Tech Gov', instituicao: 'Pref. Recife', score: 78, justification: 'Afinidade identificada com o cluster de pesquisadores bem sucedidos da UFPE.' }
-                  ]} 
+                  matches={matches.length > 0 ? matches : []} 
                 />
               )}
 

@@ -317,18 +317,20 @@ REQUISITOS:
         # Fallback: rule-based justification
         parts = []
         if matched_skills:
-            parts.append(f"Skills em comum: {', '.join(matched_skills[:3])}")
+            top_skills = matched_skills[:3]
+            parts.append(f"Forte alinhamento técnico em {', '.join(top_skills)}")
         if matched_areas:
-            parts.append(f"Áreas alinhadas: {', '.join(matched_areas[:2])}")
+            parts.append(f"aderência à área de {matched_areas[0]}")
+        
         if maturidade_score >= 1.0:
-            parts.append("Maturidade acadêmica alinhada")
-        elif maturidade_score > 0:
-            parts.append("Maturidade acadêmica parcialmente alinhada")
-
+            parts.append("maturidade acadêmica ideal para o edital")
+        
         pct = f"{score*100:.0f}%"
         if parts:
-            return f"Aderência de {pct}. {'. '.join(parts)}."
-        return f"Aderência de {pct} baseada na análise de compatibilidade."
+            main_reason = ". ".join(parts)
+            return f"Match de {pct}: {main_reason}. Análise baseada em compatibilidade de competências."
+        
+        return f"Aderência de {pct} identificada através do cruzamento de metadados do ecossistema."
 
     def _create_eligible_for_edge(self, entity_uid, entity_type, edital_uid, score_data):
         """Create or update ELIGIBLE_FOR edge in Neo4j."""
