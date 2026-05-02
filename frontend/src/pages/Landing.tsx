@@ -192,7 +192,7 @@ const Landing = () => {
             </div>
 
             {/* Right column — 3D animated graph */}
-            <div className="hidden md:flex absolute right-[10%] top-[-120px] z-[1] pointer-events-none" style={{ width: cubeZoom, height: cubeZoom }}>
+            <div className="hidden md:flex absolute right-[10%] top-[80px] z-[1] pointer-events-none" style={{ width: cubeZoom, height: cubeZoom }}>
               <div className="pointer-events-auto w-full h-full">
                 <Graph3D
                   size={cubeZoom}
