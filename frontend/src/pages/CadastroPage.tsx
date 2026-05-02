@@ -35,6 +35,7 @@ export const CadastroPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showCognition, setShowCognition] = useState(false);
   const [registeredUid, setRegisteredUid] = useState<string | null>(null);
+  const [initialAiData, setInitialAiData] = useState<any>(null);
   const [apiPromise, setApiPromise] = useState<Promise<any> | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const navigate = useNavigate();
@@ -90,6 +91,7 @@ export const CadastroPage: React.FC = () => {
       const result = await res.json();
       if (!res.ok) throw new Error(result.detail || 'Falha no cadastro.');
       if (result.uid) setRegisteredUid(result.uid);
+      if (result.ai_data) setInitialAiData(result.ai_data);
       return result;
     });
 
@@ -211,6 +213,7 @@ export const CadastroPage: React.FC = () => {
             userName={watch('name') || 'Acadêmico'} 
             userId={registeredUid}
             apiPromise={apiPromise}
+            initialData={initialAiData}
             onComplete={async () => {
               await checkAuth();
               navigate('/user', { replace: true });

@@ -12,6 +12,7 @@ interface CognitionExperienceProps {
   userName: string;
   userId: string | null;
   apiPromise: Promise<any> | null;
+  initialData?: any; // Novo: suporte a dados síncronos
   onComplete: () => void;
 }
 
@@ -36,7 +37,7 @@ const AGENT_ICON_COLORS: Record<string, string> = {
   match: 'bg-gray-950 border-amber-500 shadow-amber-500/20',
 };
 
-export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userName, userId, apiPromise, onComplete }) => {
+export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userName, userId, apiPromise, initialData, onComplete }) => {
   const navigate = useNavigate();
   const { setCachedMatches } = useAuthStore();
   const [currentStep, setCurrentStep] = useState(0);
@@ -46,9 +47,33 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Caso 1: Já recebemos os dados no cadastro (Fluxo Síncrono/Vercel)
+    if (initialData && initialData.status === 'completed') {
+      console.log("🚀 Usando dados síncronos (InitialData)");
+      setLogs(initialData.logs || ["Processamento instantâneo concluído."]);
+      if (initialData.matches?.length > 0) {
+        setMatches(initialData.matches);
+        setCachedMatches(initialData.matches);
+      }
+      
+      // Simula progressão rápida para efeito visual premium
+      let step = 0;
+      const interval = setInterval(() => {
+        step++;
+        setCurrentStep(step);
+        if (step >= 3) {
+          clearInterval(interval);
+          setTimeout(() => setShowFinish(true), 1500);
+        }
+      }, 800);
+      return () => clearInterval(interval);
+    }
+
+    // Caso 2: Fluxo assíncrono padrão (Polling)
     if (!userId) return;
     let pollInterval: any;
     let retryTimeout: any;
+    let errorCount = 0;
     
     const startPolling = () => {
       pollInterval = setInterval(async () => {
@@ -56,13 +81,22 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
           const res = await fetch(`/api/users/${userId}/status`, {
             credentials: 'include'
           });
-          if (!res.ok) return;
+          
+          if (!res.ok) {
+            errorCount++;
+            if (errorCount > 5) { // Se der muito 404, assume que a instância resetou
+               console.warn("⚠️ Muitas falhas no polling. A instância pode ter reiniciado.");
+            }
+            return;
+          }
+
+          errorCount = 0;
           const data = await res.json();
           console.log("🤖 AI Polling Status:", data.status, "Logs:", data.logs?.length);
 
           if (data.logs && data.logs.length > logs.length) {
             setLogs(data.logs);
-            setError(null); // Clear error if we get new logs
+            setError(null);
           }
 
           if (data.status === 'completed') {
@@ -77,31 +111,22 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
           if (data.status === 'failed') {
             setError("O orquestrador encontrou um obstáculo técnico.");
             clearInterval(pollInterval);
-            
-            // Refazer chamadas após 5 segundos conforme solicitado
             toast.info("A IA está recalibrando os sensores... Reiniciando em 5s.");
             retryTimeout = setTimeout(async () => {
               try {
                 if (userId) await api.orchestrate(userId);
                 startPolling();
               } catch (retryErr) {
-                console.error("Retry failed:", retryErr);
                 setError("Falha crítica na recalibração.");
               }
             }, 5000);
           }
 
           const statusMap: Record<string, number> = {
-            'started': 0,
-            'retrieving': 1,
-            'analyzing': 1,
-            'configuring': 2,
-            'matching': 3,
-            'completed': 3
+            'started': 0, 'retrieving': 1, 'analyzing': 1,
+            'configuring': 2, 'matching': 3, 'completed': 3
           };
-          if (data.status in statusMap) {
-            setCurrentStep(statusMap[data.status]);
-          }
+          if (data.status in statusMap) setCurrentStep(statusMap[data.status]);
         } catch (err) {
           console.error("Polling error:", err);
         }
@@ -115,7 +140,7 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
       clearTimeout(retryTimeout);
       if (pollInterval) clearInterval(pollInterval);
     };
-  }, [userId, logs.length]);
+  }, [userId, logs.length, initialData]);
 
   const getProcessingMessage = () => {
     if (error) return error;
