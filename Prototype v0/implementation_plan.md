@@ -1,68 +1,55 @@
-# 🚀 ARIANO — Plano de Implementação (Novo Design System Lovable)
+# 🚀 ARIANO — Plano de Implementação (Integração Real de IA)
 
-> **Versão:** 8.0.0 (Sprint Atual)
+> **Versão:** 9.0.0 (Sprint Atual)
 > **Data:** 01/05/2026
-> **Foco:** Migração do Design System Global com preservação estrita do Motor de Grafos
+> **Foco:** Transição de dados mock para integração real com NVIDIA Nemotron-3 via OpenRouter e automação do ecossistema.
 
 ---
 
 ## 1. Visão Geral
 
-Esta sprint foca em **mudar radicalmente o Design System do projeto**. O frontend atual será atualizado para incorporar um novo design gerado no Lovable. A integração ocorrerá de forma progressiva, substituindo componentes genéricos de UI, painéis, modais e layouts.
-
-**REGRA DE OURO INEGOCIÁVEL:**
-> Todas as páginas e componentes que dependem ou exibem a tecnologia de grafos (NetworkX + react-force-graph) devem permanecer **intactos em sua funcionalidade e lógica**.
-> Isso inclui:
-> - `/admin/grafo`
-> - `/user/cadastro` (processo interativo de IA e formação do grafo)
-> - `/user/ecossistema`
-> - `NetworkXGraphView.tsx` e suas lógicas associadas.
+Esta sprint marca a transição do ARIANO de uma interface de simulação para um sistema de matchmaking real e produtivo. Substituiremos todos os dados mockados da animação de cadastro por resultados gerados em tempo real pela nossa pipeline de agentes IA, além de implementar o auto-login após o registro.
 
 ---
 
-## 2. Passos de Implementação
+## 2. Pilares de Execução
 
-### Passo 1 — Setup e Importação
-- Fazer o download / clone do código gerado pelo Lovable.
-- Importar os assets, CSS global (`index.css`), configuração do Tailwind e diretório de componentes (`components/ui` do shadcn/radix, se aplicável) para dentro de `frontend/src/` do ARIANO.
-- Mesclar a configuração do Tailwind (Tailwind V4 ou `tailwind.config.js`) garantindo que as cores neon do grafo (`--color-void`, cores de CoT, etc.) coexistam com as novas variáveis do design system do Lovable.
+### Passo 1 — Estabilização do Backend (Python)
+- Refinar o `OrchestratorAgent` para garantir que a análise de perfil, configuração de grafo e cálculo de elegibilidade ocorram de forma atômica ou sequencial rastreável.
+- Mapear chamadas de LLM para utilizar o modelo NVIDIA Nemotron-3 Super (120B) via OpenRouter com prompts otimizados para o ecossistema de Recife.
+- Garantir que o endpoint `/api/users/register` retorne o contexto necessário para o frontend.
 
-### Passo 2 — Atualização do Layout Global e Landing Page
-- Substituir o wrapper principal do App (`AppLayout`, Sidebars de usuário e admin) pelo novo layout importado.
-- **Landing Page (`/`):** O componente `Landing.tsx` do projeto Lovable será a nova página raiz do ARIANO. O roteamento no `App.tsx` deixará de fazer redirect imediato e passará a exibir essa apresentação.
-- Atualizar a navegação e cabeçalhos para refletir o novo design system.
-- O layout novo deve ser "encaixado" de forma que a área principal (Outlet) ainda receba os componentes das páginas atuais.
+### Passo 2 — Refinamento da Experiência de Cognição (UI/UX)
+- **Atualização de Textos:** Alterar de "O ARIANO está processando seu futuro" para "Nosso motor de IA está realizando os matches estratégicos para seu perfil...".
+- **Limpeza Visual:** Remover o badge "Sincronização ativa" para um visual mais limpo e focado.
+- **Dados Reais:** O componente `CognitionExperience` deve consumir o resultado real da `apiPromise`, exibindo o Top 3 Matches calculados pela IA com justificativas geradas pelo agente.
 
-### Passo 3 — Refatoração de Páginas Simples
-Atualizar as páginas que não possuem interação complexa com grafos para o novo padrão visual:
-- `/admin/dashboard`
-- `/admin/academicos`
-- `/admin/editais`
-- `/admin/matches`
-- `/user/matchs`
-- `/user/profile`
-- Modais e popups (como o `AuthPopup` e páginas de erro).
+### Passo 3 — Automação e Fluxo de Autenticação
+- **Auto-Login:** Implementar a chamada automática ao `checkAuth()` após o sucesso do cadastro, garantindo que o usuário entre no dashboard já autenticado sem precisar de um novo login manual.
+- **Botões Funcionais:** Garantir que todos os botões da tela final ("Ver cada match", "Explorar Meu Perfil") redirecionem corretamente para as rotas funcionais do app.
 
-### Passo 4 — Adequação (Sem Quebra) das Páginas de Grafo
-As páginas core de grafo deverão ser envelopadas no novo design, **sem tocar no motor do grafo**.
-- Em `/admin/grafo`: O menu lateral de filtros e o menu de detalhes flutuante devem adotar as novas classes e estilos (glassmorphism/Lovable styling), mas a lógica de estado, navegação e o componente `<NetworkXGraphView />` devem continuar sendo consumidos exatamente da mesma forma.
-- Em `/user/cadastro`: O pipeline animado de IA e a construção step-by-step do grafo devem ser mantidos. Apenas os botões e inputs dos passos anteriores ao grafo precisam herdar o novo UI.
-
-### Passo 5 — Polimento e Testes
-- Verificar a responsividade do novo layout (Desktop/Mobile).
-- Garantir que as animações de entrada e o z-index do grafo não estejam colidindo com modais ou sidebars novas.
-- Testar o fluxo completo de cadastro até a visualização de comunidades para assegurar que a "alma" do projeto (A interatividade dos agentes e grafos) brilhe dentro da nova embalagem premium.
+### Passo 4 — Design System & Micro-interações
+- **Theme Toggle:** Atualizar o botão de alternância de tema (Sol/Lua) com animações fluidas via `framer-motion`, garantindo consistência em todas as páginas (Landing e Dashboard).
+- **Polimento de Cards:** Ajustar os `MatchResultCards` para exibir as justificativas da LLM com a estética premium do projeto.
 
 ---
 
-## 3. Critérios de Aceite (DoD da Sprint)
+## 3. Arquitetura da Pipeline IA (Mapeamento)
 
-- [ ] Novo código (Lovable) importado e rodando sem erros de build.
-- [ ] Tailwind configurado corretamente (Design System novo + Cores legado do Grafo).
-- [ ] Sidebars e Navbar atualizadas com o novo padrão.
-- [ ] Telas de listas e dashboards (admin e user) usando os novos cards e tipografia.
-- [ ] `<NetworkXGraphView />` funcionando 100% como antes (Minkowski Sum, Labels, Glow, Zoom/Center intactos).
-- [ ] Tela de `/admin/grafo` e `/user/cadastro` continuam imersivas, com os overlays estilizados no novo padrão.
+1. **ProfileAnalyzer (Fase 1):** Extração de skills + Classificação de áreas + Cálculo de Maturidade (0-10).
+2. **EditalInterpreter (Fase 1):** Interpretação de requisitos e fomento.
+3. **EligibilityCalculator (Fase 2):** Scoring (45% Skill, 25% Area, 15% Maturidade, 15% Priority) + Justificativa LLM.
+4. **ContextualAnalyzer (Fase 3 - 24h):** Ciclo diário de configuração de nodes e montagem de Chain-of-Thought (CoT) para evolução do grafo.
 
 ---
-> **Próxima Ação:** Executar a integração do código importado do Lovable na branch `dev`.
+
+## 4. Critérios de Aceite (DoD)
+
+- [ ] Cadastro gera nós reais no Neo4j com skills e maturidade extraídas por IA.
+- [ ] Usuário é autenticado automaticamente via cookie após o cadastro.
+- [ ] Animação de processamento exibe matches reais gerados pela pipeline.
+- [ ] Botão de tema animado e funcional em toda a plataforma.
+- [ ] Documentação do projeto (`01_DOCUMENTO_PROJETO_ARIANO.md`) atualizada com o novo status.
+
+---
+> **Próxima Ação:** Iniciar a implementação do auto-login no frontend e atualização da `CognitionExperience`.

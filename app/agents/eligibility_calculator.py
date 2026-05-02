@@ -295,13 +295,20 @@ class EligibilityCalculator:
         """Generate a human-readable justification for the match score."""
         if self.llm and score > 0.3:
             try:
-                prompt = f"""Gere uma justificativa BREVE (máximo 2 frases) em português para este match acadêmico:
-- Score: {score*100:.0f}%
-- Skills compartilhados: {', '.join(matched_skills) if matched_skills else 'nenhum'}
-- Áreas alinhadas: {', '.join(matched_areas) if matched_areas else 'nenhuma'}
-- Maturidade: {'Plena' if maturidade_score >= 1.0 else 'Parcial' if maturidade_score > 0 else 'Baixa'}
+                prompt = f"""Você é o Agente de Matchmaking da NVIDIA Nemotron operando no ecossistema ARIANO. 
+Analise este match e gere uma justificativa que destaque o que MAIS chamou a atenção no perfil para este edital/oportunidade específica.
 
-Responda APENAS com a justificativa, sem formatação."""
+DADOS:
+- Score de Aderência: {score*100:.0f}%
+- Skills compartilhados: {', '.join(matched_skills) if matched_skills else 'nenhum'}
+- Áreas de Atuação alinhadas: {', '.join(matched_areas) if matched_areas else 'nenhuma'}
+- Nível de Maturidade: {'Alta' if maturidade_score >= 1.0 else 'Intermediária' if maturidade_score > 0 else 'Iniciante'}
+
+REQUISITOS:
+- Seja direto e profissional.
+- Use no máximo 2 frases.
+- Destaque o ponto forte (ex: 'A alta maturidade técnica em [Skill] foi o fator decisivo').
+- Responda APENAS com a justificativa em português, sem prefixos."""
                 response = self.llm.invoke(prompt)
                 return response.content.strip()
             except Exception:

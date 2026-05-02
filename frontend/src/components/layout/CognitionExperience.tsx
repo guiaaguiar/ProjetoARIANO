@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bot, Cpu, Network, Zap, CheckCircle2, ArrowRight, MessageSquare, ShieldCheck } from 'lucide-react';
 import { MiniGraphAnimation } from '../MiniGraphAnimation';
@@ -34,6 +35,7 @@ const AGENT_ICON_COLORS: Record<string, string> = {
 };
 
 export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userName, apiPromise, onComplete }) => {
+  const navigate = useNavigate();
   const { setCachedMatches } = useAuthStore();
   const [currentStep, setCurrentStep] = useState(0);
   const [logs, setLogs] = useState<string[]>([]);
@@ -127,15 +129,8 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
             >
               {/* Central Title */}
               <div className="text-center space-y-4">
-                 <motion.div
-                   animate={{ opacity: [0.4, 1, 0.4], scale: [1, 1.05, 1] }}
-                   transition={{ duration: 3, repeat: Infinity }}
-                   className="text-xs font-bold uppercase tracking-[0.5em] text-teal-500 mb-2"
-                 >
-                   Sincronização Ativa
-                 </motion.div>
                  <h1 className="text-4xl lg:text-5xl font-bold text-white tracking-tight leading-tight">
-                   O <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-500">ARIANO</span> está processando seu futuro.
+                   Nosso motor de IA está realizando os matches estratégicos para seu perfil...
                  </h1>
               </div>
 
@@ -252,7 +247,7 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
 
               <div className="flex items-center gap-6 mt-8">
                 <button
-                  onClick={() => window.location.href = '/user/matchs'}
+                  onClick={() => navigate('/user/matches')}
                   className="text-gray-400 hover:text-white font-medium transition-colors"
                 >
                   Ver Todos os Matches

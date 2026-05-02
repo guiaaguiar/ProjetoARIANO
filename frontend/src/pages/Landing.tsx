@@ -146,14 +146,7 @@ const Landing = () => {
             <span className="text-[14px] font-bold text-foreground tracking-[0.08em] uppercase">ARIANO</span>
           </Link>
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="h-8 w-8 flex items-center justify-center text-foreground/70 hover:text-foreground transition-colors"
-              title="Toggle theme"
-            >
-              <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-              <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-            </button>
+            <ThemeToggleButton />
             <Link to="/login">
               <button className="text-[13px] text-foreground/70 hover:text-foreground transition-colors h-8 px-3">
                 Entrar

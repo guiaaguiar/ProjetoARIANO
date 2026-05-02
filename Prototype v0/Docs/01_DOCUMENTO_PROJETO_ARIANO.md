@@ -1,10 +1,10 @@
 # 📋 PROJETO ARIANO — Documento de Visão e Planejamento do MVP
 
-> **Versão:** 7.0.0  
+> **Versão:** 8.0.0  
 > **Data:** 01/05/2026  
-> **Status:** MVP 1.0.0 Online — Sprint 6 em Andamento (Grafo de Alta Precisão & UX Avançada)
+> **Status:** MVP 1.0.0 Online — Sprint 8 em Andamento (Integração Real de IA & Refinamento UI/UX)
 > **Metodologia:** SCRUM (adaptado para contexto acadêmico)  
-> **Última atualização:** 01/05/2026 — Sprint 6 (Graph-CoT de Alta Fidelidade, Minkowski Sum, Centralização Viewport, UI/UX Neon Polish)
+> **Última atualização:** 01/05/2026 — Sprint 8 (Integração Real de IA, Auto-Auth, Refinamento de Cognição, UI Polish)
 
 ---
 
@@ -777,18 +777,33 @@ Finalizamos a integração total E2E, removendo mocks e estabilizando a comunica
 - Atualização do projeto ARIANO Docs, incluindo consolidação da migração do monorepo.
 - Bugfix: Resolução de falhas críticas na criação de usuários com upload de currículo em PDF e conversão instantânea.
 
-### Sprint 6 — Grafo de Alta Precisão & UX Avançada (Semana 10) 🚀 EM ANDAMENTO
+### Sprint 6 — Grafo de Alta Precisão & UX Avançada (Semana 10) ✅ CONCLUÍDA
 
 **Foco:** Transformar a visualização de comunidades (Graph-CoT) num painel de altíssima fidelidade estética e usabilidade impecável.
 
 **Pilares e Entregas Técnicas:**
-1. **Comunidades Orgânicas (Slime/Blob):** Implementação do cálculo matemático de Minkowski Sum (Convex Hull + arcos circulares) para desenhar clusters de pensamento de formato orgânico (slimes) englobando os nós perfeitamente.
-2. **Textos à Prova de Falhas (Bulletproof Labels):** Uso de `ctx.clip()` no Canvas HTML5 garantindo que nenhum nome de nó transborde seu círculo, com stroke de 2px constante independentemente do zoom.
-3. **Dinâmica de Foco e Glow (Neon Polish):** Nós selecionados recebem aumento de `shadowBlur` (até 70px), anel de aura secundário duplo e bordas destacadas. A cor do glow extra se adequa à cor quente da sua CoT.
-4. **Navegação Inteligente entre Conexões:** No painel de detalhes, clicar numa conexão leva o usuário diretamente ao nó de destino com zoom e auto-center imediatos.
-5. **Centralização Real de Viewport:** Cálculo dinâmico das dimensões baseadas nos painéis abertos (esquerda: filtros, direita: detalhes) garantindo que o nó se posicione precisamente no "centro visual útil" (sem hardcode de px).
-6. **Controle Contextual por Teclado e Fundo:** Escutadores para fechamento progressivo de painéis em cadeia (prioridade: Esc -> Painel Detalhe -> Esc -> Painel Filtros). Clique no fundo do grafo (Vazio) fecha os detalhes.
-7. **Menu de Filtros Interativos do Grafo:** Filtros simultâneos que ocultam os nós irrelevantes e separam por Comunidade, isolando e permitindo o estudo individualizado de cada cluster.
+1. **Comunidades Orgânicas (Slime/Blob):** Implementação do cálculo matemático de Minkowski Sum para desenhar clusters de pensamento.
+2. **Textos à Prova de Falhas (Bulletproof Labels):** Uso de `ctx.clip()` no Canvas HTML5 garantindo que nenhum nome de nó transborde seu círculo.
+3. **Dinâmica de Foco e Glow (Neon Polish):** Nós selecionados recebem aumento de `shadowBlur`.
+
+### Sprint 7 — Landing Page & Design Premium (Semana 11) ✅ CONCLUÍDA
+
+**Foco:** Criação de uma Landing Page impactante e refinamento da identidade visual global.
+
+**Entregas:**
+- Nova Landing Page interativa com motor de grafos 3D (Three.js).
+- Otimização de builds e code-splitting para performance máxima (Vercel).
+- Refinamento de tipografia e paleta de cores teal neon.
+
+### Sprint 8 — Integração Real de IA & Auto-Auth (Semana 12) 🚀 EM ANDAMENTO
+
+**Foco:** Transição final para inteligência real e fluxo de usuário sem fricção.
+
+**Pilares e Entregas Técnicas:**
+1. **Pipeline de IA Real:** Substituição de mocks por chamadas reais via NVIDIA Nemotron-3 (OpenRouter) no fluxo de cadastro.
+2. **Auto-Auth:** Login automático via cookies JWT imediatamente após a conclusão do cadastro.
+3. **Refinamento de Cognição:** Atualização da `CognitionExperience` para exibir matches reais com justificativas da LLM.
+4. **Micro-interações:** Botão de tema (Sol/Lua) com animações fluidas via Framer Motion.
 
 ---
 

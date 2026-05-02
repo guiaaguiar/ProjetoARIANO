@@ -1,6 +1,6 @@
 # 🎨 DESIGN_SYSTEM.md — ARIANO v2 (Lovable Edition)
 
-> **Versão:** 2.0.0
+> **Versão:** 3.0.0
 > **Data:** 01/05/2026
 > **Objetivo:** Padronizar a transição visual do projeto ARIANO para o novo Design System (framework Lovable - shadcn/ui + Tailwind V4 + next-themes), estabelecendo restrições rigorosas de layout, tipografia e stack.
 
@@ -102,7 +102,9 @@ Para que o tema topográfico do Lovable funcione perfeitamente:
   );
   ```
 - **Sombras**: Evitar sombras pesadas; privilegiar fronteiras `border border-border` e fundos contrastantes com backdrop filter (flat design moderno).
-- **Animações**: Transições globais fluidas (`transition-all duration-200` e Easing `ease-out`). Theme toggle utiliza cross-fade rotacional.
+- **Animações**: Transições globais fluidas (`transition-all duration-200` e Easing `ease-out`). 
+- **Theme Toggle**: Utiliza `framer-motion` para uma transição rotacional de 360° e escala entre o Sol e a Lua, garantindo um feedback visual premium.
+- **Cognition Experience**: Padrão de pipeline visual com timeline de agentes, scratchpad de raciocínio e transição suave para resultados reais de matchmaking.
 
 ---
 

@@ -8,7 +8,7 @@ import { useAuthStore } from '../store/authStore';
 import { useEffect } from 'react';
 
 export const CadastroPage: React.FC = () => {
-  const { isAuthenticated, isLoading, user } = useAuthStore();
+  const { isAuthenticated, isLoading, user, checkAuth } = useAuthStore();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [showCognition, setShowCognition] = useState(false);
@@ -294,7 +294,8 @@ export const CadastroPage: React.FC = () => {
           <CognitionExperience 
             userName={formData.name || 'Acadêmico'} 
             apiPromise={apiPromise}
-            onComplete={() => {
+            onComplete={async () => {
+              await checkAuth();
               navigate('/user', { replace: true });
             }} 
           />
