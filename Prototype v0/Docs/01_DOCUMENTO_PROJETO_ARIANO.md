@@ -1,10 +1,10 @@
 # 📋 PROJETO ARIANO — Documento de Visão e Planejamento do MVP
 
-> **Versão:** 10.0.0  
-> **Data:** 01/05/2026  
-> **Status:** MVP 1.0.0 Online — Sprint 8 Especial (IA Transparente & Auto-Auth Robusto)
+> **Versão:** 11.0.0  
+> **Data:** 02/05/2026  
+> **Status:** MVP 1.0.0 Online — Sprint 8 Especial (IA Transparente & Pipeline Multi-Step)
 > **Metodologia:** SCRUM (adaptado para contexto acadêmico)  
-> **Última atualização:** 01/05/2026 — Sprint 8 (Polling de IA, Status Real-Time, Fix de Sessão)
+> **Última atualização:** 02/05/2026 — Sprint 8 (Pipeline Síncrono, IA Transparente, Fix de Sessão)
 
 ---
 
@@ -795,9 +795,16 @@ Finalizamos a integração total E2E, removendo mocks e estabilizando a comunica
 - Otimização de builds e code-splitting para performance máxima (Vercel).
 - Refinamento de tipografia e paleta de cores teal neon.
 
-### Sprint 8 — IA Transparente & Auto-Auth Robusto (Semana 12) 🚀 EM ANDAMENTO
+### Sprint 8 — IA Transparente & Pipeline Multi-Step (Semana 12) ✅ CONCLUÍDA
 
-**Foco:** Garantir que a inteligência artificial seja visível em tempo real e que a autenticação seja infalível.
+**Foco:** Garantir que a inteligência artificial seja visível em tempo real e que a arquitetura seja resiliente ao ambiente serverless do Vercel.
+
+**Entregas Técnicas:**
+1. **Pipeline de IA Multi-Step:** Substituição do polling genérico por uma sequência de chamadas síncronas (`/v2/analyze`, `/v2/extract`, `/v2/match`), garantindo transparência total do processo cognitivo.
+2. **Grafo Dinâmico em Tempo Real:** O componente `MiniGraphAnimation` agora renderiza nodes reais extraídos pela LLM durante o cadastro, eliminando dados mockados.
+3. **Resiliência Serverless (Stateless):** Implementação de persistência de contexto via payload síncrono, evitando perda de estado durante o processamento da IA.
+4. **Auto-Auth Robusto:** Correção do fluxo de redirecionamento pós-cadastro com delay de 1.5s para sincronização de cookies JWT no Vercel.
+5. **Data de Conclusão:** 02/05/2026 às 02:35.
 
 **Pilares e Entregas Técnicas:**
 1. **Status API:** Endpoint para rastrear o progresso dos agentes em tempo real.

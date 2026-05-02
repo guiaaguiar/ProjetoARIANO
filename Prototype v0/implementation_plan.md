@@ -12,23 +12,20 @@
 
 ---
 
-# Implementation Plan - Sprint 12: Resiliência Serverless & Refinamento Cognitivo (CONCLUÍDO)
+# Implementation Plan - Sprint 13: Pipeline de IA Transparente & Multi-Step (CONCLUÍDO)
+**Data de Conclusão:** 02/05/2026 às 02:35
 
-## 🎯 Objetivos Concluídos
-1.  **Onboarding Síncrono**: Implementado processamento imediato em `is_memory_mode()` para evitar 404s no Vercel.
-2.  **Inteligência Fallback**: Melhorada a extração de skills e áreas via regras (regex) para quando a LLM estiver offline.
-3.  **Justificativas Realistas**: Substituídas as frases genéricas por explicações baseadas em competências detectadas.
-4.  **Ritmo Cognitivo**: Ajustada a cadência da animação para 2s por etapa (total ~10s) para dar peso à análise.
-5.  **Sessão Blindada**: Adicionado delay de segurança no redirecionamento para garantir persistência do JWT.
+## 🎯 Objetivos Alcançados
+1.  **Pipeline V2 (Multi-Step)**: Migração do polling passivo para uma orquestração ativa de endpoints sequenciais (`/v2/analyze`, `/v2/extract`, `/v2/match`).
+2.  **Sincronização Atômica**: A animação no frontend agora é disparada e sustentada pelas respostas reais da LLM em cada etapa.
+3.  **Visualização Dinâmica**: O `MiniGraphAnimation` renderiza nodes (skills, áreas e matches) extraídos em tempo real, sem qualquer dado mockado.
+4.  **Resiliência Stateless**: A passagem de contexto entre chamadas garante que o fluxo não quebre em instâncias efêmeras do Vercel.
+5.  **Refinamento de Sessão**: Delay de 1.5s na navegação final para assegurar a persistência dos cookies JWT.
 
-## 🛠️ Detalhes Técnicos
-- **Backend**: `user_routes.py` agora orquestra o fluxo síncrono. `ProfileAnalyzer` e `EligibilityCalculator` possuem fallbacks robustos.
-- **Frontend**: `CognitionExperience.tsx` removeu mocks e agora reflete 100% o dado real do backend.
-
-> [!WARNING]
-> **Próximo Passo Crítico**: Para ativar a inteligência profunda (Nemotron 3 Super), é obrigatório configurar a `OPENROUTER_API_KEY` no painel de Environment Variables do Vercel. Sem isso, o sistema opera em modo de "Busca de Palavras-chave".
-ling.
+## 🛠️ Mudanças Realizadas
+- **Backend**: Implementados endpoints `/v2/*` em `agent_routes.py` e método `generate_profile_context` no `ProfileAnalyzer`.
+- **Frontend**: Refatoração completa de `CognitionExperience.tsx` para orquestração assíncrona e `MiniGraphAnimation.tsx` para suporte a dados dinâmicos.
 
 ---
 > [!IMPORTANT]
-> Este plano visa entregar a experiência "tinindo" conforme solicitado, eliminando a confusão visual entre a animação e o formulário.
+> A plataforma agora opera com **Transparência Cognitiva Total**. O usuário vê exatamente o que a IA descobriu, no tempo em que ela descobriu.
