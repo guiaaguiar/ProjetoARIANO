@@ -42,3 +42,7 @@ htmlcov/
 # Large files (>100MB GitHub limit)
 trabalho faculdade/Banco-de-Dados-Nao-Relacional.pptx
 venv/
+
+# Lovable Temp Import
+lovable_temp/
+
