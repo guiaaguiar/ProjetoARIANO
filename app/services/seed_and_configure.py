@@ -41,7 +41,7 @@ def _get_all_academics() -> list[dict]:
         results = []
         for label in ["Student", "Researcher", "Professor"]:
             for node in store.get_nodes_by_label(label):
-                n = store.nodes.get(node["uid"], {})
+                results.append({
                     "uid": node["uid"],
                     "type": label,
                     "name": node.get("name", ""),

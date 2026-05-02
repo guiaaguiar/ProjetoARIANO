@@ -11,8 +11,7 @@ import * as api from '../../lib/api';
 interface CognitionExperienceProps {
   userName: string;
   userId: string | null;
-  apiPromise: Promise<any> | null;
-  initialData?: any; // Novo: suporte a dados síncronos
+  formData: any;
   onComplete: () => void;
 }
 
