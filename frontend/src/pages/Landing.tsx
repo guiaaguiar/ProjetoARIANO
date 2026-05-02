@@ -193,7 +193,7 @@ const Landing = () => {
 
             {/* Right column — 3D animated graph */}
             <div className="hidden md:flex absolute left-[30%] top-[-60px] z-[1] w-[70%] pointer-events-none items-center justify-center" style={{ height: 'calc(100vh - 80px)' }}>
-              <div className="pointer-events-auto" style={{ width: cubeZoom, height: cubeZoom, transform: 'translate(35%, -30%)' }}>
+              <div className="pointer-events-auto" style={{ width: cubeZoom, height: cubeZoom, transform: 'translate(45%, -35%)' }}>
                 <Graph3D
                   size={cubeZoom}
                   lineHex={theme === "dark" ? "#1aa0b8" : "#0d7a8c"}
