@@ -132,11 +132,21 @@ class ExplainMatchesRequest(BaseModel):
 @router.post("/v2/analyze-profile", response_model=AgentResponse)
 def analyze_profile_v2(request: ProfileContextRequest):
     """Stage 1: Generate rich context string and initial summary."""
+    # Verify user existence first
+    from app.core.neo4j_driver import run_cypher, is_memory_mode
+    user_check = run_cypher("MATCH (u) WHERE u.uid = $uid RETURN u.name", {"uid": request.entity_uid})
+    if not user_check:
+        logger.error(f"❌ Stage 1: User {request.entity_uid} not found in graph.")
+        return AgentResponse(
+            status="error",
+            message=f"Usuário {request.entity_uid} não encontrado no grafo. {'(Modo Memória detectado - dados perdidos)' if is_memory_mode() else ''}",
+            data={}
+        )
+
     analyzer = _get_profile_analyzer()
     context = analyzer.generate_profile_context(request.dict())
     
     # Save partial progress to graph
-    from app.core.neo4j_driver import run_cypher
     run_cypher(
         """
         MATCH (u) WHERE u.uid = $uid
@@ -157,7 +167,13 @@ def analyze_profile_v2(request: ProfileContextRequest):
 
 @router.post("/v2/extract-skills", response_model=AgentResponse)
 def extract_skills_v2(request: ExtractSkillsRequest):
-    """Stage 2: Use LLM to find real nodes for skills and areas + PERSIST."""
+    # Verify user existence
+    from app.core.neo4j_driver import run_cypher, is_memory_mode
+    user_check = run_cypher("MATCH (u) WHERE u.uid = $uid RETURN u.name", {"uid": request.entity_uid})
+    if not user_check:
+        logger.error(f"❌ Stage 2: User {request.entity_uid} not found.")
+        return AgentResponse(status="error", message="Usuário não encontrado para extração de skills.", data={})
+
     analyzer = _get_profile_analyzer()
     
     if analyzer.llm:
