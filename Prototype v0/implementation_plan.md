@@ -14,20 +14,24 @@
 
 ---
 
-# Implementation Plan - Sprint 14: Cadência Cognitiva & Justificativas Reais
-
-> **Status:** ✅ CONCLUÍDO (02/05/2026 03:00)
+# Implementation Plan - Sprint 15: Estabilização de Produção & Code Health
+> **Status:** ✅ CONCLUÍDO (04/05/2026 21:00)
 
 ## 🎯 Objetivos
-1.  **Cadência Orgânica**: Implementar um `min_delay` de 3-5 segundos por etapa no frontend (`CognitionExperience`), garantindo que o usuário tenha tempo de ler os "pensamentos" da IA, mesmo que a API seja rápida.
-2.  **Justificativas Profundas**: Garantir que as justificativas de match sejam extraídas da LLM e não venham de fallbacks genéricos.
-3.  **Visual Feedback Progressivo**: Melhorar a fluidez das transições no `MiniGraphAnimation` para que os novos nodes surjam com "peso" visual.
-4.  **Debugging de LLM**: Adicionar logs explícitos no Vercel para identificar por que a LLM está (ou não) sendo acionada nos endpoints V2.
+1.  **Estabilização do Backend**: Resolver todos os erros de sintaxe e avisos de linting nos agentes (`ProfileAnalyzer`, `EligibilityCalculator`, `Orchestrator`).
+2.  **Code Health**: Refatorar importações e modernizar o uso do Pydantic para evitar avisos em produção.
+3.  **Persistência Habilitada**: Garantir que o sistema suporte a transição automática para o Neo4j AuraDB assim que as credenciais forem injetadas, eliminando o "Modo Memória" (Efêmero).
+4.  **Auditoria de Agentes**: Validar a integridade das extrações de skills e áreas de atuação.
 
-## 🛠️ Mudanças Propostas
-- **Backend (`agent_routes.py`)**: Refinar os prompts dos endpoints `/v2/*` para garantir que a justificativa de match seja sempre personalizada. Melhorar logs de inicialização do singleton.
-- **Frontend (`CognitionExperience.tsx`)**: Adicionar um wrapper de `Promise.all([apiCall, delay])` para controlar o ritmo.
-- **Frontend (`MiniGraphAnimation.tsx`)**: Implementar transições de opacidade e escala mais lentas para novos nodes.
+## 🛠️ Mudanças Realizadas
+- **Backend (`agent_routes.py`, `profile_analyzer.py`, `seed_and_configure.py`)**: Refatoração completa de importações para o nível de topo, eliminando avisos de "variable visibility".
+- **Backend (`agent_routes.py`)**: Substituição de `.dict()` por `.model_dump()` e correção de referências de configuração faltantes.
+- **Backend (`neo4j_driver.py`)**: Refinamento da lógica de fallback para garantir que o sistema opere de forma resiliente.
+- **QA Automation**: Criação de scripts de diagnóstico para validação contínua da saúde dos agentes.
+
+---
+> [!IMPORTANT]
+> O sistema está agora em estado de "Production-Ready". O próximo passo crítico é a injeção manual das secrets do Neo4j AuraDB no painel da Vercel para habilitar a persistência real.
 
 ---
 > [!IMPORTANT]

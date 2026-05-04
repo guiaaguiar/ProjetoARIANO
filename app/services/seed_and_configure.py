@@ -26,6 +26,7 @@ from app.services.seed_native import seed_native
 from app.agents.profile_analyzer import ProfileAnalyzer
 from app.agents.edital_interpreter import EditalInterpreter
 from app.agents.eligibility_calculator import EligibilityCalculator
+from app.agents.orchestrator import OrchestratorAgent
 
 logging.basicConfig(
     level=logging.INFO,
@@ -101,7 +102,6 @@ def run_pipeline():
 
     # Step 1: Profile Analysis
     print("\n📋 Fase 1: Analisando perfis acadêmicos (Orchestrator)...")
-    from app.agents.orchestrator import OrchestratorAgent
     orchestrator = OrchestratorAgent()
 
     academics = _get_all_academics()
