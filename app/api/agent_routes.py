@@ -10,13 +10,22 @@ Endpoints for triggering and managing AI agent operations:
 """
 
 import logging
+import json
+import re
+import uuid
+import datetime
 from typing import Optional
+
+import networkx as nx
 from fastapi import APIRouter, HTTPException, BackgroundTasks
 from pydantic import BaseModel, Field
 
+from app.core.config import settings
+from app.core.neo4j_driver import run_cypher, is_memory_mode, get_memory_store
 from app.agents.profile_analyzer import ProfileAnalyzer
 from app.agents.edital_interpreter import EditalInterpreter
 from app.agents.eligibility_calculator import EligibilityCalculator
+from app.agents.orchestrator import OrchestratorAgent
 from app.services.match_engine import (
     get_all_matches,
     get_matches_for_entity,
@@ -144,7 +153,7 @@ def analyze_profile_v2(request: ProfileContextRequest):
         )
 
     analyzer = _get_profile_analyzer()
-    context = analyzer.generate_profile_context(request.dict())
+    context = analyzer.generate_profile_context(request.model_dump())
     
     # Save partial progress to graph
     run_cypher(
@@ -193,7 +202,6 @@ def extract_skills_v2(request: ExtractSkillsRequest):
         }}"""
         try:
             from langchain_core.messages import HumanMessage
-            import json, re
             response = analyzer.llm.invoke([HumanMessage(content=prompt)])
             clean_content = re.sub(r'```json\s*|\s*```', '', response.content).strip()
             data = json.loads(clean_content)
@@ -209,9 +217,6 @@ def extract_skills_v2(request: ExtractSkillsRequest):
         }
     
     # PERSISTENCE IN NEO4J
-    from app.core.neo4j_driver import run_cypher
-    import uuid, datetime
-    
     # Update User with scratchpad
     run_cypher(
         "MATCH (u) WHERE u.uid = $uid SET u.scratchpad = $scratch, u.last_step = 'skills'",
@@ -254,7 +259,6 @@ def match_editais_v2(request: MatchEditaisRequest):
     """Stage 3: Find relevant editais using graph topology + LLM filtering."""
     calculator = _get_eligibility_calculator()
     
-    from app.core.neo4j_driver import run_cypher
     editais = run_cypher("MATCH (e:Edital) WHERE e.status = 'aberto' RETURN e.title AS title, e.uid AS uid, e.description AS description")
     
     if not editais:
@@ -276,7 +280,6 @@ def match_editais_v2(request: MatchEditaisRequest):
         
         try:
             from langchain_core.messages import HumanMessage
-            import json, re
             response = calculator.llm.invoke([HumanMessage(content=prompt)])
             clean_content = re.sub(r'```json\s*|\s*```', '', response.content).strip()
             data = json.loads(clean_content)
@@ -325,7 +328,6 @@ def explain_matches_v2(request: ExplainMatchesRequest):
             return AgentResponse(status="error", message="Falha ao gerar justificativas", data={})
 
     # PERSISTENCE IN NEO4J
-    from app.core.neo4j_driver import run_cypher
     
     for match in data.get("matches", []):
         run_cypher(
@@ -472,8 +474,6 @@ def calculate_matches(request: CalculateRequest = CalculateRequest()):
 @router.post("/orchestrate/{uid}", response_model=AgentResponse)
 def orchestrate_user(uid: str, background_tasks: BackgroundTasks):
     """Re-trigger the full Orchestrator pipeline for a user."""
-    from app.agents.orchestrator import OrchestratorAgent
-    from app.core.neo4j_driver import run_cypher
 
     query = """
     MATCH (u)
@@ -531,7 +531,6 @@ def run_full_pipeline():
     2. Interpret all editais (EditalInterpreter)
     3. Calculate all matches (EligibilityCalculator)
     """
-    from app.core.neo4j_driver import run_cypher
 
     analyzer = _get_profile_analyzer()
     interpreter = _get_edital_interpreter()
@@ -661,9 +660,6 @@ def query_entity_connections(entity_uid: str):
 @router.get("/communities", response_model=AgentResponse, tags=["Agents"])
 def detect_communities():
     """Detect communities using NetworkX Louvain algorithm based on ELIGIBLE_FOR and HAS_SKILL."""
-    import networkx as nx
-    from app.core.neo4j_driver import run_cypher, is_memory_mode, get_memory_store
-    
     G = nx.Graph()
     
     if is_memory_mode():
@@ -718,11 +714,11 @@ def agent_status():
     interpreter = _get_edital_interpreter()
     calculator = _get_eligibility_calculator()
 
-    from app.core.config import settings
     return AgentResponse(
         status="success",
         message="Agent status retrieved",
         data={
+            "is_memory_mode": is_memory_mode(),
             "llm_provider": "OpenRouter",
             "llm_model": settings.openrouter_model,
             "profile_analyzer": {

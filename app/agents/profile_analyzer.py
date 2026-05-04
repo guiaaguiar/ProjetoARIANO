@@ -14,6 +14,7 @@ import json
 import logging
 import uuid
 import datetime
+import re
 from typing import Optional
 
 from app.core.config import settings
@@ -179,7 +180,6 @@ Responda APENAS em JSON válido com a estrutura exata:
         all_skills = {s: cat for cat, skills in SKILL_CATEGORIES.items() for s in skills}
         for skill_name, category in all_skills.items():
             # Match word boundaries for better accuracy
-            import re
             pattern = rf'\b{re.escape(skill_name.lower())}\b'
             if (re.search(pattern, bio) or re.search(pattern, curriculo)) and skill_name not in declared_skills:
                 extracted_skills.append({
