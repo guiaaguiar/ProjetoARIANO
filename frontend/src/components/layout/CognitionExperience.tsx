@@ -160,24 +160,16 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
 
   const getProcessingMessage = () => {
     if (error) return error;
-    if (logs.length > 0) {
-      const lastLog = logs[logs.length - 1].replace(/\[.*\]\s/, '');
-      return lastLog;
-    }
-    
-    return "A IA está extraindo suas informações e ";
+    if (currentStep === 0) return "Processando seu contexto acadêmico...";
+    if (currentStep === 1) return "Extraindo competências e áreas de atuação...";
+    if (currentStep === 2) return "Mapeando editais compatíveis no ecossistema...";
+    if (currentStep === 3) return "Análise concluída com sucesso!";
+    return "Iniciando jornada cognitiva...";
   };
 
-  const [secondaryMessage, setSecondaryMessage] = useState("A IA está extraindo suas informações e ");
-  
-  useEffect(() => {
-    if (logs.length === 0 && !error) {
-       const timer = setTimeout(() => {
-         setSecondaryMessage("o ARIANO está fazendo conexões estratégicas...");
-       }, 4000);
-       return () => clearTimeout(timer);
-    }
-  }, [logs.length, error]);
+  const handleRetry = () => {
+    window.location.reload();
+  };
 
   return (
     <div className="fixed inset-0 z-50 bg-background/70 backdrop-blur-[120px] flex flex-col items-center justify-center p-6 lg:p-12 overflow-hidden">
@@ -305,9 +297,17 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
                 <h2 className="text-4xl font-bold text-white">
                   {error ? 'Ops! Erro de Conexão' : 'Top 3 Matches Imediatos'}
                 </h2>
-                <p className="text-gray-400">
-                  {error ? 'Não conseguimos processar seus dados em tempo real. Tente atualizar a página.' : 'O sistema pré-calculou sua aderência em milissegundos.'}
+                <p className="text-gray-400 mb-6">
+                  {error ? 'Não conseguimos processar seus dados em tempo real.' : 'O sistema pré-calculou sua aderência em milissegundos.'}
                 </p>
+                {error && (
+                  <button 
+                    onClick={handleRetry}
+                    className="px-8 py-3 bg-red-500/20 border border-red-500/50 text-red-400 rounded-xl font-bold hover:bg-red-500/30 transition-all flex items-center gap-2 mx-auto mt-4"
+                  >
+                    <RefreshCw className="w-5 h-5" /> Tentar Novamente
+                  </button>
+                )}
               </div>
 
               {!error && (

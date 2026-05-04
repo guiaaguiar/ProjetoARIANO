@@ -702,11 +702,12 @@ def agent_status():
     interpreter = _get_edital_interpreter()
     calculator = _get_eligibility_calculator()
 
-    from app.core.config import settings
+    from app.core.neo4j_driver import is_memory_mode
     return AgentResponse(
         status="success",
         message="Agent status retrieved",
         data={
+            "is_memory_mode": is_memory_mode(),
             "llm_provider": "OpenRouter",
             "llm_model": settings.openrouter_model,
             "profile_analyzer": {

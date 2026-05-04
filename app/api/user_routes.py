@@ -105,24 +105,15 @@ async def register_user(
         
         logger.info(f"✅ Usuário {uid} persistido com sucesso.")
 
-        # 6. Ativação da Inteligência
-        ai_data = None
-        try:
-            orchestrator = OrchestratorAgent()
-            if is_memory_mode():
-                # No Vercel/Memory Mode, processamos síncrono para evitar 404 em instâncias stateless
-                logger.info(f"🧠 Processamento síncrono (Memory Mode) para {uid}")
-                ai_result = orchestrator.process_new_entity(uid, neo4j_type, profile_data)
-                ai_data = {
-                    "status": "completed",
-                    "matches": ai_result.get("matches", []),
-                    "logs": ["Processamento instantâneo concluído."]
-                }
-            else:
+        # 6. Ativação da Inteligência (Opcional - agora feito via Front-end/V2)
+        # Não processamos síncrono para evitar 504 Gateway Timeout no Vercel
+        if not is_memory_mode():
+            try:
+                orchestrator = OrchestratorAgent()
                 background_tasks.add_task(orchestrator.process_new_entity, uid, neo4j_type, profile_data)
                 logger.info(f"🧠 Orquestrador agendado para o usuário {uid}")
-        except Exception as ai_err:
-            logger.error(f"❌ Falha ao iniciar orquestrador IA: {ai_err}")
+            except Exception as ai_err:
+                logger.error(f"❌ Falha ao iniciar orquestrador IA: {ai_err}")
 
         # 7. Auto-login via Cookie
         token = create_access_token({"sub": uid, "type": neo4j_type.lower(), "name": name})
@@ -137,8 +128,7 @@ async def register_user(
         return {
             "status": "success",
             "message": "Cadastro realizado com sucesso!",
-            "uid": uid,
-            "ai_data": ai_data
+            "uid": uid
         }
 
     except HTTPException as he:
