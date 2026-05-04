@@ -52,6 +52,27 @@ export const CadastroPage: React.FC = () => {
   const userType = watch('user_type');
 
   useEffect(() => {
+    // Reset global para debug (deleta usuários e limpa cookies)
+    const reset = async () => {
+      try {
+        const res = await fetch('/api/users/reset', { method: 'POST', credentials: 'include' });
+        if (res.ok) {
+          console.log("🧹 [Debug] Sistema resetado com sucesso.");
+          // Limpa estado local do auth
+          useAuthStore.getState().logout();
+        }
+      } catch (err) {
+        console.warn("⚠️ Falha ao resetar estado inicial:", err);
+      }
+    };
+    
+    // Só reseta se vier do link de "Refazer" ou se não estiver logado tentando limpar
+    if (!isAuthenticated) {
+      reset();
+    }
+  }, []);
+
+  useEffect(() => {
     if (!isLoading && isAuthenticated && user?.type !== 'admin') {
       navigate('/user');
     }

@@ -57,6 +57,7 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
     const runPipeline = async () => {
       try {
         setCurrentStep(0);
+        console.log("🚀 [Cognition] Iniciando extração de contexto acadêmico...");
         setLogs(prev => [...prev, "🧠 Iniciando extração de contexto acadêmico..."]);
         
         // Step 1: Analyze Profile
@@ -72,6 +73,7 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
         const contextData = await contextRes.json();
         if (!isMounted) return;
         
+        console.log("✅ [Cognition] Contexto processado:", contextData);
         const profileContext = contextData.data.context;
         setLogs(prev => [...prev, "✅ Contexto processado. Acionando Agente Analista..."]);
         
@@ -89,6 +91,7 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
         const skillsData = await skillsRes.json();
         if (!isMounted) return;
         
+        console.log("✅ [Cognition] Skills extraídas:", skillsData);
         setActiveSkills(skillsData.data.skills);
         setActiveAreas(skillsData.data.areas);
         setLogs(prev => [...prev, `🔍 Habilidades encontradas: ${skillsData.data.skills.slice(0,3).join(', ')}...`]);
@@ -107,6 +110,8 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
         
         const matchesData = await matchesRes.json();
         if (!isMounted) return;
+        
+        console.log("✅ [Cognition] Matches filtrados:", matchesData);
         
         // Step 4: Explain Matches (Deep Reasoning)
         setLogs(prev => [...prev, "🧠 Analisando aderência profunda com editais selecionados..."]);
@@ -127,11 +132,13 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
         const explainData = await explainRes.json();
         if (!isMounted) return;
         
+        console.log("✅ [Cognition] Justificativas LLM:", explainData);
         setActiveMatches(explainData.data.matches);
         setMatches(explainData.data.matches);
         setCachedMatches(explainData.data.matches);
         
         // Garante sincronização de sessão antes do fim
+        console.log("🔐 [Cognition] Sincronizando sessão...");
         await useAuthStore.getState().checkAuth();
         
         setCurrentStep(3);

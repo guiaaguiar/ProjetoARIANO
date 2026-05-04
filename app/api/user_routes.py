@@ -149,3 +149,26 @@ async def register_user(
             status_code=500, 
             detail=f"Erro interno ao processar cadastro: {str(e)}"
         )
+@router.post("/reset")
+async def reset_database(response: Response):
+    """
+    LIMPEZA TOTAL: Deleta todos os usuários e limpa o estado.
+    (Debug Only)
+    """
+    try:
+        if is_memory_mode():
+            store = get_memory_store()
+            store.nodes = {}
+            store.edges = []
+            logger.info("🧹 Memory Store resetada.")
+        else:
+            run_cypher("MATCH (u) WHERE u:Student OR u:Researcher OR u:Professor OR u:Admin OR u:User DETACH DELETE u")
+            logger.info("🧹 Neo4j resetado.")
+            
+        # Limpa o cookie de autenticação
+        response.delete_cookie("auth_token")
+        
+        return {"status": "success", "message": "Banco de dados e cookies limpos com sucesso."}
+    except Exception as e:
+        logger.error(f"❌ Erro ao resetar banco: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
