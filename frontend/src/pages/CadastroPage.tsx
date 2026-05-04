@@ -73,10 +73,11 @@ export const CadastroPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (!isLoading && isAuthenticated && user?.type !== 'admin') {
+    // Só redireciona se não estiver no meio do processo de cognição
+    if (!isLoading && isAuthenticated && user?.type !== 'admin' && !showCognition) {
       navigate('/user');
     }
-  }, [isAuthenticated, isLoading, navigate, user]);
+  }, [isAuthenticated, isLoading, navigate, user, showCognition]);
 
   const onNext = async () => {
     let fields: (keyof RegisterFormData)[] = [];
