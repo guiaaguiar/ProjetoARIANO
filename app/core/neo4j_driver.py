@@ -37,9 +37,70 @@ class MemoryGraphStore:
         self.nodes: dict[str, dict] = {}  # uid -> {labels: [...], props: {...}}
         self.edges: list[dict] = []  # [{source, target, type, props}]
         logger.info("📦 MemoryGraphStore initialized (Neo4j fallback)")
+        # Tenta carregar dados persistidos se estivermos em ambiente de produção/Vercel
+        self.load_from_kv()
+
+    def save_to_kv(self):
+        """Persiste o estado do grafo no Vercel KV."""
+        import os
+        import json
+        import httpx
+        
+        url = os.environ.get("KV_REST_API_URL")
+        token = os.environ.get("KV_REST_API_TOKEN")
+        
+        if not url or not token:
+            return
+
+        try:
+            data = {
+                "nodes": self.nodes,
+                "edges": self.edges,
+                "last_sync": datetime.now().isoformat()
+            }
+            # KV REST API: SET key value
+            with httpx.Client() as client:
+                client.post(
+                    f"{url}/set/ariano_graph_persistent",
+                    headers={"Authorization": f"Bearer {token}"},
+                    content=json.dumps(data)
+                )
+            logger.info("💾 Grafo persistido no Vercel KV com sucesso.")
+        except Exception as e:
+            logger.error(f"❌ Falha ao salvar no Vercel KV: {e}")
+
+    def load_from_kv(self):
+        """Carrega o estado do grafo do Vercel KV."""
+        import os
+        import json
+        import httpx
+        
+        url = os.environ.get("KV_REST_API_URL")
+        token = os.environ.get("KV_REST_API_TOKEN")
+        
+        if not url or not token:
+            logger.info("ℹ️ Vercel KV não configurado. Iniciando grafo vazio.")
+            return
+
+        try:
+            with httpx.Client() as client:
+                res = client.get(
+                    f"{url}/get/ariano_graph_persistent",
+                    headers={"Authorization": f"Bearer {token}"}
+                )
+                if res.status_code == 200:
+                    val = res.json().get("result")
+                    if val:
+                        data = json.loads(val)
+                        self.nodes = data.get("nodes", {})
+                        self.edges = data.get("edges", [])
+                        logger.info(f"✅ Grafo carregado do Vercel KV ({len(self.nodes)} nós, {len(self.edges)} arestas)")
+        except Exception as e:
+            logger.error(f"❌ Falha ao carregar do Vercel KV: {e}")
 
     def add_node(self, uid: str, labels: list[str], props: dict):
         self.nodes[uid] = {"labels": labels, "props": {**props, "uid": uid}}
+        self.save_to_kv()
 
     def get_node(self, uid: str) -> dict | None:
         return self.nodes.get(uid)
@@ -64,6 +125,7 @@ class MemoryGraphStore:
             "type": edge_type,
             "props": props or {},
         })
+        self.save_to_kv()
 
     def get_edges(self, source: str = None, target: str = None,
                   edge_type: str = None) -> list[dict]:
@@ -80,6 +142,7 @@ class MemoryGraphStore:
 
     def delete_edges(self, edge_type: str):
         self.edges = [e for e in self.edges if e["type"] != edge_type]
+        self.save_to_kv()
 
     def find_node_by_prop(self, label: str, prop: str, value: Any) -> dict | None:
         for n in self.nodes.values():

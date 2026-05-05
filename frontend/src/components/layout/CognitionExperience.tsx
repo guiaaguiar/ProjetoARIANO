@@ -50,12 +50,14 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
   const [activeMatches, setActiveMatches] = useState<any[]>([]);
 
   useEffect(() => {
+    if (!userId || !formData) return; // Aguarda o UID do registro
+    
     let isMounted = true;
-
     const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
     const runPipeline = async () => {
       try {
+        console.log("🛠️ [Debug] Iniciando pipeline para User:", userId);
         setCurrentStep(0);
         console.log("🚀 [Cognition] Iniciando extração de contexto acadêmico...");
         setLogs(prev => [...prev, "🧠 Iniciando extração de contexto acadêmico..."]);
@@ -73,6 +75,8 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
         const contextData = await contextRes.json();
         if (!isMounted) return;
         
+        if (contextData.status === 'error') throw new Error(contextData.message);
+
         console.log("✅ [Cognition] Contexto processado:", contextData);
         const profileContext = contextData.data.context;
         setLogs(prev => [...prev, "✅ Contexto processado. Acionando Agente Analista..."]);
@@ -91,6 +95,8 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
         const skillsData = await skillsRes.json();
         if (!isMounted) return;
         
+        if (skillsData.status === 'error') throw new Error(skillsData.message);
+
         console.log("✅ [Cognition] Skills extraídas:", skillsData);
         setActiveSkills(skillsData.data.skills);
         setActiveAreas(skillsData.data.areas);
@@ -111,6 +117,8 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
         const matchesData = await matchesRes.json();
         if (!isMounted) return;
         
+        if (matchesData.status === 'error') throw new Error(matchesData.message);
+
         console.log("✅ [Cognition] Matches filtrados:", matchesData);
         
         // Step 4: Explain Matches (Deep Reasoning)
@@ -132,6 +140,8 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
         const explainData = await explainRes.json();
         if (!isMounted) return;
         
+        if (explainData.status === 'error') throw new Error(explainData.message);
+
         console.log("✅ [Cognition] Justificativas LLM:", explainData);
         setActiveMatches(explainData.data.matches);
         setMatches(explainData.data.matches);
@@ -148,15 +158,15 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
           if (isMounted) setShowFinish(true);
         }, 2500);
         
-      } catch (err) {
+      } catch (err: any) {
         console.error("Pipeline error:", err);
-        setError("Ocorreu um erro no processamento cognitivo. Verifique sua conexão.");
+        setError(err.message || "Ocorreu um erro no processamento cognitivo. Verifique sua conexão.");
       }
     };
 
     runPipeline();
     return () => { isMounted = false; };
-  }, [formData]);
+  }, [formData, userId]);
 
   const getProcessingMessage = () => {
     if (error) return error;

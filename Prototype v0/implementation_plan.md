@@ -1,38 +1,48 @@
-# 🚀 ARIANO — Estabilidade Final & UX Premium (Sprint 11)
+# 🚀 ARIANO — Estabilidade Final & Persistência Local (Sprint 16)
 
-> **Versão:** 11.0.0
-> **Status:** ✅ CONCLUÍDO (02/05/2026 03:00)
-> **Foco:** Resolver travamentos no fluxo de cadastro, isolamento visual da IA e correção de alertas de segurança.
-
----
-
-## 1. Diagnóstico de Erros & UX
-> **Status:** ✅ CONCLUÍDO (02/05/2026 03:00)
-- **Travamento:** O componente `CognitionExperience` ficava preso em modo de polling se o backend terminasse muito rápido ou sem matches.
-- **Visual Overlap:** O formulário de cadastro ficava visível por trás da animação de IA, criando poluição visual ("bizarro").
-- **Security:** O Vercel logava avisos sobre `InsecureKeyLengthWarning` no JWT.
+## 🎯 Visão Geral
+Este plano detalha a transição final da arquitetura de dados do ARIANO: abandonando a dependência do **Neo4j AuraDB (Cloud)** em favor de um modelo **"Neo4j Local"** (motor em memória) persistido de forma robusta via **Vercel KV (Redis)**.
 
 ---
 
-# Implementation Plan - Sprint 15: Estabilização de Produção & Code Health
-> **Status:** ✅ CONCLUÍDO (04/05/2026 21:00)
+## 🧠 Decisões Arquiteturais
 
-## 🎯 Objetivos
-1.  **Estabilização do Backend**: Resolver todos os erros de sintaxe e avisos de linting nos agentes (`ProfileAnalyzer`, `EligibilityCalculator`, `Orchestrator`).
-2.  **Code Health**: Refatorar importações e modernizar o uso do Pydantic para evitar avisos em produção.
-3.  **Persistência Habilitada**: Garantir que o sistema suporte a transição automática para o Neo4j AuraDB assim que as credenciais forem injetadas, eliminando o "Modo Memória" (Efêmero).
-4.  **Auditoria de Agentes**: Validar a integridade das extrações de skills e áreas de atuação.
+### 1. Por que Vercel KV (Redis)?
+- **Sinergia Serverless**: Diferente do Neo4j tradicional, o Vercel KV é otimizado para conexões rápidas via HTTP/REST, ideal para as funções serverless da Vercel.
+- **Persistência do Cérebro**: O motor `MemoryGraphStore` é extremamente rápido (O(1)), mas volátil. O Redis servirá como o "disco rígido" onde o estado do grafo é salvo e carregado.
+- **Custo e Complexidade**: Elimina a necessidade de gerenciar instâncias de banco de dados externas e faturas separadas (AuraDB).
 
-## 🛠️ Mudanças Realizadas
-- **Backend (`agent_routes.py`, `profile_analyzer.py`, `seed_and_configure.py`)**: Refatoração completa de importações para o nível de topo, eliminando avisos de "variable visibility".
-- **Backend (`agent_routes.py`)**: Substituição de `.dict()` por `.model_dump()` e correção de referências de configuração faltantes.
-- **Backend (`neo4j_driver.py`)**: Refinamento da lógica de fallback para garantir que o sistema opere de forma resiliente.
-- **QA Automation**: Criação de scripts de diagnóstico para validação contínua da saúde dos agentes.
+### 2. Fluxo de Persistência
+- **Escrita (Sync)**: Toda vez que um agente de IA cria um nó ou aresta, o sistema serializa o grafo em JSON e envia para o Vercel KV.
+- **Leitura (Load)**: No início de cada requisição (ou boot do container), o sistema busca o JSON no KV e reconstrói o grafo em memória.
 
----
-> [!IMPORTANT]
-> O sistema está agora em estado de "Production-Ready". O próximo passo crítico é a injeção manual das secrets do Neo4j AuraDB no painel da Vercel para habilitar a persistência real.
+### 3. Segurança e Limites
+- **Credenciais**: Uso estrito de `KV_REST_API_URL` e `KV_REST_API_TOKEN` via Environment Variables.
+- **Quota**: Monitoramento do limite de 30MB (free tier) do Vercel KV. O grafo JSON atual é leve (~KB), suportando milhares de nós antes de necessitar upgrade.
 
 ---
-> [!IMPORTANT]
-> O objetivo é que o usuário sinta que o ARIANO está "processando profundamente" seu perfil, e não apenas respondendo um JSON estático.
+
+## 🛠️ Próximos Passos (Plano de Ação)
+
+### Fase 1: Provisionamento e Configuração [EM ANDAMENTO]
+- [ ] **Criação do KV**: Finalizar o provisionamento do database `ariano-kv` no dashboard da Vercel.
+- [ ] **Conexão de Projeto**: Linkar o `ariano-kv` ao projeto `ariano` para injeção automática de variáveis.
+- [ ] **Sincronização Local**: Executar `vercel env pull` para validar as credenciais no ambiente de desenvolvimento.
+
+### Fase 2: Integração e Testes de Código
+- [ ] **Validação do Driver**: Testar se o `neo4j_driver.py` consegue se comunicar com o KV usando as novas chaves.
+- [ ] **Teste de Serialização**: Garantir que grafos complexos (com múltiplos nós e arestas) sejam convertidos em JSON e restaurados sem perda de integridade.
+
+### Fase 3: QA de Persistência (Teste Real)
+- [ ] **Simulação de Reinício**: Fazer o deploy, criar um usuário, aguardar o encerramento da função serverless e verificar se os dados permanecem lá em uma nova consulta.
+- [ ] **Teste de Stress**: Validar a latência das chamadas de IA com o overhead do salvamento no Redis.
+
+### Fase 4: Entrega e Documentação
+- [ ] **Walkthrough Final**: Registrar em vídeo/print o sucesso da persistência.
+- [ ] **Checklist de Documentação**: Garantir que o `01_DOCUMENTO_PROJETO_ARIANO.md` reflita exatamente o estado final da infraestrutura.
+
+---
+
+## ⚠️ Riscos e Mitigações
+- **Risco**: Timeout durante o salvamento de grafos muito grandes.
+- **Mitigação**: O salvamento é otimizado e o timeout da Vercel já está em 60s. Futuramente, pode-se implementar salvamento incremental.

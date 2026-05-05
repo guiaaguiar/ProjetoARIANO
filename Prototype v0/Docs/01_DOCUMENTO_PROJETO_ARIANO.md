@@ -63,9 +63,9 @@ O **ARIANO** (**A**rquitetura de **I**nteligência **A**rtificial **N**aturalmen
 - ✅ Agentes de IA (NVIDIA Nemotron 3 via OpenRouter) que **interpretam e configuram o grafo** (enriquecimento, classificação, criação de arestas ponderadas)
 - ✅ Match via **Cypher query pura** ou O(1) de Busca em Memória sobre o grafo instanciado.
 - ✅ Interface web robusta e otimizada (Vite, React) consumindo os endpoints backend diretamente via REST Axios
-- ✅ Zero-config Execution garantida com in-memory database nativo e transparente ao usuário
-- ✅ **Deploy Fullstack (Vercel):** Backend FastAPI (Serverless) e Frontend Vite integrados em monorepo
-- ✅ **Segurança de Credenciais:** Gestão de chaves via Environment Variables (Secrets) ocultas em produção
+- ✅ **Zero-config Execution:** Garantida com motor de grafo in-memory nativo, agora persistido via **Vercel KV (Redis)** para eliminar o modo efêmero.
+- ✅ **Deploy Fullstack (Vercel):** Backend FastAPI (Serverless) e Frontend Vite integrados em monorepo com persistência "Neo4j Local" integrada.
+- ✅ **Segurança de Credenciais:** Gestão de chaves via Environment Variables (Secrets) ocultas em produção (Vercel KV e OpenRouter).
 - 🚀 **Autenticação Dual:** Login com email/senha, cookies JWT, dois perfis simultâneos (user + admin) (Sprint 4)
 - 🚀 **CORETO — Cadastro de Talento:** Cadastro com match estratégico visível em tempo real pela IA + consulta O(1) posterior (Sprint 4)
 - 🚀 **Portal do Usuário:** Perfil, Matches pessoais O(1) e Ecossistema individual em /user/* (Sprint 4)
@@ -288,10 +288,18 @@ O design visual e interativo (Dark theme com efeitos neon, hover rings e visuali
                                 │ Bolt / Memory
                      ┌──────────┴───────────────────────────┐
                      │   DATA LAYER = "CÉREBRO" DO ARIANO    │
-                     │   Neo4j / In-Memory Graph Database     │
-                     │   Nós + Arestas + Comunidades CoT     │
-                     │   Campos IA: maturidade, o_que_busco  │
+                     │   Neo4j Local (Vercel KV Persistent)  │
+                     │   - Engine: MemoryGraphStore (Python) │
+                     │   - Sync: Vercel KV REST API          │
+                     │   - Formato: JSON Serialized Graph    │
                      └──────────────────────────────────────┘
+
+### 🗄️ Persistência de Dados (Vercel KV)
+
+O ARIANO utiliza um motor de grafos híbrido. Enquanto o processamento ocorre em memória para performance O(1), a persistência é garantida pelo **Vercel KV**:
+- **Sincronização Atômica:** Cada alteração no grafo dispara um comando `SET` assíncrono para o Redis da Vercel.
+- **Recuperação Automática:** No boot da Serverless Function, o estado mais recente é carregado via `GET`, garantindo que o "Cérebro" do sistema seja permanente.
+- **Zero-Dependency:** Não há necessidade de gerenciar instâncias externas de Neo4j ou AuraDB, reduzindo a latência de rede e custos.
 ```
 
 ### 4.2 Fluxo de Dados — Três Fases Distintas
@@ -555,8 +563,8 @@ Os agentes do ARIANO são configurados com prompts especializados que implementa
 │  └─ Neomodel (OGM) + Neo4j Driver (Cypher nativo)         │
 │                                                           │
 │  🗄️ DADOS                                                 │
-│  ├─ Neo4j 5.x Community (graph database)                  │
-│  └─ Memory Graph Engine (Fallback O(1) nativo)            │
+│  ├─ Neo4j Local (Python Interpreter)                       │
+│  └─ Vercel KV / Redis (Camada de Persistência)             │
 │                                                           │
 │  🔧 DEVOPS & DEPLOY                                       │
 │  ├─ **Vercel Fullstack Deployment** (Monorepo)            │
