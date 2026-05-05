@@ -142,7 +142,12 @@ class ExplainMatchesRequest(BaseModel):
 def analyze_profile_v2(request: ProfileContextRequest):
     """Stage 1: Generate rich context string and initial summary."""
     # Verify user existence first
-    from app.core.neo4j_driver import run_cypher, is_memory_mode
+    from app.core.neo4j_driver import run_cypher, is_memory_mode, get_memory_store
+    
+    if is_memory_mode():
+        # Forçamos refresh para garantir visibilidade do usuário recém-criado
+        get_memory_store(force_refresh=True)
+
     user_check = run_cypher("MATCH (u) WHERE u.uid = $uid RETURN u.name", {"uid": request.entity_uid})
     if not user_check:
         logger.error(f"❌ Stage 1: User {request.entity_uid} not found in graph.")

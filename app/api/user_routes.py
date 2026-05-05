@@ -147,7 +147,8 @@ async def check_user_exists(uid: str):
     """
     try:
         if is_memory_mode():
-            store = get_memory_store()
+            # Forçamos o refresh para garantir que vimos a persistência de outros processos/lambdas
+            store = get_memory_store(force_refresh=True)
             user = store.get_node(uid)
             exists = user is not None
         else:

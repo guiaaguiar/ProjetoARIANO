@@ -178,10 +178,13 @@ class MemoryGraphStore:
         return len(self.edges)
 
 
-def get_memory_store() -> MemoryGraphStore:
+def get_memory_store(force_refresh: bool = False) -> MemoryGraphStore:
     global _memory_store
     if _memory_store is None:
         _memory_store = MemoryGraphStore()
+    elif force_refresh:
+        logger.info("🔄 Forçando recarregamento do grafo via Vercel KV...")
+        _memory_store.load_from_kv()
     return _memory_store
 
 
