@@ -1,7 +1,8 @@
 # 🚀 ARIANO — Estabilidade Final & Persistência Local (Sprint 16)
 
-## 🎯 Visão Geral
-Este plano detalha a transição final da arquitetura de dados do ARIANO: abandonando a dependência do **Neo4j AuraDB (Cloud)** em favor de um modelo **"Neo4j Local"** (motor em memória) persistido de forma robusta via **Vercel KV (Redis)**.
+> **Versão:** 12.0.0
+> **Status:** 🚧 EM ANDAMENTO (05/05/2026)
+> **Foco:** Desacoplamento síncrono da IA, Polling no Frontend e Redução de Latência.
 
 ---
 
@@ -43,6 +44,33 @@ Este plano detalha a transição final da arquitetura de dados do ARIANO: abando
 
 ---
 
+# Implementation Plan - Sprint 17: Performance & Resiliência (Async Pipeline)
+> **Status:** 🚧 EM ANDAMENTO (05/05/2026)
+
+## 🎯 Objetivos
+1.  **Latência Zero no Registro**: Garantir que o cadastro responda em < 2s, movendo a IA para segundo plano.
+2.  **Polling Robusto**: Implementar consulta de status no `CognitionExperience` para evitar timeouts de rede.
+3.  **Estabilidade de Conexão**: Resolver o erro visual na animação que ocorre após 30s de espera.
+
+## 🛠️ Próximos Passos (Plano de Ação)
+
+### Fase 1: Backend Assíncrono & Integridade
+- [ ] **BackgroundTasks**: Mover `OrchestratorAgent.process_new_entity` para segundo plano.
+- [ ] **Registration Return**: Garantir que `/api/users/register` retorne o UID e sucesso em < 500ms.
+- [ ] **Memory Optimization**: Revisar imports pesados e globais para reduzir o uso de memória de 440MB para < 300MB.
+- [ ] **Health Check Endpoint**: Criar `/api/users/check/{uid}` para confirmar existência no grafo persistente.
+
+### Fase 2: Frontend Resilience & Sync
+- [ ] **Wait for UID**: Impedir o início da animação de IA até que o registro retorne um UID válido.
+- [ ] **Pre-Flight Check**: Realizar uma chamada ao novo endpoint de check antes de iniciar o `analyze-profile`.
+- [ ] **Polling Logic**: Implementar consulta de status no `CognitionExperience.tsx` (intervalo de 2s).
+
+### Fase 3: Infra & Deploy
+- [ ] **Deploy de Correção**: Subir as mudanças para `main` e testar com um perfil de alta complexidade.
+- [ ] **Monitoramento de Logs**: Validar se a duração da requisição de registro caiu de 50s para < 2s.
+
+---
+
 ## ⚠️ Riscos e Mitigações
-- **Risco**: Timeout durante o salvamento de grafos muito grandes.
-- **Mitigação**: O salvamento é otimizado e o timeout da Vercel já está em 60s. Futuramente, pode-se implementar salvamento incremental.
+- **Risco**: A função serverless ser encerrada antes da Background Task terminar.
+- **Mitigação**: O tempo limite da Vercel (`maxDuration`) protege a execução, mas a resposta HTTP será enviada antes, liberando o cliente.

@@ -16,16 +16,13 @@ import uuid
 import datetime
 from typing import Optional
 
-import networkx as nx
+# Lazy imports moved inside functions to reduce memory footprint
 from fastapi import APIRouter, HTTPException, BackgroundTasks
 from pydantic import BaseModel, Field
 
 from app.core.config import settings
 from app.core.neo4j_driver import run_cypher, is_memory_mode, get_memory_store
-from app.agents.profile_analyzer import ProfileAnalyzer
-from app.agents.edital_interpreter import EditalInterpreter
-from app.agents.eligibility_calculator import EligibilityCalculator
-from app.agents.orchestrator import OrchestratorAgent
+# Agent imports moved inside getters for lazy loading
 from app.services.match_engine import (
     get_all_matches,
     get_matches_for_entity,
@@ -47,6 +44,7 @@ _eligibility_calculator = None
 def _get_profile_analyzer() -> ProfileAnalyzer:
     global _profile_analyzer
     if _profile_analyzer is None:
+        from app.agents.profile_analyzer import ProfileAnalyzer
         _profile_analyzer = ProfileAnalyzer()
         logger.info(f"🤖 ProfileAnalyzer Singleton: LLM {'disponível' if _profile_analyzer.llm else 'indisponível'}")
     return _profile_analyzer
@@ -55,6 +53,7 @@ def _get_profile_analyzer() -> ProfileAnalyzer:
 def _get_edital_interpreter() -> EditalInterpreter:
     global _edital_interpreter
     if _edital_interpreter is None:
+        from app.agents.edital_interpreter import EditalInterpreter
         _edital_interpreter = EditalInterpreter()
         logger.info(f"🤖 EditalInterpreter Singleton: LLM {'disponível' if _edital_interpreter.llm else 'indisponível'}")
     return _edital_interpreter
@@ -63,6 +62,7 @@ def _get_edital_interpreter() -> EditalInterpreter:
 def _get_eligibility_calculator() -> EligibilityCalculator:
     global _eligibility_calculator
     if _eligibility_calculator is None:
+        from app.agents.eligibility_calculator import EligibilityCalculator
         _eligibility_calculator = EligibilityCalculator()
         logger.info(f"🤖 EligibilityCalculator Singleton: LLM {'disponível' if _eligibility_calculator.llm else 'indisponível'}")
     return _eligibility_calculator
@@ -488,6 +488,7 @@ def orchestrate_user(uid: str, background_tasks: BackgroundTasks):
         raise HTTPException(404, "Usuário não encontrado")
     
     user_data = results[0]
+    from app.agents.orchestrator import OrchestratorAgent
     orchestrator = OrchestratorAgent()
     
     background_tasks.add_task(
@@ -661,6 +662,7 @@ def query_entity_connections(entity_uid: str):
 @router.get("/communities", response_model=AgentResponse, tags=["Agents"])
 def detect_communities():
     """Detect communities using NetworkX Louvain algorithm based on ELIGIBLE_FOR and HAS_SKILL."""
+    import networkx as nx
     G = nx.Graph()
     
     if is_memory_mode():

@@ -105,15 +105,14 @@ async def register_user(
         
         logger.info(f"✅ Usuário {uid} persistido com sucesso.")
 
-        # 6. Ativação da Inteligência (Opcional - agora feito via Front-end/V2)
-        # Não processamos síncrono para evitar 504 Gateway Timeout no Vercel
-        if not is_memory_mode():
-            try:
-                orchestrator = OrchestratorAgent()
-                background_tasks.add_task(orchestrator.process_new_entity, uid, neo4j_type, profile_data)
-                logger.info(f"🧠 Orquestrador agendado para o usuário {uid}")
-            except Exception as ai_err:
-                logger.error(f"❌ Falha ao iniciar orquestrador IA: {ai_err}")
+        # 6. Ativação da Inteligência (Assíncrona)
+        # Movemos o processamento pesado para BackgroundTasks para evitar 504 Gateway Timeout
+        try:
+            orchestrator = OrchestratorAgent()
+            background_tasks.add_task(orchestrator.process_new_entity, uid, neo4j_type, profile_data)
+            logger.info(f"🧠 Orquestrador agendado em segundo plano para o usuário {uid}")
+        except Exception as ai_err:
+            logger.error(f"❌ Falha ao agendar orquestrador IA: {ai_err}")
 
         # 7. Auto-login via Cookie
         token = create_access_token({"sub": uid, "type": neo4j_type.lower(), "name": name})
@@ -139,6 +138,27 @@ async def register_user(
             status_code=500, 
             detail=f"Erro interno ao processar cadastro: {str(e)}"
         )
+
+@router.get("/check/{uid}")
+async def check_user_exists(uid: str):
+    """
+    Verifica se um usuário existe no grafo persistente. 
+    Usado pelo frontend para evitar race conditions antes de iniciar a IA.
+    """
+    try:
+        if is_memory_mode():
+            store = get_memory_store()
+            user = store.get_node(uid)
+            exists = user is not None
+        else:
+            results = run_cypher("MATCH (u) WHERE u.uid = $uid RETURN u.uid", {"uid": uid})
+            exists = len(results) > 0
+            
+        return {"exists": exists, "uid": uid}
+    except Exception as e:
+        logger.error(f"❌ Erro no health check do usuário {uid}: {e}")
+        return {"exists": False, "uid": uid, "error": str(e)}
+
 @router.post("/reset")
 async def reset_database(response: Response):
     """

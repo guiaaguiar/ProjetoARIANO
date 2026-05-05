@@ -58,6 +58,31 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
     const runPipeline = async () => {
       try {
         console.log("🛠️ [Debug] Iniciando pipeline para User:", userId);
+        
+        // PRE-FLIGHT CHECK: Esperar o usuário existir no grafo (Vercel KV Sync)
+        setLogs(prev => [...prev, "📡 Sincronizando com o ecossistema..."]);
+        let attempts = 0;
+        let exists = false;
+        
+        while (attempts < 10 && !exists) {
+            try {
+                const checkRes = await fetch(`/api/users/check/${userId}`);
+                const checkData = await checkRes.json();
+                if (checkData.exists) {
+                    exists = true;
+                    break;
+                }
+            } catch (e) {
+                console.warn("Check attempt failed:", e);
+            }
+            attempts++;
+            await delay(1500); // Espera 1.5s entre tentativas
+        }
+        
+        if (!exists) {
+            throw new Error("Não foi possível localizar seu perfil no grafo. Tente recarregar a página.");
+        }
+
         setCurrentStep(0);
         console.log("🚀 [Cognition] Iniciando extração de contexto acadêmico...");
         setLogs(prev => [...prev, "🧠 Iniciando extração de contexto acadêmico..."]);
@@ -160,7 +185,18 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
         
       } catch (err: any) {
         console.error("Pipeline error:", err);
+        // Se o erro for um timeout ou erro de rede, tentamos um fallback de status
         setError(err.message || "Ocorreu um erro no processamento cognitivo. Verifique sua conexão.");
+        
+        // Fallback: Tenta verificar se o Orchestrator terminou em background
+        try {
+            const finalCheck = await fetch(`/api/users/check/${userId}`);
+            const finalData = await finalCheck.json();
+            if (finalData.exists) {
+                setLogs(prev => [...prev, "♻️ Recuperando processamento de fundo..."]);
+                // Se o usuário existe, permitimos completar mesmo com erro no pipeline visual
+            }
+        } catch(e) {}
       }
     };
 
