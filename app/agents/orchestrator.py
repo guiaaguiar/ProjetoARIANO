@@ -30,7 +30,19 @@ class OrchestratorAgent:
 
     def process_new_entity(self, entity_uid: str, entity_type: str, profile_data: dict) -> Dict[str, Any]:
         """Runs the full intelligence pipeline for a new or updated entity."""
+        from app.core.neo4j_driver import get_memory_store, is_memory_mode
+        
         logger.info(f"🚀 Orchestrator: Starting pipeline for {entity_type} {entity_uid}")
+        
+        # Se estivermos em modo memória, usamos batch_update para evitar timeouts no Vercel KV
+        if is_memory_mode():
+            store = get_memory_store()
+            with store.batch_update():
+                return self._process_logic(entity_uid, entity_type, profile_data)
+        else:
+            return self._process_logic(entity_uid, entity_type, profile_data)
+
+    def _process_logic(self, entity_uid: str, entity_type: str, profile_data: dict) -> Dict[str, Any]:
         self._update_status(entity_uid, entity_type, "started", "Iniciando processamento cognitivo...")
         
         try:

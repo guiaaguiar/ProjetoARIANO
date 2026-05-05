@@ -36,6 +36,7 @@ class MemoryGraphStore:
     def __init__(self):
         self.nodes: dict[str, dict] = {}  # uid -> {labels: [...], props: {...}}
         self.edges: list[dict] = []  # [{source, target, type, props}]
+        self.auto_save = True
         logger.info("📦 MemoryGraphStore initialized (Neo4j fallback)")
         # Tenta carregar dados persistidos se estivermos em ambiente de produção/Vercel
         self.load_from_kv()
@@ -100,7 +101,8 @@ class MemoryGraphStore:
 
     def add_node(self, uid: str, labels: list[str], props: dict):
         self.nodes[uid] = {"labels": labels, "props": {**props, "uid": uid}}
-        self.save_to_kv()
+        if self.auto_save:
+            self.save_to_kv()
 
     def get_node(self, uid: str) -> dict | None:
         return self.nodes.get(uid)
@@ -125,7 +127,8 @@ class MemoryGraphStore:
             "type": edge_type,
             "props": props or {},
         })
-        self.save_to_kv()
+        if self.auto_save:
+            self.save_to_kv()
 
     def get_edges(self, source: str = None, target: str = None,
                   edge_type: str = None) -> list[dict]:
@@ -142,7 +145,8 @@ class MemoryGraphStore:
 
     def delete_edges(self, edge_type: str):
         self.edges = [e for e in self.edges if e["type"] != edge_type]
-        self.save_to_kv()
+        if self.auto_save:
+            self.save_to_kv()
 
     def find_node_by_prop(self, label: str, prop: str, value: Any) -> dict | None:
         for n in self.nodes.values():
@@ -154,6 +158,19 @@ class MemoryGraphStore:
         if label:
             return len(self.get_nodes_by_label(label))
         return len(self.nodes)
+
+    from contextlib import contextmanager
+
+    @contextmanager
+    def batch_update(self):
+        """Context manager para desabilitar auto-save durante múltiplas operações."""
+        original_auto_save = self.auto_save
+        self.auto_save = False
+        try:
+            yield
+        finally:
+            self.auto_save = original_auto_save
+            self.save_to_kv()
 
     def count_edges(self, edge_type: str = None) -> int:
         if edge_type:

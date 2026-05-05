@@ -216,40 +216,41 @@ def extract_skills_v2(request: ExtractSkillsRequest):
             "areas": analysis["classified_areas"][:3]
         }
     
-    # PERSISTENCE IN NEO4J
-    # Update User with scratchpad
-    run_cypher(
-        "MATCH (u) WHERE u.uid = $uid SET u.scratchpad = $scratch, u.last_step = 'skills'",
-        {"uid": request.entity_uid, "scratch": data.get("scratchpad")}
-    )
-    
-    # Create Skills & Connections
-    for s_name in data["skills"]:
+    # PERSISTENCE IN NEO4J (Batched for Performance)
+    with store.batch_update():
+        # Update User with scratchpad
         run_cypher(
-            """
-            MERGE (s:Skill {name: $name})
-            ON CREATE SET s.uid = $suid, s.created_at = timestamp()
-            WITH s
-            MATCH (u) WHERE u.uid = $uid
-            MERGE (u)-[r:HAS_SKILL]->(s)
-            SET r.source = 'v2_pipeline', r.confidence = 0.95
-            """,
-            {"name": s_name, "suid": str(uuid.uuid4())[:8], "uid": request.entity_uid}
+            "MATCH (u) WHERE u.uid = $uid SET u.scratchpad = $scratch, u.last_step = 'skills'",
+            {"uid": request.entity_uid, "scratch": data.get("scratchpad")}
         )
         
-    # Create Areas & Connections
-    for a_name in data["areas"]:
-        run_cypher(
-            """
-            MERGE (a:Area {name: $name})
-            ON CREATE SET a.uid = $auid, a.created_at = timestamp()
-            WITH a
-            MATCH (u) WHERE u.uid = $uid
-            MERGE (u)-[r:WORKS_IN_AREA]->(a)
-            SET r.source = 'v2_pipeline'
-            """,
-            {"name": a_name, "auid": str(uuid.uuid4())[:8], "uid": request.entity_uid}
-        )
+        # Create Skills & Connections
+        for s_name in data["skills"]:
+            run_cypher(
+                """
+                MERGE (s:Skill {name: $name})
+                ON CREATE SET s.uid = $suid, s.created_at = timestamp()
+                WITH s
+                MATCH (u) WHERE u.uid = $uid
+                MERGE (u)-[r:HAS_SKILL]->(s)
+                SET r.source = 'v2_pipeline', r.confidence = 0.95
+                """,
+                {"name": s_name, "suid": str(uuid.uuid4())[:8], "uid": request.entity_uid}
+            )
+            
+        # Create Areas & Connections
+        for a_name in data["areas"]:
+            run_cypher(
+                """
+                MERGE (a:Area {name: $name})
+                ON CREATE SET a.uid = $auid, a.created_at = timestamp()
+                WITH a
+                MATCH (u) WHERE u.uid = $uid
+                MERGE (u)-[r:WORKS_IN_AREA]->(a)
+                SET r.source = 'v2_pipeline'
+                """,
+                {"name": a_name, "auid": str(uuid.uuid4())[:8], "uid": request.entity_uid}
+            )
         
     return AgentResponse(status="success", message="Skills persistidas no grafo", data=data)
 
@@ -327,26 +328,26 @@ def explain_matches_v2(request: ExplainMatchesRequest):
             logger.error(f"❌ Explain matches failed: {e}")
             return AgentResponse(status="error", message="Falha ao gerar justificativas", data={})
 
-    # PERSISTENCE IN NEO4J
-    
-    for match in data.get("matches", []):
-        run_cypher(
-            """
-            MATCH (u) WHERE u.uid = $uid
-            MATCH (e:Edital) WHERE e.uid = $euid OR e.title = $title
-            MERGE (u)-[r:ELIGIBLE_FOR]->(e)
-            SET r.justification = $just,
-                r.score = 0.9,
-                r.source = 'v2_pipeline',
-                r.created_at = timestamp()
-            """,
-            {
-                "uid": request.entity_uid,
-                "euid": match.get("uid"),
-                "title": match["title"],
-                "just": match["justification"]
-            }
-        )
+    # PERSISTENCE IN NEO4J (Batched for Performance)
+    with store.batch_update():
+        for match in data.get("matches", []):
+            run_cypher(
+                """
+                MATCH (u) WHERE u.uid = $uid
+                MATCH (e:Edital) WHERE e.uid = $euid OR e.title = $title
+                MERGE (u)-[r:ELIGIBLE_FOR]->(e)
+                SET r.justification = $just,
+                    r.score = 0.9,
+                    r.source = 'v2_pipeline',
+                    r.created_at = timestamp()
+                """,
+                {
+                    "uid": request.entity_uid,
+                    "euid": match.get("uid"),
+                    "title": match["title"],
+                    "just": match["justification"]
+                }
+            )
 
     return AgentResponse(status="success", message="Matches e justificativas salvos no grafo", data=data)
 
