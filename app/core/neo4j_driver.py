@@ -200,19 +200,6 @@ class MemoryGraphStore:
             return len(self.get_nodes_by_label(label))
         return len(self.nodes)
 
-    from contextlib import contextmanager
-
-    @contextmanager
-    def batch_update(self):
-        """Context manager para desabilitar auto-save durante múltiplas operações."""
-        original_auto_save = self.auto_save
-        self.auto_save = False
-        try:
-            yield
-        finally:
-            self.auto_save = original_auto_save
-            self.save_to_kv()
-
     def count_edges(self, edge_type: str = None) -> int:
         if edge_type:
             return len([e for e in self.edges if e["type"] == edge_type])
@@ -447,11 +434,24 @@ def _handle_match_return(query: str, params: dict, store: MemoryGraphStore) -> l
         if "RESEARCHER" in q: labels_to_check.append("Researcher")
         if "PROFESSOR" in q: labels_to_check.append("Professor")
         if "EDITAL" in q: labels_to_check.append("Edital")
+
+        # Detect status filter: WHERE e.status = 'aberto'
+        filter_status = None
+        if "STATUS = 'ABERTO'" in q or 'STATUS = "ABERTO"' in q:
+            filter_status = "aberto"
+
+        # Detect LIMIT
+        import re as _re
+        limit_match = _re.search(r'LIMIT\s+(\d+)', q)
+        limit = int(limit_match.group(1)) if limit_match else 1000
         
         for label in labels_to_check:
             for node in store.get_nodes_by_label(label):
                 uid_param = params.get("uid") or params.get("entity_uid")
                 if uid_param and node.get("uid") != uid_param:
+                    continue
+                # Apply status filter for Editais
+                if filter_status and label == "Edital" and node.get("status", "aberto") != filter_status:
                     continue
                 results.append({
                     "uid": node.get("uid"),
@@ -470,7 +470,7 @@ def _handle_match_return(query: str, params: dict, store: MemoryGraphStore) -> l
                     "description": node.get("description", ""),
                     "edital_type": node.get("edital_type", "pesquisa"),
                 })
-        return results
+        return results[:limit]
 
     # Shared skills query (HAS_SKILL + REQUIRES_SKILL)
     if "HAS_SKILL" in q and "REQUIRES_SKILL" in q:

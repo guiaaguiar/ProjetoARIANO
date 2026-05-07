@@ -227,10 +227,18 @@ def seed_native():
 
     if is_memory_mode():
         store = get_memory_store()
+        # Lazy seeding: only re-seed if no Editais exist
+        existing_editais = store.get_nodes_by_label("Edital")
+        if existing_editais:
+            print(f"  ⚡ Lazy seed: {len(existing_editais)} editais already exist, skipping re-seed.")
+            return {}
         store.nodes.clear()
         store.edges.clear()
+        # batch_update disables auto-save, does ONE final save when done
+        result = {}
         with store.batch_update():
-            return _seed_to_memory(store)
+            result = _seed_to_memory(store)
+        return result
     else:
         run_cypher("MATCH (n) DETACH DELETE n")
         return _seed_to_neo4j()
