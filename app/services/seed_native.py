@@ -229,7 +229,8 @@ def seed_native():
         store = get_memory_store()
         store.nodes.clear()
         store.edges.clear()
-        return _seed_to_memory(store)
+        with store.batch_update():
+            return _seed_to_memory(store)
     else:
         run_cypher("MATCH (n) DETACH DELETE n")
         return _seed_to_neo4j()

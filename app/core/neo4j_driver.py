@@ -37,9 +37,25 @@ class MemoryGraphStore:
         self.nodes: dict[str, dict] = {}  # uid -> {labels: [...], props: {...}}
         self.edges: list[dict] = []  # [{source, target, type, props}]
         self.auto_save = True
+        self._in_batch = False
         logger.info("📦 MemoryGraphStore initialized (Neo4j fallback)")
         # Tenta carregar dados persistidos se estivermos em ambiente de produção/Vercel
         self.load_from_kv()
+
+    from contextlib import contextmanager
+    @contextmanager
+    def batch_update(self):
+        """Context manager to disable auto-save during bulk operations."""
+        original_auto_save = self.auto_save
+        self.auto_save = False
+        self._in_batch = True
+        try:
+            yield
+        finally:
+            self.auto_save = original_auto_save
+            self._in_batch = False
+            if self.auto_save:
+                self.save_to_kv()
 
     def save_to_kv(self):
         """Persiste o estado COMPLETO do grafo no Vercel KV (Fallback legados ou sincronização global)."""
@@ -68,17 +84,18 @@ class MemoryGraphStore:
             node_data = self.nodes.get(uid)
             if not node_data: return
             with httpx.Client(timeout=5.0) as client:
+                # 1. Salva o nó
                 client.post(
                     f"{url}/set/ariano:node:{uid}",
                     headers={"Authorization": f"Bearer {token}"},
                     content=json.dumps(node_data)
                 )
-            # Também adiciona ao índice de UIDs
-            client.post(
-                f"{url}/sadd/ariano:uids",
-                headers={"Authorization": f"Bearer {token}"},
-                content=uid
-            )
+                # 2. Também adiciona ao índice de UIDs (dentro do bloco do cliente)
+                client.post(
+                    f"{url}/sadd/ariano:uids",
+                    headers={"Authorization": f"Bearer {token}"},
+                    content=uid
+                )
         except Exception as e:
             logger.error(f"❌ Falha ao salvar nó {uid} no KV: {e}")
 

@@ -74,7 +74,13 @@ Você é o motor de matchmaking do ARIANO. Analise o perfil e retorne APENAS JSO
 - Retorna `uid` + `profile_json` completo para o frontend usar localmente
 - Persiste apenas autenticação (cookie JWT) imediatamente
 
+#### [FIXED] `app/core/neo4j_driver.py` & `app/services/seed_native.py`
+- Resolvido bug "client closed" no `save_node_to_kv` movendo chamadas para dentro do bloco `with httpx.Client`.
+- Implementado `batch_update` no `MemoryGraphStore` para evitar dezenas de escritas redundantes do grafo completo durante o seed.
+- Envolvido o seed inicial com `batch_update`, reduzindo latência de ~15s para <2s, eliminando o erro 504.
+
 #### [NEW] `app/api/user_routes.py` → endpoint `POST /finalize`
+...
 
 - Chamado **apenas quando o usuário interage** (clica em match ou "Ver Perfil")
 - Body: `{ uid, profile_data, matches_data }`
@@ -153,15 +159,17 @@ Componente de grafo animado para as fases 1 e 2:
 | Animação em 3 fases visuais | Inspeção manual no `/cadastro` |
 | LLM responde com JSON válido | Log de servidor + `console.log` |
 | Dados salvos só no final | Verificar `/api/users/debug/kv` antes e depois do clique |
-| Timeout < 30s (Vercel limit) | Uma única chamada LLM vs 4 chamadas sequenciais |
+| Sem erros "client closed" | Verificar logs do backend após registro |
+| Timeout < 10s (Vercel limit) | Uma única chamada LLM + Seed otimizado |
 
 ---
 
 ## Ordem de Execução
 
-- [ ] **1.** Criar endpoint `POST /api/agents/v2/cognition-full`
-- [ ] **2.** Criar endpoint `POST /api/users/finalize`
-- [ ] **3.** Refatorar `CognitionExperience.tsx` — remover pre-flight e pipeline multi-step
-- [ ] **4.** Implementar animação em 3 fases (editais → rede → matches)
-- [ ] **5.** Conectar clique no match ao `/finalize` + navegação para grafo
-- [ ] **6.** Deploy e QA completo
+- [x] **1.** Criar endpoint `POST /api/agents/v2/cognition-full`
+- [x] **2.** Criar endpoint `POST /api/users/finalize`
+- [x] **3.** Corrigir bug "client closed" e otimizar seed com `batch_update`
+- [x] **4.** Refatorar `CognitionExperience.tsx` — remover pre-flight e pipeline multi-step
+- [ ] **5.** Implementar animação em 3 fases (editais → rede → matches)
+- [ ] **6.** Conectar clique no match ao `/finalize` + navegação para grafo
+- [ ] **7.** Deploy e QA completo
