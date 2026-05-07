@@ -179,3 +179,88 @@ async def reset_database(response: Response):
     except Exception as e:
         logger.error(f"❌ Erro ao resetar banco: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+from pydantic import BaseModel
+
+class FinalizeRequest(BaseModel):
+    uid: str
+    profile_data: dict
+    matches: list
+
+
+@router.post("/finalize")
+async def finalize_registration(body: FinalizeRequest):
+    """
+    Called when the user interacts with the final results screen (clicks a match or 'Ver Perfil').
+    Persists all user data and match relationships to the graph — deferred persistence pattern.
+    """
+    try:
+        uid = body.uid
+        profile_data = body.profile_data
+        matches = body.matches
+
+        logger.info(f"💾 Finalizando cadastro de {uid} com {len(matches)} matches.")
+
+        if is_memory_mode():
+            store = get_memory_store()
+            # Ensure node exists (update it with full profile if needed)
+            if not store.get_node(uid):
+                neo4j_type = {"student": "Student", "researcher": "Researcher", "professor": "Professor"}.get(
+                    profile_data.get("user_type", "student"), "Student"
+                )
+                store.add_node(uid, [neo4j_type], profile_data)
+                logger.info(f"✅ Nó {uid} criado no grafo de memória.")
+            
+            # Save match edges
+            for match in matches:
+                edital_uid = match.get("edital_uid", "")
+                if edital_uid:
+                    store.add_edge(uid, edital_uid, "ELIGIBLE_FOR", {
+                        "score": match.get("score", 0.75),
+                        "justification": match.get("justification", ""),
+                        "source": "cognition_v3",
+                    })
+        else:
+            # Upsert user node
+            neo4j_type = {"student": "Student", "researcher": "Researcher", "professor": "Professor"}.get(
+                profile_data.get("user_type", "student"), "Student"
+            )
+            run_cypher(f"""
+                MERGE (u:{neo4j_type} {{uid: $uid}})
+                SET u.name = $name, u.email = $email, u.institution = $institution,
+                    u.course = $course, u.bio = $bio, u.o_que_busco = $o_que_busco,
+                    u.finalized_at = $ts
+            """, {
+                "uid": uid,
+                "name": profile_data.get("name", ""),
+                "email": profile_data.get("email", ""),
+                "institution": profile_data.get("institution", ""),
+                "course": profile_data.get("course", ""),
+                "bio": profile_data.get("bio", ""),
+                "o_que_busco": profile_data.get("o_que_busco", ""),
+                "ts": datetime.now().isoformat(),
+            })
+
+            # Save match relationships
+            for match in matches:
+                edital_uid = match.get("edital_uid", "")
+                if edital_uid:
+                    run_cypher("""
+                        MATCH (u {uid: $uid})
+                        MATCH (e:Edital {uid: $euid})
+                        MERGE (u)-[r:ELIGIBLE_FOR]->(e)
+                        SET r.score = $score, r.justification = $just, r.source = 'cognition_v3'
+                    """, {
+                        "uid": uid,
+                        "euid": edital_uid,
+                        "score": match.get("score", 0.75),
+                        "just": match.get("justification", ""),
+                    })
+
+        logger.info(f"✅ Cadastro finalizado com sucesso para {uid}.")
+        return {"status": "success", "message": "Perfil e matches salvos no ecossistema."}
+
+    except Exception as e:
+        logger.error(f"❌ Erro ao finalizar cadastro: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))

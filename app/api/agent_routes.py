@@ -134,9 +134,164 @@ class ExplainMatchesRequest(BaseModel):
     matches: list[dict] # list of {title, uid}
 
 
+
+class CognitionFullRequest(BaseModel):
+    """Single-call cognition: receives full profile directly, no KV lookup needed."""
+    uid: str
+    name: str
+    bio: str = ""
+    institution: str = ""
+    course: str = ""
+    semester: int = 1
+    o_que_busco: str = ""
+    curriculo_texto: str = ""
+    user_type: str = "student"
+
+
+# ═══════════════════════════════════════════
+# V3 SINGLE-CALL COGNITION (NEW ARCHITECTURE)
+# ═══════════════════════════════════════════
+
+@router.post("/v2/cognition-full", response_model=AgentResponse)
+def cognition_full(request: CognitionFullRequest):
+    """
+    Single-call LLM pipeline for the registration animation.
+    
+    Receives the complete user profile directly from the frontend (no KV lookup).
+    Returns structured JSON with edital_nodes, network_nodes, and matches for
+    the 3-phase cinematic animation.
+    """
+    import json, re
+
+    analyzer = _get_profile_analyzer()
+
+    # 1. Fetch available editais from the graph (these always exist)
+    editais_raw = run_cypher(
+        "MATCH (e:Edital) WHERE e.status = 'aberto' RETURN e.title AS title, e.uid AS uid, e.description AS description, e.institution AS institution LIMIT 15"
+    )
+    # Fallback: seed editais if none exist
+    if not editais_raw:
+        from app.services.seed_native import seed_native
+        seed_native()
+        editais_raw = run_cypher(
+            "MATCH (e:Edital) WHERE e.status = 'aberto' RETURN e.title AS title, e.uid AS uid, e.description AS description, e.institution AS institution LIMIT 15"
+        )
+
+    # 2. Fetch network peers for context
+    network_raw = run_cypher(
+        "MATCH (u) WHERE (u:Student OR u:Professor OR u:Researcher) RETURN u.name AS name, labels(u)[0] AS type LIMIT 8"
+    )
+
+    edital_list_str = "\n".join([
+        f"- UID:{e.get('uid','?')} | {e.get('title','?')} ({e.get('institution','?')}): {(e.get('description') or '')[:120]}"
+        for e in editais_raw
+    ])
+    network_list_str = "\n".join([
+        f"- {n.get('name','?')} ({n.get('type','?')})"
+        for n in network_raw
+    ]) or "- Nenhum membro na rede ainda."
+
+    prompt = f"""Você é o motor de matchmaking cognitivo do ARIANO, um ecossistema de inovação acadêmica.
+
+PERFIL DO NOVO USUÁRIO:
+- Nome: {request.name}
+- Curso: {request.course} (Semestre {request.semester}) em {request.institution}
+- Bio: {request.bio or 'Não informada'}
+- Objetivos: {request.o_que_busco or 'Não informado'}
+- Currículo/Experiências: {(request.curriculo_texto or 'Não informado')[:500]}
+
+EDITAIS DISPONÍVEIS NO ECOSSISTEMA:
+{edital_list_str}
+
+MEMBROS DA REDE EXISTENTE:
+{network_list_str}
+
+Sua tarefa: analisar o perfil e retornar APENAS JSON válido (sem markdown, sem explicações), com exatamente este formato:
+{{
+  "edital_nodes": [
+    {{"name": "Título exato do edital", "uid": "uid-do-edital"}}
+  ],
+  "network_nodes": [
+    {{"name": "Nome do membro", "type": "professor"}}
+  ],
+  "matches": [
+    {{
+      "edital_name": "Título exato do edital",
+      "edital_uid": "uid-do-edital",
+      "institution": "Instituição do edital",
+      "justification": "1-2 frases técnicas explicando por que este edital é perfeito para este perfil específico.",
+      "score": 0.85
+    }}
+  ]
+}}
+
+Regras:
+- edital_nodes: exatamente 3 editais mais compatíveis com o perfil
+- network_nodes: até 4 pessoas da rede que seriam conexões estratégicas (use a lista fornecida ou crie nomes plausíveis se a rede estiver vazia)
+- matches: os mesmos 3 editais de edital_nodes, com justificativas únicas e técnicas
+- score: número entre 0.0 e 1.0 representando a aderência
+- Responda APENAS com o JSON. Nenhum texto adicional."""
+
+    result_data = {"edital_nodes": [], "network_nodes": [], "matches": []}
+
+    if analyzer.llm:
+        try:
+            from langchain_core.messages import HumanMessage
+            response = analyzer.llm.invoke([HumanMessage(content=prompt)])
+            raw = response.content.strip()
+            # Strip markdown code fences if present
+            raw = re.sub(r'^```(?:json)?\s*', '', raw, flags=re.MULTILINE)
+            raw = re.sub(r'\s*```$', '', raw, flags=re.MULTILINE)
+            result_data = json.loads(raw.strip())
+            logger.info(f"✅ cognition-full: LLM returned {len(result_data.get('matches', []))} matches for {request.uid}")
+        except Exception as e:
+            logger.error(f"❌ cognition-full LLM failed: {e}. Using rule-based fallback.")
+            # Rule-based fallback
+            result_data = _cognition_fallback(request, editais_raw, network_raw)
+    else:
+        logger.info("ℹ️ cognition-full: No LLM, using rule-based fallback.")
+        result_data = _cognition_fallback(request, editais_raw, network_raw)
+
+    return AgentResponse(
+        status="success",
+        message="Cognição completa gerada com sucesso.",
+        data=result_data
+    )
+
+
+def _cognition_fallback(request: CognitionFullRequest, editais: list, network: list) -> dict:
+    """Rule-based fallback when LLM is unavailable."""
+    top_editais = editais[:3]
+    top_network = network[:4]
+
+    edital_nodes = [{"name": e.get("title", "Edital"), "uid": e.get("uid", "")} for e in top_editais]
+    network_nodes = [{"name": n.get("name", "Membro"), "type": (n.get("type") or "student").lower()} for n in top_network]
+    
+    # Add placeholder nodes if network is empty
+    if not network_nodes:
+        network_nodes = [
+            {"name": "Prof. Silva", "type": "professor"},
+            {"name": "Ana Costa", "type": "student"},
+        ]
+
+    matches = [
+        {
+            "edital_name": e.get("title", "Edital"),
+            "edital_uid": e.get("uid", ""),
+            "institution": e.get("institution", ""),
+            "justification": f"Compatibilidade identificada entre o perfil de {request.course} de {request.name} e os requisitos deste edital no ecossistema {request.institution}.",
+            "score": round(0.75 - (i * 0.05), 2)
+        }
+        for i, e in enumerate(top_editais)
+    ]
+
+    return {"edital_nodes": edital_nodes, "network_nodes": network_nodes, "matches": matches}
+
+
 # ═══════════════════════════════════════════
 # V2 MULTI-STEP PIPELINE (FOR ANIMATION)
 # ═══════════════════════════════════════════
+
 
 @router.post("/v2/analyze-profile", response_model=AgentResponse)
 def analyze_profile_v2(request: ProfileContextRequest):

@@ -1,12 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bot, Cpu, Network, Zap, CheckCircle2, ArrowRight, MessageSquare, ShieldCheck, RefreshCw } from 'lucide-react';
-import { MiniGraphAnimation } from '../MiniGraphAnimation';
-import { MatchResultCards } from '../MatchResultCards';
+import { CheckCircle2, ArrowRight, RefreshCw, Zap } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
-import * as api from '../../lib/api';
 
 interface CognitionExperienceProps {
   userName: string;
@@ -15,386 +12,505 @@ interface CognitionExperienceProps {
   onComplete: () => void;
 }
 
-const AGENT_STEPS = [
-  { id: 'orchestrator', label: 'Iniciando Cognição', icon: Bot, color: 'text-teal-400', glow: 'shadow-teal-500/40' },
-  { id: 'analyzer', label: 'Análise de Potencial', icon: Cpu, color: 'text-blue-400', glow: 'shadow-blue-500/40' },
-  { id: 'knowledge', label: 'Integração de Rede', icon: Network, color: 'text-purple-400', glow: 'shadow-purple-500/40' },
-  { id: 'match', label: 'Otimização de Matches', icon: Zap, color: 'text-amber-400', glow: 'shadow-amber-500/40' },
-];
+// Phase types for the 3-phase animation
+type Phase = 'loading' | 'editais' | 'network' | 'matches' | 'done' | 'error';
 
-const AGENT_COLORS: Record<string, string> = {
-  orchestrator: 'border-teal-500/50 shadow-[0_0_20px_rgba(20,184,166,0.1)]',
-  analyzer: 'border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.1)]',
-  knowledge: 'border-purple-500/50 shadow-[0_0_20px_rgba(168,85,247,0.1)]',
-  match: 'border-amber-500/50 shadow-[0_0_20px_rgba(245,158,11,0.1)]',
+interface EditalNode {
+  name: string;
+  uid: string;
+}
+
+interface NetworkNode {
+  name: string;
+  type: 'professor' | 'student' | 'researcher';
+}
+
+interface Match {
+  edital_name: string;
+  edital_uid: string;
+  institution: string;
+  justification: string;
+  score: number;
+}
+
+const NODE_TYPE_COLORS: Record<string, string> = {
+  professor: 'bg-purple-500/20 border-purple-500/60 text-purple-300',
+  student: 'bg-teal-500/20 border-teal-500/60 text-teal-300',
+  researcher: 'bg-blue-500/20 border-blue-500/60 text-blue-300',
 };
 
-const AGENT_ICON_COLORS: Record<string, string> = {
-  orchestrator: 'bg-gray-950 border-teal-500 shadow-teal-500/20',
-  analyzer: 'bg-gray-950 border-blue-500 shadow-blue-500/20',
-  knowledge: 'bg-gray-950 border-purple-500 shadow-purple-500/20',
-  match: 'bg-gray-950 border-amber-500 shadow-amber-500/20',
+const NODE_TYPE_LABEL: Record<string, string> = {
+  professor: 'Professor',
+  student: 'Estudante',
+  researcher: 'Pesquisador',
 };
 
-export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userName, userId, formData, onComplete }) => {
+export const CognitionExperience: React.FC<CognitionExperienceProps> = ({
+  userName,
+  userId,
+  formData,
+  onComplete,
+}) => {
   const navigate = useNavigate();
   const { setCachedMatches } = useAuthStore();
-  const [currentStep, setCurrentStep] = useState(0);
-  const [logs, setLogs] = useState<string[]>([]);
-  const [showFinish, setShowFinish] = useState(false);
-  const [matches, setMatches] = useState<any[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  
-  const [activeSkills, setActiveSkills] = useState<string[]>([]);
-  const [activeAreas, setActiveAreas] = useState<string[]>([]);
-  const [activeMatches, setActiveMatches] = useState<any[]>([]);
+  const [phase, setPhase] = useState<Phase>('loading');
+  const [statusMsg, setStatusMsg] = useState('Ativando motor cognitivo ARIANO...');
+  const [editalNodes, setEditalNodes] = useState<EditalNode[]>([]);
+  const [networkNodes, setNetworkNodes] = useState<NetworkNode[]>([]);
+  const [matches, setMatches] = useState<Match[]>([]);
+  const [errorMsg, setErrorMsg] = useState('');
+  const isMounted = useRef(true);
 
   useEffect(() => {
-    if (!userId || !formData) return; // Aguarda o UID do registro
-    
-    let isMounted = true;
-    const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
+    isMounted.current = true;
+    return () => { isMounted.current = false; };
+  }, []);
 
-    const runPipeline = async () => {
-      try {
-        console.log("🛠️ [Debug] Iniciando pipeline para User:", userId);
-        
-        // PRE-FLIGHT CHECK: Esperar o usuário existir no grafo (Vercel KV Sync)
-        setLogs(prev => [...prev, "📡 Sincronizando com o ecossistema..."]);
-        let attempts = 0;
-        let exists = false;
-        
-        while (attempts < 10 && !exists) {
-            try {
-                const checkRes = await fetch(`/api/users/check/${userId}`);
-                const checkData = await checkRes.json();
-                if (checkData.exists) {
-                    exists = true;
-                    break;
-                }
-            } catch (e) {
-                console.warn("Check attempt failed:", e);
-            }
-            attempts++;
-            await delay(1500); // Espera 1.5s entre tentativas
-        }
-        
-        if (!exists) {
-            throw new Error("Não foi possível localizar seu perfil no grafo. Tente recarregar a página.");
-        }
+  useEffect(() => {
+    if (!formData) return;
+    runCognition();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData]);
 
-        setCurrentStep(0);
-        console.log("🚀 [Cognition] Iniciando extração de contexto acadêmico...");
-        setLogs(prev => [...prev, "🧠 Iniciando extração de contexto acadêmico..."]);
-        
-        // Step 1: Analyze Profile
-        const [contextRes] = await Promise.all([
-          fetch('/api/agents/v2/analyze-profile', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...formData, entity_uid: userId })
-          }),
-          delay(3500) // Cadência mínima
-        ]);
-        
-        const contextData = await contextRes.json();
-        if (!isMounted) return;
-        
-        if (contextData.status === 'error') throw new Error(contextData.message);
+  const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
-        console.log("✅ [Cognition] Contexto processado:", contextData);
-        const profileContext = contextData.data.context;
-        setLogs(prev => [...prev, "✅ Contexto processado. Acionando Agente Analista..."]);
-        
-        // Step 2: Extract Skills
-        setCurrentStep(1);
-        const [skillsRes] = await Promise.all([
-          fetch('/api/agents/v2/extract-skills', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ context: profileContext, entity_uid: userId })
-          }),
-          delay(4000) // Cadência para o Agente Analista
-        ]);
-        
-        const skillsData = await skillsRes.json();
-        if (!isMounted) return;
-        
-        if (skillsData.status === 'error') throw new Error(skillsData.message);
+  const runCognition = async () => {
+    try {
+      // ── Single LLM call — no KV lookup, no pre-flight check ──
+      setStatusMsg('Analisando perfil no ecossistema de inovação...');
 
-        console.log("✅ [Cognition] Skills extraídas:", skillsData);
-        setActiveSkills(skillsData.data.skills);
-        setActiveAreas(skillsData.data.areas);
-        setLogs(prev => [...prev, `🔍 Habilidades encontradas: ${skillsData.data.skills.slice(0,3).join(', ')}...`]);
-        setLogs(prev => [...prev, "🧬 Integrando conexões no ecossistema..."]);
-        
-        // Step 3: Match Editais (Filtering)
-        setCurrentStep(2);
-        const [matchesRes] = await Promise.all([
-          fetch('/api/agents/v2/match-editais', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ context: profileContext, skills: skillsData.data.skills, entity_uid: userId })
-          }),
-          delay(4000)
-        ]);
-        
-        const matchesData = await matchesRes.json();
-        if (!isMounted) return;
-        
-        if (matchesData.status === 'error') throw new Error(matchesData.message);
+      const res = await fetch('/api/agents/v2/cognition-full', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          uid: userId || 'anon',
+          name: formData.name || userName,
+          bio: formData.bio || '',
+          institution: formData.institution || '',
+          course: formData.course || '',
+          semester: Number(formData.semester) || 1,
+          o_que_busco: formData.o_que_busco || '',
+          curriculo_texto: formData.curriculo_texto || '',
+          user_type: formData.user_type || 'student',
+        }),
+      });
 
-        console.log("✅ [Cognition] Matches filtrados:", matchesData);
-        
-        // Step 4: Explain Matches (Deep Reasoning)
-        setLogs(prev => [...prev, "🧠 Analisando aderência profunda com editais selecionados..."]);
-        const [explainRes] = await Promise.all([
-          fetch('/api/agents/v2/explain-matches', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-              context: profileContext, 
-              skills: skillsData.data.skills,
-              matches: matchesData.data.matches,
-              entity_uid: userId
-            })
-          }),
-          delay(5000) // Cadência para o raciocínio profundo
-        ]);
-        
-        const explainData = await explainRes.json();
-        if (!isMounted) return;
-        
-        if (explainData.status === 'error') throw new Error(explainData.message);
+      if (!isMounted.current) return;
 
-        console.log("✅ [Cognition] Justificativas LLM:", explainData);
-        setActiveMatches(explainData.data.matches);
-        setMatches(explainData.data.matches);
-        setCachedMatches(explainData.data.matches);
-        
-        // Garante sincronização de sessão antes do fim
-        console.log("🔐 [Cognition] Sincronizando sessão...");
-        await useAuthStore.getState().checkAuth();
-        
-        setCurrentStep(3);
-        setLogs(prev => [...prev, "🎯 Otimização de matches concluída com sucesso."]);
-        
-        setTimeout(() => {
-          if (isMounted) setShowFinish(true);
-        }, 2500);
-        
-      } catch (err: any) {
-        console.error("Pipeline error:", err);
-        // Se o erro for um timeout ou erro de rede, tentamos um fallback de status
-        setError(err.message || "Ocorreu um erro no processamento cognitivo. Verifique sua conexão.");
-        
-        // Fallback: Tenta verificar se o Orchestrator terminou em background
-        try {
-            const finalCheck = await fetch(`/api/users/check/${userId}`);
-            const finalData = await finalCheck.json();
-            if (finalData.exists) {
-                setLogs(prev => [...prev, "♻️ Recuperando processamento de fundo..."]);
-                // Se o usuário existe, permitimos completar mesmo com erro no pipeline visual
-            }
-        } catch(e) {}
+      if (!res.ok) throw new Error(`Servidor retornou ${res.status}`);
+
+      const payload = await res.json();
+
+      if (payload.status === 'error') throw new Error(payload.message);
+
+      const { edital_nodes = [], network_nodes = [], matches: llmMatches = [] } = payload.data;
+
+      // ── Phase 1: Editais ──
+      if (isMounted.current) {
+        setStatusMsg('Conectando aos editais mais compatíveis...');
+        setEditalNodes(edital_nodes);
+        setPhase('editais');
       }
-    };
+      await delay(3200);
 
-    runPipeline();
-    return () => { isMounted = false; };
-  }, [formData, userId]);
+      // ── Phase 2: Network ──
+      if (isMounted.current) {
+        setStatusMsg('Mapeando sua rede de inovação...');
+        setNetworkNodes(network_nodes);
+        setPhase('network');
+      }
+      await delay(3200);
 
-  const getProcessingMessage = () => {
-    if (error) return error;
-    if (currentStep === 0) return "Processando seu contexto acadêmico...";
-    if (currentStep === 1) return "Extraindo competências e áreas de atuação...";
-    if (currentStep === 2) return "Mapeando editais compatíveis no ecossistema...";
-    if (currentStep === 3) return "Análise concluída com sucesso!";
-    return "Iniciando jornada cognitiva...";
+      // ── Phase 3: Matches ──
+      if (isMounted.current) {
+        setStatusMsg('Matches identificados pela IA!');
+        setMatches(llmMatches);
+        setCachedMatches(llmMatches);
+        setPhase('matches');
+      }
+      await delay(800);
+
+      if (isMounted.current) setPhase('done');
+
+    } catch (err: any) {
+      console.error('[CognitionExperience] error:', err);
+      if (isMounted.current) {
+        setErrorMsg(err.message || 'Erro no processamento cognitivo.');
+        setPhase('error');
+      }
+    }
   };
 
-  const handleRetry = () => {
-    window.location.reload();
+  // ── Finalize: called when user clicks a match or "Explorar Perfil" ──
+  const finalize = async (selectedMatch?: Match) => {
+    try {
+      await fetch('/api/users/finalize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          uid: userId,
+          profile_data: { ...formData, user_type: formData.user_type || 'student' },
+          matches,
+        }),
+      });
+    } catch (e) {
+      console.warn('Finalize request failed (non-blocking):', e);
+    }
   };
+
+  const handleMatchClick = async (match: Match) => {
+    await finalize(match);
+    navigate(`/user/ecossistema?highlight=${match.edital_uid}`);
+  };
+
+  const handleExploreProfile = async () => {
+    await finalize();
+    onComplete();
+  };
+
+  // ────────────────────────────────────────────
+  // RENDER
+  // ────────────────────────────────────────────
 
   return (
-    <div className="fixed inset-0 z-50 bg-background/70 backdrop-blur-[120px] flex flex-col items-center justify-center p-6 lg:p-12 overflow-hidden">
-      {/* Background Glows */}
-      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-1/4 -left-20 w-96 h-96 bg-teal-500/10 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-blue-500/10 rounded-full blur-[120px] animate-pulse" />
+    <div className="fixed inset-0 z-50 bg-[#050a0f] flex flex-col items-center justify-center p-6 lg:p-12 overflow-hidden">
+      {/* Ambient glows */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-1/4 -left-32 w-[500px] h-[500px] bg-teal-600/8 rounded-full blur-[140px] animate-pulse" />
+        <div className="absolute bottom-1/4 -right-32 w-[500px] h-[500px] bg-indigo-600/8 rounded-full blur-[140px] animate-pulse" style={{ animationDelay: '1.5s' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-teal-500/4 rounded-full blur-[80px]" />
       </div>
 
-      <div className={`w-full transition-all duration-700 z-10 ${showFinish ? 'max-w-4xl' : 'max-w-7xl'}`}>
-        <AnimatePresence mode="wait">
-          {!showFinish ? (
-            <motion.div 
-              key="processing"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0, scale: 1.1 }}
-              className="flex flex-col items-center justify-center space-y-12"
-            >
-              {/* Central Title */}
-              <div className="text-center space-y-4">
-                  <h1 className="text-4xl lg:text-5xl font-bold text-white tracking-tight leading-tight">
-                    {logs.length > 0 ? getProcessingMessage() : "O ARIANO está fazendo conexões estratégicas..."}
-                  </h1>
-              </div>
-
-              {/* Central Graph & Agent Orbit */}
-              <div className="relative w-full aspect-square max-w-[600px] flex items-center justify-center">
-                 {/* Agent Orbit Circles */}
-                 <div className="absolute inset-0 border border-white/5 rounded-full animate-[spin_20s_linear_infinite]" />
-                 <div className="absolute inset-20 border border-white/10 rounded-full animate-[spin_15s_linear_infinite_reverse]" />
-                 
-                 {/* The Graph */}
-                 <div className="relative z-10 w-full h-full scale-125">
-                    <MiniGraphAnimation 
-                      step={currentStep} 
-                      activeSkills={activeSkills}
-                      activeAreas={activeAreas}
-                      activeMatches={activeMatches}
-                    />
-                 </div>
-
-                 {/* Agent Floating Bubbles */}
-                 {AGENT_STEPS.map((step, idx) => {
-                    const Icon = step.icon;
-                    const isActive = idx === currentStep;
-                    const isDone = idx < currentStep;
-                    
-                    const angle = (idx * 90) * (Math.PI / 180);
-                    const radius = window.innerWidth > 1024 ? 260 : 200; 
-                    
-                    return (
-                      <motion.div
-                        key={step.id}
-                        initial={false}
-                        animate={{
-                          scale: isActive ? 1.2 : 0.9,
-                          opacity: isActive ? 1 : isDone ? 0.6 : 0.2,
-                          x: Math.cos(angle) * (isActive ? 200 : radius),
-                          y: Math.sin(angle) * (isActive ? 200 : radius),
-                        }}
-                        className={`absolute w-16 h-16 rounded-3xl backdrop-blur-2xl border flex items-center justify-center transition-all duration-700 ${
-                          isActive ? `bg-gray-900 ${AGENT_COLORS[step.id]} ring-2 ring-white/20` : 
-                          isDone ? 'bg-teal-500/5 border-teal-500/20' : 'bg-gray-900/40 border-white/5'
-                        }`}
-                      >
-                         <Icon className={`w-8 h-8 ${isActive ? step.color : 'text-gray-500'}`} />
-                         {isActive && (
-                            <motion.div 
-                              layoutId="activeGlow"
-                              className="absolute -inset-4 bg-teal-500/10 blur-2xl rounded-full -z-10"
-                            />
-                         )}
-                      </motion.div>
-                    );
-                 })}
-              </div>
-
-              {/* Progress Stepper (Non-technical) */}
-              <div className="flex gap-4 items-center mt-8">
-                 {AGENT_STEPS.map((step, idx) => (
-                   <div key={idx} className="flex items-center">
-                      <motion.div
-                        animate={{
-                          width: idx === currentStep ? 120 : 12,
-                          backgroundColor: idx === currentStep ? '#14b8a6' : idx < currentStep ? '#0f766e' : '#1f2937',
-                        }}
-                        className="h-1.5 rounded-full relative overflow-hidden"
-                      >
-                         {idx === currentStep && (
-                           <motion.div 
-                             initial={{ x: '-100%' }}
-                             animate={{ x: '100%' }}
-                             transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
-                             className="absolute inset-0 bg-white/30"
-                           />
-                         )}
-                      </motion.div>
-                   </div>
-                 ))}
-              </div>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="results"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="flex flex-col items-center justify-center space-y-8 w-full"
-            >
-              <div className="text-center space-y-2 mb-4">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className={`inline-flex items-center gap-2 border px-4 py-2 rounded-full mb-4 ${error ? 'bg-red-500/10 border-red-500/30' : 'bg-teal-500/10 border-teal-500/30'}`}
-                >
-                  {error ? (
-                    <Bot className="w-5 h-5 text-red-400" />
-                  ) : (
-                    <CheckCircle2 className="w-5 h-5 text-teal-400" />
-                  )}
-                  <span className={`text-sm font-bold uppercase tracking-widest ${error ? 'text-red-400' : 'text-teal-400'}`}>
-                    {error ? 'Erro de Processamento' : 'Processamento Concluído'}
-                  </span>
-                </motion.div>
-                <h2 className="text-4xl font-bold text-white">
-                  {error ? 'Ops! Erro de Conexão' : 'Top 3 Matches Imediatos'}
-                </h2>
-                <p className="text-gray-400 mb-6">
-                  {error ? 'Não conseguimos processar seus dados em tempo real.' : 'O sistema pré-calculou sua aderência em milissegundos.'}
-                </p>
-                {error && (
-                  <button 
-                    onClick={handleRetry}
-                    className="px-8 py-3 bg-red-500/20 border border-red-500/50 text-red-400 rounded-xl font-bold hover:bg-red-500/30 transition-all flex items-center gap-2 mx-auto mt-4"
-                  >
-                    <RefreshCw className="w-5 h-5" /> Tentar Novamente
-                  </button>
-                )}
-              </div>
-
-              {!error && (
-                <MatchResultCards 
-                  matches={matches.length > 0 ? matches : []} 
-                />
-              )}
-
-              <div className="flex items-center gap-6 mt-8">
-                <button
-                  onClick={() => navigate('/user/matches')}
-                  className="text-gray-400 hover:text-white font-medium transition-colors"
-                >
-                  Ver Todos os Matches
-                </button>
-                <button
-                  onClick={onComplete}
-                  className="group relative px-10 py-4 bg-teal-600 hover:bg-teal-500 text-white rounded-2xl font-bold shadow-2xl shadow-teal-500/30 transition-all hover:scale-105 flex items-center gap-4 overflow-hidden"
-                >
-                  <div className="absolute inset-0 w-full h-full bg-white/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500" />
-                  Explorar Meu Perfil
-                  <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Decorative Matrix Background (Simplified) */}
-      <div className="absolute inset-0 -z-10 opacity-[0.03] pointer-events-none select-none overflow-hidden">
-        <div className="grid grid-cols-12 gap-4 h-full">
-          {Array.from({ length: 48 }).map((_, i) => (
-             <div key={i} className="flex flex-col gap-2 font-mono text-[8px] text-teal-500">
-               {Array.from({ length: 40 }).map((_, j) => (
-                 <span key={j}>{Math.random() > 0.5 ? '1' : '0'}</span>
-               ))}
-             </div>
+      {/* Matrix rain background */}
+      <div className="absolute inset-0 -z-10 opacity-[0.025] pointer-events-none select-none overflow-hidden">
+        <div className="grid grid-cols-16 gap-3 h-full font-mono text-[7px] text-teal-400">
+          {Array.from({ length: 64 }).map((_, i) => (
+            <div key={i} className="flex flex-col gap-1">
+              {Array.from({ length: 50 }).map((_, j) => (
+                <span key={j}>{Math.random() > 0.5 ? '1' : '0'}</span>
+              ))}
+            </div>
           ))}
         </div>
       </div>
+
+      <AnimatePresence mode="wait">
+        {/* ── LOADING PHASE ── */}
+        {phase === 'loading' && (
+          <motion.div
+            key="loading"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="flex flex-col items-center gap-10 text-center"
+          >
+            <CognitionOrb />
+            <div className="space-y-3">
+              <h1 className="text-3xl lg:text-4xl font-bold text-white tracking-tight">
+                {statusMsg}
+              </h1>
+              <p className="text-gray-500 text-sm">Uma chamada. Toda a inteligência do ecossistema.</p>
+            </div>
+            <PulseBar />
+          </motion.div>
+        )}
+
+        {/* ── PHASE 1: EDITAIS ── */}
+        {phase === 'editais' && (
+          <motion.div
+            key="editais"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex flex-col items-center gap-8 w-full max-w-2xl"
+          >
+            <PhaseLabel step={1} label="Editais Identificados" />
+            <h1 className="text-3xl font-bold text-white text-center">{statusMsg}</h1>
+            <GraphCanvas
+              center={{ label: userName.split(' ')[0], color: 'bg-teal-500' }}
+              nodes={editalNodes.map(e => ({ label: e.name, color: 'bg-amber-500/80 border-amber-400' }))}
+              edgeColor="stroke-amber-500/40"
+            />
+            <PulseBar />
+          </motion.div>
+        )}
+
+        {/* ── PHASE 2: NETWORK ── */}
+        {phase === 'network' && (
+          <motion.div
+            key="network"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex flex-col items-center gap-8 w-full max-w-2xl"
+          >
+            <PhaseLabel step={2} label="Rede de Inovação" />
+            <h1 className="text-3xl font-bold text-white text-center">{statusMsg}</h1>
+            <GraphCanvas
+              center={{ label: userName.split(' ')[0], color: 'bg-teal-500' }}
+              nodes={[
+                ...editalNodes.map(e => ({ label: e.name, color: 'bg-amber-500/70 border-amber-400/50', small: true })),
+                ...networkNodes.map(n => ({ label: n.name, color: NODE_TYPE_COLORS[n.type] || 'bg-teal-500/50' })),
+              ]}
+              edgeColor="stroke-indigo-500/30"
+            />
+            <PulseBar />
+          </motion.div>
+        )}
+
+        {/* ── PHASE 3 + DONE: MATCHES ── */}
+        {(phase === 'matches' || phase === 'done') && (
+          <motion.div
+            key="matches"
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex flex-col items-center gap-6 w-full max-w-3xl"
+          >
+            {/* Header */}
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-col items-center gap-2 text-center"
+            >
+              <div className="inline-flex items-center gap-2 bg-teal-500/10 border border-teal-500/30 px-4 py-1.5 rounded-full">
+                <CheckCircle2 className="w-4 h-4 text-teal-400" />
+                <span className="text-xs font-bold uppercase tracking-widest text-teal-400">
+                  Análise Cognitiva Completa
+                </span>
+              </div>
+              <h2 className="text-3xl lg:text-4xl font-bold text-white">
+                Top {matches.length} Matches do Ecossistema
+              </h2>
+              <p className="text-gray-500 text-sm max-w-md">
+                A IA mapeou sua aderência a {matches.length} editais estratégicos. Clique para explorar no grafo.
+              </p>
+            </motion.div>
+
+            {/* Match Cards */}
+            <div className="grid gap-4 w-full">
+              {matches.map((match, i) => (
+                <motion.button
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.15 }}
+                  onClick={() => handleMatchClick(match)}
+                  className="text-left w-full group bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 hover:border-teal-500/40 rounded-2xl p-5 transition-all duration-300 overflow-hidden relative"
+                >
+                  <div className="absolute top-0 right-0 w-40 h-40 bg-teal-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="flex items-start justify-between gap-4 mb-3">
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-teal-400 mb-1 flex items-center gap-1">
+                        <Zap className="w-3 h-3" /> Match #{i + 1}
+                      </p>
+                      <h3 className="text-base font-bold text-white group-hover:text-teal-300 transition-colors leading-snug">
+                        {match.edital_name}
+                      </h3>
+                      {match.institution && (
+                        <p className="text-xs text-gray-500 mt-0.5">{match.institution}</p>
+                      )}
+                    </div>
+                    <div className="shrink-0 flex flex-col items-end gap-1">
+                      <div className="bg-teal-500/10 border border-teal-500/20 rounded-full px-2.5 py-1 text-teal-400 font-black text-sm">
+                        {Math.round(match.score * 100)}%
+                      </div>
+                      <ArrowRight className="w-4 h-4 text-gray-600 group-hover:text-teal-400 group-hover:translate-x-1 transition-all" />
+                    </div>
+                  </div>
+                  {/* Score bar */}
+                  <div className="w-full bg-white/5 rounded-full h-1 mb-3">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${match.score * 100}%` }}
+                      transition={{ duration: 1.2, delay: i * 0.15 + 0.3, ease: [0.16, 1, 0.3, 1] }}
+                      className="h-full bg-teal-400 rounded-full shadow-[0_0_8px_rgba(45,212,191,0.6)]"
+                    />
+                  </div>
+                  {/* Justification */}
+                  <p className="text-[13px] text-gray-400 leading-relaxed italic">
+                    "{match.justification}"
+                  </p>
+                </motion.button>
+              ))}
+            </div>
+
+            {/* CTA buttons */}
+            <div className="flex items-center gap-4 mt-2">
+              <button
+                onClick={() => navigate('/user/matches')}
+                className="text-gray-500 hover:text-white text-sm font-medium transition-colors"
+              >
+                Ver todos os matches
+              </button>
+              <button
+                onClick={handleExploreProfile}
+                className="group relative px-8 py-3.5 bg-teal-600 hover:bg-teal-500 text-white rounded-xl font-bold shadow-xl shadow-teal-500/20 transition-all hover:scale-105 flex items-center gap-3 overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-white/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500" />
+                Explorar Meu Perfil
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── ERROR PHASE ── */}
+        {phase === 'error' && (
+          <motion.div
+            key="error"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex flex-col items-center gap-6 text-center max-w-md"
+          >
+            <div className="w-20 h-20 rounded-3xl bg-red-500/10 border border-red-500/30 flex items-center justify-center">
+              <RefreshCw className="w-10 h-10 text-red-400" />
+            </div>
+            <h2 className="text-2xl font-bold text-white">Falha na Cognição</h2>
+            <p className="text-gray-400 text-sm leading-relaxed">{errorMsg}</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => window.location.reload()}
+                className="px-6 py-3 bg-red-500/20 border border-red-500/40 text-red-300 rounded-xl font-semibold hover:bg-red-500/30 transition-all flex items-center gap-2"
+              >
+                <RefreshCw className="w-4 h-4" /> Tentar Novamente
+              </button>
+              <button
+                onClick={handleExploreProfile}
+                className="px-6 py-3 bg-white/5 border border-white/10 text-gray-300 rounded-xl font-semibold hover:bg-white/10 transition-all"
+              >
+                Explorar Perfil
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+
+// ────────────────────────────────────────────
+// SUB-COMPONENTS
+// ────────────────────────────────────────────
+
+const CognitionOrb: React.FC = () => (
+  <div className="relative w-32 h-32 flex items-center justify-center">
+    {/* Orbiting rings */}
+    <div className="absolute inset-0 border border-teal-500/20 rounded-full animate-[spin_8s_linear_infinite]" />
+    <div className="absolute inset-4 border border-teal-500/30 rounded-full animate-[spin_5s_linear_infinite_reverse]" />
+    <div className="absolute inset-8 border border-teal-400/40 rounded-full animate-[spin_3s_linear_infinite]" />
+    {/* Core glow */}
+    <div className="absolute inset-10 bg-teal-500/20 rounded-full blur-md animate-pulse" />
+    <div className="relative z-10 w-10 h-10 bg-teal-500 rounded-full shadow-[0_0_30px_rgba(20,184,166,0.8)] flex items-center justify-center">
+      <div className="w-4 h-4 bg-white/80 rounded-full animate-pulse" />
+    </div>
+  </div>
+);
+
+const PulseBar: React.FC = () => (
+  <div className="flex gap-1.5 items-center">
+    {Array.from({ length: 5 }).map((_, i) => (
+      <motion.div
+        key={i}
+        animate={{ scaleY: [1, 2.5, 1], opacity: [0.4, 1, 0.4] }}
+        transition={{ duration: 1.2, delay: i * 0.15, repeat: Infinity }}
+        className="w-1.5 h-5 bg-teal-500 rounded-full origin-bottom"
+      />
+    ))}
+  </div>
+);
+
+const PhaseLabel: React.FC<{ step: number; label: string }> = ({ step, label }) => (
+  <div className="flex items-center gap-2">
+    {[1, 2, 3].map(s => (
+      <div key={s} className="flex items-center gap-1">
+        <div className={`w-2 h-2 rounded-full transition-all duration-500 ${s <= step ? 'bg-teal-400 shadow-[0_0_8px_rgba(45,212,191,0.8)]' : 'bg-white/10'}`} />
+        {s < 3 && <div className={`w-8 h-px ${s < step ? 'bg-teal-400/60' : 'bg-white/10'}`} />}
+      </div>
+    ))}
+    <span className="ml-2 text-xs font-bold uppercase tracking-widest text-teal-400">{label}</span>
+  </div>
+);
+
+interface GraphNode { label: string; color: string; small?: boolean; }
+interface GraphCanvasProps {
+  center: { label: string; color: string };
+  nodes: GraphNode[];
+  edgeColor: string;
+}
+
+const GraphCanvas: React.FC<GraphCanvasProps> = ({ center, nodes, edgeColor }) => {
+  const svgSize = 380;
+  const cx = svgSize / 2;
+  const cy = svgSize / 2;
+  const radius = 140;
+
+  const positions = nodes.map((_, i) => {
+    const angle = (i / nodes.length) * 2 * Math.PI - Math.PI / 2;
+    return {
+      x: cx + radius * Math.cos(angle),
+      y: cy + radius * Math.sin(angle),
+    };
+  });
+
+  return (
+    <div className="relative w-full max-w-sm mx-auto" style={{ aspectRatio: '1' }}>
+      <svg
+        viewBox={`0 0 ${svgSize} ${svgSize}`}
+        className="absolute inset-0 w-full h-full"
+        style={{ overflow: 'visible' }}
+      >
+        {positions.map((pos, i) => (
+          <motion.line
+            key={i}
+            x1={cx} y1={cy} x2={pos.x} y2={pos.y}
+            className={edgeColor}
+            strokeWidth="1"
+            initial={{ pathLength: 0, opacity: 0 }}
+            animate={{ pathLength: 1, opacity: 1 }}
+            transition={{ duration: 0.8, delay: i * 0.12 }}
+          />
+        ))}
+      </svg>
+
+      {/* Center node */}
+      <motion.div
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        className={`absolute w-14 h-14 ${center.color} rounded-full flex items-center justify-center shadow-[0_0_24px_rgba(20,184,166,0.6)] z-10`}
+        style={{ left: `calc(50% - 28px)`, top: `calc(50% - 28px)` }}
+      >
+        <span className="text-xs font-bold text-white truncate max-w-[48px] text-center leading-tight px-1">
+          {center.label}
+        </span>
+      </motion.div>
+
+      {/* Satellite nodes */}
+      {nodes.map((node, i) => {
+        const pos = positions[i];
+        const size = node.small ? 'w-9 h-9' : 'w-11 h-11';
+        const textSize = node.small ? 'text-[9px]' : 'text-[10px]';
+        const pct = (pos.x / svgSize) * 100;
+        const pct_y = (pos.y / svgSize) * 100;
+        const halfPx = node.small ? 18 : 22;
+        return (
+          <motion.div
+            key={i}
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.3 + i * 0.12, type: 'spring', stiffness: 200 }}
+            className={`absolute ${size} rounded-full border flex items-center justify-center ${node.color} z-10`}
+            style={{
+              left: `calc(${pct}% - ${halfPx}px)`,
+              top: `calc(${pct_y}% - ${halfPx}px)`,
+            }}
+          >
+            <span className={`${textSize} font-semibold text-center leading-tight px-1 line-clamp-2 max-w-full`}>
+              {node.label.split(' ').slice(0, 2).join(' ')}
+            </span>
+          </motion.div>
+        );
+      })}
     </div>
   );
 };
