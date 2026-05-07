@@ -46,3 +46,53 @@ def get_user_ai_status(uid: str):
         "name": user_data.get("name"),
         "matches": matches
     }
+
+@router.get("/debug/graph")
+def debug_graph():
+    """Returns the current in-memory state of the graph store (singleton in this lambda)."""
+    from app.core.neo4j_driver import get_memory_store, is_memory_mode
+    if not is_memory_mode():
+        return {"mode": "neo4j", "message": "Graph is stored in Neo4j, not memory."}
+    
+    store = get_memory_store()
+    return {
+        "mode": "memory",
+        "node_count": len(store.nodes),
+        "edge_count": len(store.edges),
+        "nodes_summary": [
+            {"uid": uid, "name": n["props"].get("name"), "labels": n["labels"]}
+            for uid, n in store.nodes.items()
+        ]
+    }
+
+@router.get("/debug/kv")
+def debug_kv():
+    """Directly queries Vercel KV to see the persistent state."""
+    import os, httpx, json
+    url = os.environ.get("KV_REST_API_URL")
+    token = os.environ.get("KV_REST_API_TOKEN")
+    
+    if not url or not token:
+        return {"error": "KV not configured"}
+        
+    try:
+        with httpx.Client() as client:
+            res = client.get(
+                f"{url}/get/ariano_graph_persistent",
+                headers={"Authorization": f"Bearer {token}"}
+            )
+            if res.status_code == 200:
+                val = res.json().get("result")
+                if val:
+                    data = json.loads(val)
+                    return {
+                        "status": "success",
+                        "size_bytes": len(val),
+                        "node_count": len(data.get("nodes", {})),
+                        "nodes": list(data.get("nodes", {}).keys()),
+                        "last_sync": data.get("last_sync")
+                    }
+                return {"status": "empty", "message": "No data in KV"}
+            return {"status": "error", "code": res.status_code, "text": res.text}
+    except Exception as e:
+        return {"status": "exception", "error": str(e)}

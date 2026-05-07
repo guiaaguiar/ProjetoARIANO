@@ -59,16 +59,21 @@ class MemoryGraphStore:
                 "edges": self.edges,
                 "last_sync": datetime.now().isoformat()
             }
-            # KV REST API: SET key value
-            with httpx.Client() as client:
-                client.post(
+            payload = json.dumps(data)
+            logger.info(f"📤 Salvando no KV... Payload: {len(payload)} bytes")
+            
+            with httpx.Client(timeout=10.0) as client:
+                res = client.post(
                     f"{url}/set/ariano_graph_persistent",
                     headers={"Authorization": f"Bearer {token}"},
-                    content=json.dumps(data)
+                    content=payload
                 )
-            logger.info("💾 Grafo persistido no Vercel KV com sucesso.")
+                if res.status_code != 200:
+                    logger.error(f"❌ Erro KV SET (Status {res.status_code}): {res.text}")
+                else:
+                    logger.info("💾 Grafo persistido no Vercel KV com sucesso.")
         except Exception as e:
-            logger.error(f"❌ Falha ao salvar no Vercel KV: {e}")
+            logger.error(f"❌ Falha ao salvar no Vercel KV: {e}", exc_info=True)
 
     def load_from_kv(self):
         """Carrega o estado do grafo do Vercel KV."""
@@ -84,7 +89,7 @@ class MemoryGraphStore:
             return
 
         try:
-            with httpx.Client() as client:
+            with httpx.Client(timeout=10.0) as client:
                 res = client.get(
                     f"{url}/get/ariano_graph_persistent",
                     headers={"Authorization": f"Bearer {token}"}
@@ -95,9 +100,13 @@ class MemoryGraphStore:
                         data = json.loads(val)
                         self.nodes = data.get("nodes", {})
                         self.edges = data.get("edges", [])
-                        logger.info(f"✅ Grafo carregado do Vercel KV ({len(self.nodes)} nós, {len(self.edges)} arestas)")
+                        logger.info(f"✅ Grafo carregado do Vercel KV ({len(self.nodes)} nós, {len(self.edges)} arestas, {len(val)} bytes)")
+                    else:
+                        logger.warning("⚠️ Vercel KV retornou 'result' vazio.")
+                else:
+                    logger.error(f"❌ Erro KV GET (Status {res.status_code}): {res.text}")
         except Exception as e:
-            logger.error(f"❌ Falha ao carregar do Vercel KV: {e}")
+            logger.error(f"❌ Falha ao carregar do Vercel KV: {e}", exc_info=True)
 
     def add_node(self, uid: str, labels: list[str], props: dict):
         self.nodes[uid] = {"labels": labels, "props": {**props, "uid": uid}}
