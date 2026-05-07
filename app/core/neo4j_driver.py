@@ -42,76 +42,86 @@ class MemoryGraphStore:
         self.load_from_kv()
 
     def save_to_kv(self):
-        """Persiste o estado do grafo no Vercel KV."""
-        import os
-        import json
-        import httpx
-        
+        """Persiste o estado COMPLETO do grafo no Vercel KV (Fallback legados ou sincronização global)."""
+        import os, json, httpx
         url = os.environ.get("KV_REST_API_URL")
         token = os.environ.get("KV_REST_API_TOKEN")
-        
-        if not url or not token:
-            return
+        if not url or not token: return
 
         try:
-            data = {
-                "nodes": self.nodes,
-                "edges": self.edges,
-                "last_sync": datetime.now().isoformat()
-            }
+            data = {"nodes": self.nodes, "edges": self.edges, "last_sync": datetime.now().isoformat()}
             payload = json.dumps(data)
-            logger.info(f"📤 Salvando no KV... Payload: {len(payload)} bytes")
-            
             with httpx.Client(timeout=10.0) as client:
-                res = client.post(
-                    f"{url}/set/ariano_graph_persistent",
-                    headers={"Authorization": f"Bearer {token}"},
-                    content=payload
-                )
-                if res.status_code != 200:
-                    logger.error(f"❌ Erro KV SET (Status {res.status_code}): {res.text}")
-                else:
-                    logger.info("💾 Grafo persistido no Vercel KV com sucesso.")
+                client.post(f"{url}/set/ariano_graph_persistent", headers={"Authorization": f"Bearer {token}"}, content=payload)
+            logger.info(f"💾 Grafo completo persistido ({len(payload)} bytes).")
         except Exception as e:
-            logger.error(f"❌ Falha ao salvar no Vercel KV: {e}", exc_info=True)
+            logger.error(f"❌ Falha ao salvar no Vercel KV: {e}")
+
+    def save_node_to_kv(self, uid: str):
+        """Salva um nó individual no KV para evitar race conditions de sobrescrita global."""
+        import os, json, httpx
+        url = os.environ.get("KV_REST_API_URL")
+        token = os.environ.get("KV_REST_API_TOKEN")
+        if not url or not token: return
+
+        try:
+            node_data = self.nodes.get(uid)
+            if not node_data: return
+            with httpx.Client(timeout=5.0) as client:
+                client.post(
+                    f"{url}/set/ariano:node:{uid}",
+                    headers={"Authorization": f"Bearer {token}"},
+                    content=json.dumps(node_data)
+                )
+            # Também adiciona ao índice de UIDs
+            client.post(
+                f"{url}/sadd/ariano:uids",
+                headers={"Authorization": f"Bearer {token}"},
+                content=uid
+            )
+        except Exception as e:
+            logger.error(f"❌ Falha ao salvar nó {uid} no KV: {e}")
 
     def load_from_kv(self):
-        """Carrega o estado do grafo do Vercel KV."""
-        import os
-        import json
-        import httpx
-        
+        """Carrega o estado do grafo do Vercel KV com estratégia híbrida (Global + Individual)."""
+        import os, json, httpx
         url = os.environ.get("KV_REST_API_URL")
         token = os.environ.get("KV_REST_API_TOKEN")
-        
-        if not url or not token:
-            logger.info("ℹ️ Vercel KV não configurado. Iniciando grafo vazio.")
-            return
+        if not url or not token: return
 
         try:
             with httpx.Client(timeout=10.0) as client:
-                res = client.get(
-                    f"{url}/get/ariano_graph_persistent",
-                    headers={"Authorization": f"Bearer {token}"}
-                )
+                # 1. Carrega o grafo base
+                res = client.get(f"{url}/get/ariano_graph_persistent", headers={"Authorization": f"Bearer {token}"})
                 if res.status_code == 200:
                     val = res.json().get("result")
                     if val:
                         data = json.loads(val)
                         self.nodes = data.get("nodes", {})
                         self.edges = data.get("edges", [])
-                        logger.info(f"✅ Grafo carregado do Vercel KV ({len(self.nodes)} nós, {len(self.edges)} arestas, {len(val)} bytes)")
-                    else:
-                        logger.warning("⚠️ Vercel KV retornou 'result' vazio.")
-                else:
-                    logger.error(f"❌ Erro KV GET (Status {res.status_code}): {res.text}")
+                
+                # 2. Carrega UIDs individuais para garantir que usuários novos (não sincronizados no global) existam
+                res_uids = client.get(f"{url}/smembers/ariano:uids", headers={"Authorization": f"Bearer {token}"})
+                if res_uids.status_code == 200:
+                    uids = res_uids.json().get("result", [])
+                    for uid in uids:
+                        if uid not in self.nodes:
+                            # Nó individual detectado mas não está no dump global -> Carrega individualmente
+                            res_node = client.get(f"{url}/get/ariano:node:{uid}", headers={"Authorization": f"Bearer {token}"})
+                            if res_node.status_code == 200:
+                                node_val = res_node.json().get("result")
+                                if node_val:
+                                    self.nodes[uid] = json.loads(node_val)
+                                    logger.info(f"🔄 Nó individual {uid} recuperado via KV SADD/GET (Sync Bypass)")
+            
+            logger.info(f"✅ Grafo sincronizado ({len(self.nodes)} nós, {len(self.edges)} arestas)")
         except Exception as e:
-            logger.error(f"❌ Falha ao carregar do Vercel KV: {e}", exc_info=True)
+            logger.error(f"❌ Falha ao carregar do Vercel KV: {e}")
 
     def add_node(self, uid: str, labels: list[str], props: dict):
         self.nodes[uid] = {"labels": labels, "props": {**props, "uid": uid}}
         if self.auto_save:
-            self.save_to_kv()
+            self.save_node_to_kv(uid)
 
     def get_node(self, uid: str) -> dict | None:
         return self.nodes.get(uid)
