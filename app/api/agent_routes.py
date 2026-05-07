@@ -161,29 +161,35 @@ def cognition_full(request: CognitionFullRequest):
     Returns structured JSON with edital_nodes, network_nodes, and matches for
     the 3-phase cinematic animation.
     """
-    import json, re
+    import json, re, time
 
+    start_time = time.time()
     analyzer = _get_profile_analyzer()
 
-    # 1. Fetch available editais from the graph (these always exist)
+    # 1. Fetch available editais from the graph
+    t0 = time.time()
     editais_raw = run_cypher(
-        "MATCH (e:Edital) WHERE e.status = 'aberto' RETURN e.title AS title, e.uid AS uid, e.description AS description, e.institution AS institution LIMIT 15"
+        "MATCH (e:Edital) WHERE e.status = 'aberto' RETURN e.title AS title, e.uid AS uid, e.description AS description, e.institution AS institution LIMIT 8"
     )
     # Fallback: seed editais if none exist
     if not editais_raw:
         from app.services.seed_native import seed_native
         seed_native()
         editais_raw = run_cypher(
-            "MATCH (e:Edital) WHERE e.status = 'aberto' RETURN e.title AS title, e.uid AS uid, e.description AS description, e.institution AS institution LIMIT 15"
+            "MATCH (e:Edital) WHERE e.status = 'aberto' RETURN e.title AS title, e.uid AS uid, e.description AS description, e.institution AS institution LIMIT 8"
         )
+    t1 = time.time()
+    logger.info(f"⏱️ [cognition-full] Graph Fetch (Editais): {t1-t0:.2f}s")
 
     # 2. Fetch network peers for context
     network_raw = run_cypher(
-        "MATCH (u) WHERE (u:Student OR u:Professor OR u:Researcher) RETURN u.name AS name, labels(u)[0] AS type LIMIT 8"
+        "MATCH (u) WHERE (u:Student OR u:Professor OR u:Researcher) RETURN u.name AS name, labels(u)[0] AS type LIMIT 5"
     )
+    t2 = time.time()
+    logger.info(f"⏱️ [cognition-full] Graph Fetch (Network): {t2-t1:.2f}s")
 
     edital_list_str = "\n".join([
-        f"- UID:{e.get('uid','?')} | {e.get('title','?')} ({e.get('institution','?')}): {(e.get('description') or '')[:120]}"
+        f"- UID:{e.get('uid','?')} | {e.get('title','?')} ({e.get('institution','?')}): {(e.get('description') or '')[:80]}..."
         for e in editais_raw
     ])
     network_list_str = "\n".join([
@@ -191,66 +197,59 @@ def cognition_full(request: CognitionFullRequest):
         for n in network_raw
     ]) or "- Nenhum membro na rede ainda."
 
-    prompt = f"""Você é o motor de matchmaking cognitivo do ARIANO, um ecossistema de inovação acadêmica.
+    prompt = f"""Você é o motor de matchmaking cognitivo do ARIANO.
+Analise este perfil e conecte-o ao ecossistema.
 
-PERFIL DO NOVO USUÁRIO:
-- Nome: {request.name}
-- Curso: {request.course} (Semestre {request.semester}) em {request.institution}
-- Bio: {request.bio or 'Não informada'}
-- Objetivos: {request.o_que_busco or 'Não informado'}
-- Currículo/Experiências: {(request.curriculo_texto or 'Não informado')[:500]}
+USUÁRIO: {request.name} ({request.course}, {request.semester}º sem, {request.institution})
+BIO: {request.bio or 'N/A'}
+OBJETIVOS: {request.o_que_busco or 'N/A'}
+CURRÍCULO: {(request.curriculo_texto or 'N/A')[:300]}
 
-EDITAIS DISPONÍVEIS NO ECOSSISTEMA:
+EDITAIS DISPONÍVEIS:
 {edital_list_str}
 
-MEMBROS DA REDE EXISTENTE:
+REDE EXISTENTE:
 {network_list_str}
 
-Sua tarefa: analisar o perfil e retornar APENAS JSON válido (sem markdown, sem explicações), com exatamente este formato:
+Retorne APENAS JSON válido:
 {{
-  "edital_nodes": [
-    {{"name": "Título exato do edital", "uid": "uid-do-edital"}}
-  ],
-  "network_nodes": [
-    {{"name": "Nome do membro", "type": "professor"}}
-  ],
+  "edital_nodes": [ {{"name": "Título", "uid": "uid"}} ], // exatamente 3
+  "network_nodes": [ {{"name": "Nome", "type": "professor"}} ], // 2-4 pessoas
   "matches": [
     {{
-      "edital_name": "Título exato do edital",
-      "edital_uid": "uid-do-edital",
-      "institution": "Instituição do edital",
-      "justification": "1-2 frases técnicas explicando por que este edital é perfeito para este perfil específico.",
+      "edital_name": "Título",
+      "edital_uid": "uid",
+      "institution": "Inst",
+      "justification": "Explicação técnica curta (1 frase).",
       "score": 0.85
     }}
   ]
-}}
-
-Regras:
-- edital_nodes: exatamente 3 editais mais compatíveis com o perfil
-- network_nodes: até 4 pessoas da rede que seriam conexões estratégicas (use a lista fornecida ou crie nomes plausíveis se a rede estiver vazia)
-- matches: os mesmos 3 editais de edital_nodes, com justificativas únicas e técnicas
-- score: número entre 0.0 e 1.0 representando a aderência
-- Responda APENAS com o JSON. Nenhum texto adicional."""
+}}"""
 
     result_data = {"edital_nodes": [], "network_nodes": [], "matches": []}
 
     if analyzer.llm:
         try:
             from langchain_core.messages import HumanMessage
+            t3 = time.time()
+            # Adicionando um timeout implícito via invoke se possível, ou apenas logando
             response = analyzer.llm.invoke([HumanMessage(content=prompt)])
+            t4 = time.time()
+            logger.info(f"⏱️ [cognition-full] LLM Inference: {t4-t3:.2f}s")
+            
             raw = response.content.strip()
-            # Strip markdown code fences if present
             raw = re.sub(r'^```(?:json)?\s*', '', raw, flags=re.MULTILINE)
             raw = re.sub(r'\s*```$', '', raw, flags=re.MULTILINE)
             result_data = json.loads(raw.strip())
-            logger.info(f"✅ cognition-full: LLM returned {len(result_data.get('matches', []))} matches for {request.uid}")
         except Exception as e:
-            logger.error(f"❌ cognition-full LLM failed: {e}. Using rule-based fallback.")
-            # Rule-based fallback
+            logger.error(f"❌ cognition-full LLM failed: {e}. Fallback rule-based.")
             result_data = _cognition_fallback(request, editais_raw, network_raw)
     else:
         logger.info("ℹ️ cognition-full: No LLM, using rule-based fallback.")
         result_data = _cognition_fallback(request, editais_raw, network_raw)
+
+    total_time = time.time() - start_time
+    logger.info(f"🚀 [cognition-full] Total Pipeline Time: {total_time:.2f}s")
 
     return AgentResponse(
         status="success",

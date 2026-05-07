@@ -14,6 +14,10 @@ from collections import defaultdict
 from typing import Any
 import uuid
 from datetime import datetime
+from contextlib import contextmanager
+import os
+import json
+import httpx
 
 logger = logging.getLogger(__name__)
 
@@ -38,11 +42,16 @@ class MemoryGraphStore:
         self.edges: list[dict] = []  # [{source, target, type, props}]
         self.auto_save = True
         self._in_batch = False
+        self._kv_client = None
         logger.info("📦 MemoryGraphStore initialized (Neo4j fallback)")
         # Tenta carregar dados persistidos se estivermos em ambiente de produção/Vercel
         self.load_from_kv()
 
-    from contextlib import contextmanager
+    def _get_client(self):
+        if self._kv_client is None or self._kv_client.is_closed:
+            self._kv_client = httpx.Client(timeout=15.0)
+        return self._kv_client
+
     @contextmanager
     def batch_update(self):
         """Context manager to disable auto-save during bulk operations."""
@@ -59,7 +68,6 @@ class MemoryGraphStore:
 
     def save_to_kv(self):
         """Persiste o estado COMPLETO do grafo no Vercel KV (Fallback legados ou sincronização global)."""
-        import os, json, httpx
         url = os.environ.get("KV_REST_API_URL")
         token = os.environ.get("KV_REST_API_TOKEN")
         if not url or not token: return
@@ -67,15 +75,14 @@ class MemoryGraphStore:
         try:
             data = {"nodes": self.nodes, "edges": self.edges, "last_sync": datetime.now().isoformat()}
             payload = json.dumps(data)
-            with httpx.Client(timeout=10.0) as client:
-                client.post(f"{url}/set/ariano_graph_persistent", headers={"Authorization": f"Bearer {token}"}, content=payload)
+            client = self._get_client()
+            client.post(f"{url}/set/ariano_graph_persistent", headers={"Authorization": f"Bearer {token}"}, content=payload)
             logger.info(f"💾 Grafo completo persistido ({len(payload)} bytes).")
         except Exception as e:
             logger.error(f"❌ Falha ao salvar no Vercel KV: {e}")
 
     def save_node_to_kv(self, uid: str):
         """Salva um nó individual no KV para evitar race conditions de sobrescrita global."""
-        import os, json, httpx
         url = os.environ.get("KV_REST_API_URL")
         token = os.environ.get("KV_REST_API_TOKEN")
         if not url or not token: return
@@ -83,53 +90,51 @@ class MemoryGraphStore:
         try:
             node_data = self.nodes.get(uid)
             if not node_data: return
-            with httpx.Client(timeout=5.0) as client:
-                # 1. Salva o nó
-                client.post(
-                    f"{url}/set/ariano:node:{uid}",
-                    headers={"Authorization": f"Bearer {token}"},
-                    content=json.dumps(node_data)
-                )
-                # 2. Também adiciona ao índice de UIDs (dentro do bloco do cliente)
-                client.post(
-                    f"{url}/sadd/ariano:uids",
-                    headers={"Authorization": f"Bearer {token}"},
-                    content=uid
-                )
+            client = self._get_client()
+            # 1. Salva o nó
+            client.post(
+                f"{url}/set/ariano:node:{uid}",
+                headers={"Authorization": f"Bearer {token}"},
+                content=json.dumps(node_data)
+            )
+            # 2. Também adiciona ao índice de UIDs
+            client.post(
+                f"{url}/sadd/ariano:uids",
+                headers={"Authorization": f"Bearer {token}"},
+                content=uid
+            )
         except Exception as e:
             logger.error(f"❌ Falha ao salvar nó {uid} no KV: {e}")
 
     def load_from_kv(self):
         """Carrega o estado do grafo do Vercel KV com estratégia híbrida (Global + Individual)."""
-        import os, json, httpx
         url = os.environ.get("KV_REST_API_URL")
         token = os.environ.get("KV_REST_API_TOKEN")
         if not url or not token: return
 
         try:
-            with httpx.Client(timeout=10.0) as client:
-                # 1. Carrega o grafo base
-                res = client.get(f"{url}/get/ariano_graph_persistent", headers={"Authorization": f"Bearer {token}"})
-                if res.status_code == 200:
-                    val = res.json().get("result")
-                    if val:
-                        data = json.loads(val)
-                        self.nodes = data.get("nodes", {})
-                        self.edges = data.get("edges", [])
-                
-                # 2. Carrega UIDs individuais para garantir que usuários novos (não sincronizados no global) existam
-                res_uids = client.get(f"{url}/smembers/ariano:uids", headers={"Authorization": f"Bearer {token}"})
-                if res_uids.status_code == 200:
-                    uids = res_uids.json().get("result", [])
-                    for uid in uids:
-                        if uid not in self.nodes:
-                            # Nó individual detectado mas não está no dump global -> Carrega individualmente
-                            res_node = client.get(f"{url}/get/ariano:node:{uid}", headers={"Authorization": f"Bearer {token}"})
-                            if res_node.status_code == 200:
-                                node_val = res_node.json().get("result")
-                                if node_val:
-                                    self.nodes[uid] = json.loads(node_val)
-                                    logger.info(f"🔄 Nó individual {uid} recuperado via KV SADD/GET (Sync Bypass)")
+            client = self._get_client()
+            # 1. Carrega o grafo base
+            res = client.get(f"{url}/get/ariano_graph_persistent", headers={"Authorization": f"Bearer {token}"})
+            if res.status_code == 200:
+                val = res.json().get("result")
+                if val:
+                    data = json.loads(val)
+                    self.nodes = data.get("nodes", {})
+                    self.edges = data.get("edges", [])
+            
+            # 2. Carrega UIDs individuais para garantir que usuários novos existam
+            res_uids = client.get(f"{url}/smembers/ariano:uids", headers={"Authorization": f"Bearer {token}"})
+            if res_uids.status_code == 200:
+                uids = res_uids.json().get("result", [])
+                for uid in uids:
+                    if uid not in self.nodes:
+                        res_node = client.get(f"{url}/get/ariano:node:{uid}", headers={"Authorization": f"Bearer {token}"})
+                        if res_node.status_code == 200:
+                            node_val = res_node.json().get("result")
+                            if node_val:
+                                self.nodes[uid] = json.loads(node_val)
+                                logger.info(f"🔄 Nó individual {uid} recuperado via KV SADD/GET (Sync Bypass)")
             
             logger.info(f"✅ Grafo sincronizado ({len(self.nodes)} nós, {len(self.edges)} arestas)")
         except Exception as e:

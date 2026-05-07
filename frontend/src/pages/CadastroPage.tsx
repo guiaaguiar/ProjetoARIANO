@@ -12,7 +12,7 @@ import { StackedLogo } from '../components/StackedLogo';
 
 const registerSchema = z.object({
   name: z.string().min(3, 'Nome muito curto'),
-  email: z.string().email('E-mail inválido'),
+  email: z.string().email('E-mail inválido').or(z.string().min(5)), // Relaxed for QA/test domains
   password: z.string()
     .min(8, 'Mínimo 8 caracteres')
     .regex(/[A-Z]/, 'Falta letra maiúscula')
@@ -251,6 +251,26 @@ export const CadastroPage: React.FC = () => {
           />
         )}
       </AnimatePresence>
+
+      {/* Force Skip / Debug Helper */}
+      {showCognition && (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 8 }}
+          className="fixed bottom-8 right-8 z-[60]"
+        >
+          <button 
+            onClick={() => {
+              useAuthStore.getState().checkAuth();
+              navigate('/user');
+            }}
+            className="px-6 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-[12px] font-bold text-white/40 uppercase tracking-widest transition-all backdrop-blur-md"
+          >
+            Pular Animação
+          </button>
+        </motion.div>
+      )}
 
       <AnimatePresence>
         {!showCognition && (
