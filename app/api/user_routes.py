@@ -105,14 +105,10 @@ async def register_user(
         
         logger.info(f"✅ Usuário {uid} persistido com sucesso.")
 
-        # 6. Ativação da Inteligência (Assíncrona)
-        # Movemos o processamento pesado para BackgroundTasks para evitar 504 Gateway Timeout
-        try:
-            orchestrator = OrchestratorAgent()
-            background_tasks.add_task(orchestrator.process_new_entity, uid, neo4j_type, profile_data)
-            logger.info(f"🧠 Orquestrador agendado em segundo plano para o usuário {uid}")
-        except Exception as ai_err:
-            logger.error(f"❌ Falha ao agendar orquestrador IA: {ai_err}")
+        # 6. Ativação da Inteligência (Via Frontend Pipeline)
+        # Note: O processamento agora é disparado pelo componente CognitionExperience 
+        # no frontend para garantir feedback em tempo real e evitar timeouts de 60s na Vercel.
+        logger.info(f"🚀 Cadastro concluído para {uid}. Aguardando pipeline visual.")
 
         # 7. Auto-login via Cookie
         token = create_access_token({"sub": uid, "type": neo4j_type.lower(), "name": name})

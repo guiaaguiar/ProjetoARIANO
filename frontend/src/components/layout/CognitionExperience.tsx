@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bot, Cpu, Network, Zap, CheckCircle2, ArrowRight, MessageSquare, ShieldCheck } from 'lucide-react';
+import { Bot, Cpu, Network, Zap, CheckCircle2, ArrowRight, MessageSquare, ShieldCheck, RefreshCw } from 'lucide-react';
 import { MiniGraphAnimation } from '../MiniGraphAnimation';
 import { MatchResultCards } from '../MatchResultCards';
 import { useAuthStore } from '../../store/authStore';
@@ -238,7 +238,7 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({ userNa
               {/* Central Title */}
               <div className="text-center space-y-4">
                   <h1 className="text-4xl lg:text-5xl font-bold text-white tracking-tight leading-tight">
-                    {logs.length > 0 ? getProcessingMessage() : secondaryMessage}
+                    {logs.length > 0 ? getProcessingMessage() : "O ARIANO está fazendo conexões estratégicas..."}
                   </h1>
               </div>
 
