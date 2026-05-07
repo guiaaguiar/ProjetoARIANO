@@ -222,7 +222,9 @@ def extract_skills_v2(request: ExtractSkillsRequest):
         }
     
     # PERSISTENCE IN NEO4J (Batched for Performance)
-    with store.batch_update():
+    from app.core.neo4j_driver import get_memory_store, is_memory_mode
+    
+    def _save_skills_and_areas():
         # Update User with scratchpad
         run_cypher(
             "MATCH (u) WHERE u.uid = $uid SET u.scratchpad = $scratch, u.last_step = 'skills'",
@@ -256,6 +258,12 @@ def extract_skills_v2(request: ExtractSkillsRequest):
                 """,
                 {"name": a_name, "auid": str(uuid.uuid4())[:8], "uid": request.entity_uid}
             )
+
+    if is_memory_mode():
+        with get_memory_store().batch_update():
+            _save_skills_and_areas()
+    else:
+        _save_skills_and_areas()
         
     return AgentResponse(status="success", message="Skills persistidas no grafo", data=data)
 
@@ -334,7 +342,9 @@ def explain_matches_v2(request: ExplainMatchesRequest):
             return AgentResponse(status="error", message="Falha ao gerar justificativas", data={})
 
     # PERSISTENCE IN NEO4J (Batched for Performance)
-    with store.batch_update():
+    from app.core.neo4j_driver import get_memory_store, is_memory_mode
+    
+    def _save_matches():
         for match in data.get("matches", []):
             run_cypher(
                 """
@@ -349,10 +359,16 @@ def explain_matches_v2(request: ExplainMatchesRequest):
                 {
                     "uid": request.entity_uid,
                     "euid": match.get("uid"),
-                    "title": match["title"],
-                    "just": match["justification"]
+                    "title": match.get("title"),
+                    "just": match.get("justification")
                 }
             )
+
+    if is_memory_mode():
+        with get_memory_store().batch_update():
+            _save_matches()
+    else:
+        _save_matches()
 
     return AgentResponse(status="success", message="Matches e justificativas salvos no grafo", data=data)
 
