@@ -141,16 +141,21 @@ class ExplainMatchesRequest(BaseModel):
 @router.post("/v2/analyze-profile", response_model=AgentResponse)
 def analyze_profile_v2(request: ProfileContextRequest):
     """Stage 1: Generate rich context string and initial summary."""
-    # Verify user existence first
-    from app.core.neo4j_driver import run_cypher, is_memory_mode, get_memory_store
-    
-    if is_memory_mode():
-        # Forçamos refresh para garantir visibilidade do usuário recém-criado
-        get_memory_store(force_refresh=True)
+    # Verify user existence (with retry if memory mode)
+    import time
+    exists = False
+    for i in range(3):
+        user_check = run_cypher("MATCH (u) WHERE u.uid = $uid RETURN u.name", {"uid": request.entity_uid})
+        if user_check:
+            exists = True
+            break
+        if is_memory_mode():
+            logger.info(f"⏳ Stage 1: Usuário {request.entity_uid} não encontrado (tentativa {i+1}/3). Recarregando KV...")
+            get_memory_store(force_refresh=True)
+            time.sleep(1.5) # Espera 1.5s entre retries para propagação KV
 
-    user_check = run_cypher("MATCH (u) WHERE u.uid = $uid RETURN u.name", {"uid": request.entity_uid})
-    if not user_check:
-        logger.error(f"❌ Stage 1: User {request.entity_uid} not found in graph.")
+    if not exists:
+        logger.error(f"❌ Stage 1: User {request.entity_uid} not found in graph. (Modo Memória detectado - dados perdidos)" if is_memory_mode() else f"❌ Stage 1: User {request.entity_uid} not found.")
         return AgentResponse(
             status="error",
             message=f"Usuário {request.entity_uid} não encontrado no grafo. {'(Modo Memória detectado - dados perdidos)' if is_memory_mode() else ''}",
@@ -183,8 +188,20 @@ def analyze_profile_v2(request: ProfileContextRequest):
 def extract_skills_v2(request: ExtractSkillsRequest):
     # Verify user existence
     from app.core.neo4j_driver import run_cypher, is_memory_mode
-    user_check = run_cypher("MATCH (u) WHERE u.uid = $uid RETURN u.name", {"uid": request.entity_uid})
-    if not user_check:
+    # Verify user existence (with retry if memory mode)
+    import time
+    exists = False
+    for i in range(3):
+        user_check = run_cypher("MATCH (u) WHERE u.uid = $uid RETURN u.name", {"uid": request.entity_uid})
+        if user_check:
+            exists = True
+            break
+        if is_memory_mode():
+            logger.info(f"⏳ Stage 2: Usuário {request.entity_uid} não encontrado (tentativa {i+1}/3). Recarregando KV...")
+            get_memory_store(force_refresh=True)
+            time.sleep(1.0)
+            
+    if not exists:
         logger.error(f"❌ Stage 2: User {request.entity_uid} not found.")
         return AgentResponse(status="error", message="Usuário não encontrado para extração de skills.", data={})
 
