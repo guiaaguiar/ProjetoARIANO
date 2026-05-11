@@ -48,3 +48,4 @@ lovable_temp/
 
 .env.production.local
 .env.vercel
+.vercel
