@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Zap, GraduationCap, Search, Award, Briefcase, TrendingUp, Network, Clock, ArrowRight, Info, ChevronRight, Activity, Target, AlertTriangle
+  Zap, GraduationCap, Search, Award, Briefcase, TrendingUp, Network, Clock, ArrowRight, Info, ChevronRight, Activity, Target
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
@@ -43,17 +43,6 @@ export default function UserDashboard() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [insight, setInsight] = useState<string>('O Orquestrador está mapeando sua influência no ecossistema...');
   const [loading, setLoading] = useState(true);
-  const [isMemoryMode, setIsMemoryMode] = useState(false);
-
-  useEffect(() => {
-    api.getAgentStatus()
-      .then(res => {
-        if (res.data.is_memory_mode) {
-          setIsMemoryMode(true);
-        }
-      })
-      .catch(console.error);
-  }, []);
 
   useEffect(() => {
     if (user?.uid) {
@@ -74,20 +63,6 @@ export default function UserDashboard() {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-12 pb-12"
     >
-      {/* Persistence Warning */}
-      {isMemoryMode && (
-        <motion.div 
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          className="p-4 rounded-2xl bg-warning/10 border border-warning/20 flex items-center gap-4 text-warning"
-        >
-          <AlertTriangle className="w-5 h-5 shrink-0" />
-          <div className="text-[13px] font-medium">
-            <span className="font-bold uppercase tracking-wider mr-2">Modo Efêmero:</span>
-            O sistema está operando sem persistência persistente (Neo4j). Seus dados podem ser perdidos ao atualizar.
-          </div>
-        </motion.div>
-      )}
 
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="space-y-2">

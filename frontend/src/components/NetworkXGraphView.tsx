@@ -24,6 +24,10 @@ interface Props {
   detailPanelOpen?: boolean;
   onBackgroundClick?: () => void;
   onClustersLoaded?: (clusters: {id: number; theme: string}[]) => void;
+  /** URL do endpoint de grafo. Default: /api/graph/enriched (grafo completo). */
+  apiUrl?: string;
+  /** Métricas extras vindas do backend (personal_stats). */
+  onStatsLoaded?: (stats: Record<string, unknown>) => void;
 }
 
 export const COT_COLORS = [
@@ -120,6 +124,7 @@ export const NetworkXGraphView: React.FC<Props> = ({
   selectedNodeId, onNavigateToNode,
   filterPanelOpen = false, detailPanelOpen = false,
   onBackgroundClick, onClustersLoaded,
+  apiUrl, onStatsLoaded,
 }) => {
   const [rawData, setRawData] = useState<{nodes:GraphNode[],links:GraphLink[]}|null>(null);
   const [clusters, setClusters] = useState<{id:number,theme:string}[]>([]);
@@ -129,12 +134,15 @@ export const NetworkXGraphView: React.FC<Props> = ({
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    api.getEnrichedGraph()
+    const fetchUrl = apiUrl || '/api/graph/enriched';
+    fetch(fetchUrl)
+      .then(r => r.json())
       .then(res => {
-        if (res.error) { console.error('Grafo:', res.error); return; }
+        if (res.error) { console.error('[GRAPH] Erro:', res.error); return; }
         const loadedClusters = res.summary?.clusters || [];
         setClusters(loadedClusters);
         if (onClustersLoaded) onClustersLoaded(loadedClusters);
+        if (onStatsLoaded && res.personal_stats) onStatsLoaded(res.personal_stats);
         const data = {
           nodes: res.nodes as GraphNode[],
           links: (res.edges as any[]).map(e => ({ source: e.source, target: e.target, label: e.label })),
@@ -146,9 +154,9 @@ export const NetworkXGraphView: React.FC<Props> = ({
           setTimeout(() => freezeAllNodes(), 4000);
         }, 500);
       })
-      .catch(err => console.error('Erro ao buscar grafo:', err))
+      .catch(err => console.error('[GRAPH] Erro ao buscar grafo:', err))
       .finally(() => setLoading(false));
-  }, []);
+  }, [apiUrl]);
 
   const graphData = useMemo(() => {
     if (!rawData) return null;

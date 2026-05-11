@@ -152,6 +152,91 @@ class GraphAnalysisService:
             return {"nodes": [], "edges": [], "error": str(e)}
 
     @staticmethod
+    async def get_personal_graph(user_uid: str):
+        """
+        Retorna o subgrafo pessoal do usuário:
+        - O próprio nó do usuário
+        - Vizinhos diretos (Skills, Areas, Editais via ELIGIBLE_FOR)
+        - Acadêmicos do mesmo cluster CoT
+        Inclui métricas de densidade e connectivity_score.
+        """
+        try:
+            full = await GraphAnalysisService.get_enriched_graph()
+            if "error" in full or not full.get("nodes"):
+                return full
+
+            all_nodes = {n["id"]: n for n in full["nodes"]}
+            all_edges = full["edges"]
+
+            user_node = all_nodes.get(user_uid)
+            if not user_node:
+                logger.warning(f"[GRAPH] ⚠️  Usuário {user_uid} não encontrado no grafo. Retornando grafo completo.")
+                return full
+
+            user_cluster = user_node.get("cluster_id")
+
+            # Coletar IDs incluídos no subgrafo pessoal
+            personal_ids: set[str] = {user_uid}
+
+            # 1. Vizinhos diretos via conexões do nó do usuário
+            for conn in user_node.get("connections", []):
+                personal_ids.add(conn["uid"])
+
+            # 2. Acadêmicos do mesmo cluster (excluindo skills/áreas para não poluir)
+            for nid, node in all_nodes.items():
+                if (
+                    node.get("cluster_id") == user_cluster
+                    and node.get("type") in {"student", "researcher", "professor"}
+                ):
+                    personal_ids.add(nid)
+
+            # Filtrar nós e arestas
+            personal_nodes = [n for n in full["nodes"] if n["id"] in personal_ids]
+            personal_edges = [
+                e for e in all_edges
+                if e.get("source") in personal_ids and e.get("target") in personal_ids
+            ]
+
+            # Calcular densidade do subgrafo
+            G_personal = nx.Graph()
+            for n in personal_nodes:
+                G_personal.add_node(n["id"])
+            for e in personal_edges:
+                G_personal.add_edge(e.get("source"), e.get("target"))
+
+            density = round(nx.density(G_personal), 4) if len(G_personal) > 1 else 0.0
+
+            # Connectivity score do usuário no subgrafo (grau relativo)
+            user_degree = G_personal.degree(user_uid) if user_uid in G_personal else 0
+            max_possible = max(len(G_personal) - 1, 1)
+            connectivity_score = round(user_degree / max_possible, 4)
+
+            # Percentil de influência (posição relativa no subgrafo)
+            influences = sorted([n.get("influence", 0) for n in personal_nodes])
+            user_influence = user_node.get("influence", 0)
+            rank = sum(1 for x in influences if x <= user_influence)
+            influence_percentile = round(rank / max(len(influences), 1), 2)
+
+            logger.info(f"[GRAPH] 🎯 Subgrafo pessoal de {user_uid}: {len(personal_nodes)} nós, {len(personal_edges)} arestas, densidade={density}")
+
+            return {
+                "nodes": personal_nodes,
+                "edges": personal_edges,
+                "summary": full.get("summary", {}),
+                "personal_stats": {
+                    "density": density,
+                    "connectivity_score": connectivity_score,
+                    "influence_percentile": influence_percentile,
+                    "cluster_theme": user_node.get("cluster_theme", "Pesquisa Geral"),
+                    "node_count": len(personal_nodes),
+                    "edge_count": len(personal_edges),
+                },
+            }
+        except Exception as e:
+            logger.error(f"[GRAPH] ❌ Erro em get_personal_graph({user_uid}): {e}", exc_info=True)
+            return {"nodes": [], "edges": [], "error": str(e)}
+
+    @staticmethod
     async def get_networkx_drawing():
         return {"image": None, "error": "Use get_enriched_graph para visualização interativa"}
 

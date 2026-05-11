@@ -219,22 +219,18 @@ def _gen_uid() -> str:
 
 
 def seed_native():
-    """Seed database using native driver (works in both Neo4j and memory modes).
-
-    Returns dict of uid mappings for reference.
-    """
-    print("🌱 Seeding graph data (universal driver)...")
+    """Seed database using native driver (works in both Neo4j and memory modes)."""
+    mode_label = "[SEED] 📦 Memória" if is_memory_mode() else "[SEED] ✅ Neo4j real"
+    print(f"{mode_label} — iniciando seed do grafo...")
 
     if is_memory_mode():
         store = get_memory_store()
-        # Lazy seeding: only re-seed if no Editais exist
         existing_editais = store.get_nodes_by_label("Edital")
         if existing_editais:
-            print(f"  ⚡ Lazy seed: {len(existing_editais)} editais already exist, skipping re-seed.")
+            print(f"[SEED] ⚡ Lazy seed: {len(existing_editais)} editais já existem, pulando re-seed.")
             return {}
         store.nodes.clear()
         store.edges.clear()
-        # batch_update disables auto-save, does ONE final save when done
         result = {}
         with store.batch_update():
             result = _seed_to_memory(store)
@@ -338,7 +334,7 @@ def _seed_to_memory(store) -> dict:
 
     total_nodes = store.count_nodes()
     total_edges = store.count_edges()
-    print(f"\n🎉 Seed completo! {total_nodes} nós, {total_edges} arestas")
+    print(f"[SEED] ✅ Seed memória concluído: {total_nodes} nós, {total_edges} arestas.")
     return {"skill_uids": skill_uids, "area_uids": area_uids}
 
 
@@ -439,6 +435,6 @@ def _seed_to_neo4j() -> dict:
         RETURN nodes, edges
     """)
     if stats:
-        print(f"\n🎉 Seed completo! {stats[0]['nodes']} nós, {stats[0]['edges']} arestas")
+        print(f"[SEED] ✅ Seed Neo4j concluído: {stats[0]['nodes']} nós, {stats[0]['edges']} arestas.")
 
     return {"skill_uids": skill_uids, "area_uids": area_uids}

@@ -234,6 +234,17 @@ async def get_graph_insight(user_uid: str):
     return {"insight": await GraphAnalysisService.get_user_insight(user_uid)}
 
 
+@router.get("/graph/personal/{user_uid}", tags=["Graph"])
+async def get_personal_graph(user_uid: str):
+    """
+    Retorna o subgrafo pessoal do usuário (ego-network + cluster CoT).
+    Usado pela página /user/ecossistema.
+    """
+    from app.services.graph_analysis import GraphAnalysisService
+    return await GraphAnalysisService.get_personal_graph(user_uid)
+
+
+
 # ═══════════════════════════════════════════
 # SEED & PIPELINE
 # ═══════════════════════════════════════════

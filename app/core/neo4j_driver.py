@@ -593,7 +593,7 @@ def _handle_count(query: str, params: dict, store: MemoryGraphStore) -> list[dic
 # ═══════════════════════════════════════════
 
 def get_driver():
-    """Get or create Neo4j driver singleton. Falls back to memory mode."""
+    """Get or create Neo4j driver singleton. Falls back to memory mode only on real connection failure."""
     global _driver, _use_memory
     if _use_memory:
         return None
@@ -602,37 +602,38 @@ def get_driver():
             from neo4j import GraphDatabase
             from app.core.config import settings
             import os
-            
+
             # Detecção de ambiente Vercel/Produção (Runtime)
             is_vercel = any(os.environ.get(k) for k in ["VERCEL", "VERCEL_URL", "VERCEL_REGION"])
             is_localhost = "localhost" in settings.neo4j_uri or "127.0.0.1" in settings.neo4j_uri
 
             if is_vercel and is_localhost:
-                 logger.warning("🚀 Vercel Runtime detected + Localhost URI. Forcing Memory Mode immediately.")
-                 _use_memory = True
-                 return None
+                logger.warning("[NEO4J] ⚠️  Vercel detectado + URI localhost. Sem acesso ao Neo4j local. Usando modo memória.")
+                _use_memory = True
+                return None
 
-            # Detecção rápida: se for senha padrão em produção ou não houver senha
-            if (not settings.neo4j_password or settings.neo4j_password == "ariano2026") and not is_localhost:
-                 logger.warning("⚠️ Neo4j password not set or placeholder. Falling back to memory mode.")
-                 _use_memory = True
-                 return None
+            if not settings.neo4j_password:
+                logger.warning("[NEO4J] ⚠️  Senha Neo4j não configurada. Usando modo memória.")
+                _use_memory = True
+                return None
 
+            logger.info(f"[NEO4J] 🔌 Tentando conectar em {settings.neo4j_uri} (user={settings.neo4j_user})...")
             _driver = GraphDatabase.driver(
                 settings.neo4j_uri,
                 auth=(settings.neo4j_user, settings.neo4j_password),
-                connection_timeout=2.0,  # 2 seconds max
+                connection_timeout=3.0,
             )
-            
-            # Verificação REAL e RÁPIDA de conectividade
-            logger.info(f"Probing Neo4j connection at {settings.neo4j_uri}...")
+
+            # Verificação REAL de conectividade
             with _driver.session() as session:
-                session.run("RETURN 1").single()
-            
-            logger.info("✅ Neo4j connection established")
+                result = session.run("MATCH (n) RETURN count(n) as total").single()
+                total = result["total"] if result else 0
+
+            logger.info(f"[NEO4J] ✅ Conectado em {settings.neo4j_uri} ({total} nós no banco).")
             _use_memory = False
         except Exception as e:
-            logger.warning(f"⚠️ Neo4j probe failed ({e}). Falling back to memory mode.")
+            logger.warning(f"[NEO4J] ⚠️  Falha ao conectar: {e}. Usando modo memória.")
+
             if _driver:
                 try: _driver.close()
                 except: pass

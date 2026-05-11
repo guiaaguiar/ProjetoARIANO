@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, ArrowRight, RefreshCw, Zap } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
+import { EmptyNodeRadar } from '../EmptyNodeRadar';
 
 interface CognitionExperienceProps {
   userName: string;
@@ -255,12 +256,12 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({
             exit={{ opacity: 0, scale: 0.95 }}
             className="flex flex-col items-center gap-10 text-center"
           >
-            <CognitionOrb />
+            <EmptyNodeRadar userName={userName} size={72} />
             <div className="space-y-3">
               <h1 className="text-3xl lg:text-4xl font-bold text-white tracking-tight">
-                {statusMsg}
+                ARIANO está processando suas informações…
               </h1>
-              <p className="text-gray-500 text-sm">Uma chamada. Toda a inteligência do ecossistema.</p>
+              <p className="text-gray-500 text-sm">Configurando seu nó no Grafo de Conhecimento.</p>
             </div>
             <PulseBar />
           </motion.div>
