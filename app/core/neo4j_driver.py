@@ -1,627 +1,29 @@
 from __future__ import annotations
 
-"""Neo4j driver with in-memory fallback.
+"""Neo4j driver.
 
-When Neo4j is available → uses real Bolt driver.
-When Neo4j is NOT available → uses an in-memory graph store.
-
-This allows the MVP to function fully without a running Neo4j instance.
-Switch is automatic: if the connection fails, it falls back silently.
+Strictly connects to Neo4j. In-memory mode has been completely removed 
+in favor of Neo4j Aura for production.
 """
 
 import logging
-from collections import defaultdict
-from typing import Any
-import uuid
-from datetime import datetime
-from contextlib import contextmanager
-import os
-import json
-import httpx
+from neo4j import GraphDatabase
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
 _driver = None
-_use_memory = False
-_memory_store: MemoryGraphStore | None = None
-
-
-# ═══════════════════════════════════════════
-# IN-MEMORY GRAPH STORE (Neo4j fallback)
-# ═══════════════════════════════════════════
-
-class MemoryGraphStore:
-    """Simple in-memory graph store that mimics Neo4j Cypher operations.
-
-    Stores nodes as dicts with labels, and edges as (source, target, type, props).
-    Supports basic Cypher-like operations via Python methods.
-    """
-
-    def __init__(self):
-        self.nodes: dict[str, dict] = {}  # uid -> {labels: [...], props: {...}}
-        self.edges: list[dict] = []  # [{source, target, type, props}]
-        self.auto_save = True
-        self._in_batch = False
-        self._kv_client = None
-        logger.info("📦 MemoryGraphStore initialized (Neo4j fallback)")
-        # Tenta carregar dados persistidos se estivermos em ambiente de produção/Vercel
-        self.load_from_kv()
-
-    def _get_client(self):
-        if self._kv_client is None or self._kv_client.is_closed:
-            self._kv_client = httpx.Client(timeout=15.0)
-        return self._kv_client
-
-    @contextmanager
-    def batch_update(self):
-        """Context manager to disable auto-save during bulk operations."""
-        original_auto_save = self.auto_save
-        self.auto_save = False
-        self._in_batch = True
-        try:
-            yield
-        finally:
-            self.auto_save = original_auto_save
-            self._in_batch = False
-            if self.auto_save:
-                self.save_to_kv()
-
-    def save_to_kv(self):
-        """Persiste o estado COMPLETO do grafo no Vercel KV (Fallback legados ou sincronização global)."""
-        url = os.environ.get("KV_REST_API_URL")
-        token = os.environ.get("KV_REST_API_TOKEN")
-        if not url or not token: return
-
-        try:
-            data = {"nodes": self.nodes, "edges": self.edges, "last_sync": datetime.now().isoformat()}
-            payload = json.dumps(data)
-            client = self._get_client()
-            client.post(f"{url}/set/ariano_graph_persistent", headers={"Authorization": f"Bearer {token}"}, content=payload)
-            logger.info(f"💾 Grafo completo persistido ({len(payload)} bytes).")
-        except Exception as e:
-            logger.error(f"❌ Falha ao salvar no Vercel KV: {e}")
-
-    def save_node_to_kv(self, uid: str):
-        """Salva um nó individual no KV para evitar race conditions de sobrescrita global."""
-        url = os.environ.get("KV_REST_API_URL")
-        token = os.environ.get("KV_REST_API_TOKEN")
-        if not url or not token: return
-
-        try:
-            node_data = self.nodes.get(uid)
-            if not node_data: return
-            client = self._get_client()
-            # 1. Salva o nó
-            client.post(
-                f"{url}/set/ariano:node:{uid}",
-                headers={"Authorization": f"Bearer {token}"},
-                content=json.dumps(node_data)
-            )
-            # 2. Também adiciona ao índice de UIDs
-            client.post(
-                f"{url}/sadd/ariano:uids",
-                headers={"Authorization": f"Bearer {token}"},
-                content=uid
-            )
-        except Exception as e:
-            logger.error(f"❌ Falha ao salvar nó {uid} no KV: {e}")
-
-    def load_from_kv(self):
-        """Carrega o estado do grafo do Vercel KV com estratégia híbrida (Global + Individual)."""
-        url = os.environ.get("KV_REST_API_URL")
-        token = os.environ.get("KV_REST_API_TOKEN")
-        if not url or not token: return
-
-        try:
-            client = self._get_client()
-            # 1. Carrega o grafo base
-            res = client.get(f"{url}/get/ariano_graph_persistent", headers={"Authorization": f"Bearer {token}"})
-            if res.status_code == 200:
-                val = res.json().get("result")
-                if val:
-                    data = json.loads(val)
-                    self.nodes = data.get("nodes", {})
-                    self.edges = data.get("edges", [])
-            
-            # 2. Carrega UIDs individuais para garantir que usuários novos existam
-            res_uids = client.get(f"{url}/smembers/ariano:uids", headers={"Authorization": f"Bearer {token}"})
-            if res_uids.status_code == 200:
-                uids = res_uids.json().get("result", [])
-                for uid in uids:
-                    if uid not in self.nodes:
-                        res_node = client.get(f"{url}/get/ariano:node:{uid}", headers={"Authorization": f"Bearer {token}"})
-                        if res_node.status_code == 200:
-                            node_val = res_node.json().get("result")
-                            if node_val:
-                                self.nodes[uid] = json.loads(node_val)
-                                logger.info(f"🔄 Nó individual {uid} recuperado via KV SADD/GET (Sync Bypass)")
-            
-            logger.info(f"✅ Grafo sincronizado ({len(self.nodes)} nós, {len(self.edges)} arestas)")
-        except Exception as e:
-            logger.error(f"❌ Falha ao carregar do Vercel KV: {e}")
-
-    def add_node(self, uid: str, labels: list[str], props: dict):
-        self.nodes[uid] = {"labels": labels, "props": {**props, "uid": uid}}
-        if self.auto_save:
-            self.save_node_to_kv(uid)
-
-    def get_node(self, uid: str) -> dict | None:
-        return self.nodes.get(uid)
-
-    def get_nodes_by_label(self, label: str) -> list[dict]:
-        return [
-            n["props"] for n in self.nodes.values()
-            if label in n["labels"]
-        ]
-
-    def add_edge(self, source_uid: str, target_uid: str, edge_type: str, props: dict = None):
-        # MERGE semantics — update if exists
-        for edge in self.edges:
-            if (edge["source"] == source_uid and
-                edge["target"] == target_uid and
-                edge["type"] == edge_type):
-                edge["props"].update(props or {})
-                return
-        self.edges.append({
-            "source": source_uid,
-            "target": target_uid,
-            "type": edge_type,
-            "props": props or {},
-        })
-        if self.auto_save:
-            self.save_to_kv()
-
-    def get_edges(self, source: str = None, target: str = None,
-                  edge_type: str = None) -> list[dict]:
-        results = []
-        for edge in self.edges:
-            if source and edge["source"] != source:
-                continue
-            if target and edge["target"] != target:
-                continue
-            if edge_type and edge["type"] != edge_type:
-                continue
-            results.append(edge)
-        return results
-
-    def delete_edges(self, edge_type: str):
-        self.edges = [e for e in self.edges if e["type"] != edge_type]
-        if self.auto_save:
-            self.save_to_kv()
-
-    def find_node_by_prop(self, label: str, prop: str, value: Any) -> dict | None:
-        for n in self.nodes.values():
-            if label in n["labels"] and n["props"].get(prop) == value:
-                return n["props"]
-        return None
-
-    def count_nodes(self, label: str = None) -> int:
-        if label:
-            return len(self.get_nodes_by_label(label))
-        return len(self.nodes)
-
-    def count_edges(self, edge_type: str = None) -> int:
-        if edge_type:
-            return len([e for e in self.edges if e["type"] == edge_type])
-        return len(self.edges)
-
-
-def get_memory_store(force_refresh: bool = False) -> MemoryGraphStore:
-    global _memory_store
-    if _memory_store is None:
-        _memory_store = MemoryGraphStore()
-    elif force_refresh:
-        logger.info("🔄 Forçando recarregamento do grafo via Vercel KV...")
-        _memory_store.load_from_kv()
-    return _memory_store
-
-
-# ═══════════════════════════════════════════
-# CYPHER INTERPRETER (for in-memory mode)
-# ═══════════════════════════════════════════
-
-def _interpret_cypher(query: str, params: dict | None = None) -> list[dict]:
-    """Interpret common Cypher patterns against the in-memory store.
-
-    This is NOT a full Cypher parser — it handles the specific patterns
-    used by ARIANO's agents, match engine, and CRUD layer.
-    """
-    store = get_memory_store()
-    params = params or {}
-    query_upper = query.strip().upper()
-    query_clean = query.strip()
-
-    # ── CREATE ──
-    if "CREATE" in query_upper and "(" in query_clean and ")" in query_clean:
-        return _handle_create(query_clean, params, store)
-
-    # ── MERGE node ──
-    if "MERGE" in query_upper and "(" in query_clean and ")" in query_clean:
-        return _handle_merge(query_clean, params, store)
-
-    # ── MATCH + RETURN (queries) ──
-    if "MATCH" in query_upper and "RETURN" in query_upper:
-        return _handle_match_return(query_clean, params, store)
-
-    # ── SET (updates) ──
-    if "SET" in query_upper:
-        return _handle_set(query_clean, params, store)
-
-    # ── DELETE edges ──
-    if "DELETE" in query_upper:
-        return _handle_delete(query_clean, params, store)
-
-    # ── COUNT ──
-    if "COUNT" in query_upper:
-        return _handle_count(query_clean, params, store)
-
-    return []
-
-
-def _handle_set(query: str, params: dict, store: MemoryGraphStore) -> list[dict]:
-    """Handle SET operations for nodes."""
-    import re
-    # Extract node label and uid from MATCH: MATCH (ent:Label {uid: $uid})
-    match = re.search(r'\((\w+):(\w+)\s*\{uid:\s*\$uid\}', query)
-    if match:
-        label = match.group(2)
-        uid = params.get("uid")
-        
-        node = store.nodes.get(uid)
-        if node and label in node["labels"]:
-            # Basic support for ent.prop = $val
-            # Handles ent.ai_status = $status, ent.ai_logs = coalesce(ent.ai_logs, []) + $log_list
-            if "ai_status" in query:
-                node["props"]["ai_status"] = params.get("status")
-            
-            if "ai_logs" in query:
-                current_logs = node["props"].get("ai_logs", [])
-                new_logs = params.get("log_list", [])
-                node["props"]["ai_logs"] = current_logs + new_logs
-                
-            # Generic SET support for other props if needed
-            set_matches = re.findall(r'(\w+)\.(\w+)\s*=\s*\$(\w+)', query)
-            for _, prop, param in set_matches:
-                if prop not in ["ai_status", "ai_logs"]: # already handled specifically
-                    node["props"][prop] = params.get(param)
-            
-    return []
-
-
-def _handle_create(query: str, params: dict, store: MemoryGraphStore) -> list[dict]:
-    """Handle CREATE operations for nodes."""
-    import re
-    # Extract label: CREATE (n:Label {props})
-    match = re.search(r'\((\w+):(\w+)', query)
-    if match:
-        label = match.group(2)
-        uid = params.get("uid") or str(uuid.uuid4())[:8]
-        props = {**params, "uid": uid}
-        store.add_node(uid, [label], props)
-        return [{"uid": uid}]
-    return []
-
-def _handle_merge(query: str, params: dict, store: MemoryGraphStore) -> list[dict]:
-    """Handle MERGE operations for nodes and edges."""
-    q = query.upper()
-
-    # Edge MERGE: (a)-[r:TYPE]->(b)
-    if ")-[" in query and "]->" in query:
-        # Extract edge type from r:TYPE
-        import re
-        edge_match = re.search(r'\[r?:(\w+)\]', query)
-        edge_type = edge_match.group(1) if edge_match else "UNKNOWN"
-
-        # Find source and target UIDs from params
-        source_uid = params.get("uid") or params.get("entity_uid")
-        target_name = params.get("skill_name") or params.get("area_name")
-        target_uid = params.get("edital_uid")
-
-        # If target is by name, find it
-        if target_name and not target_uid:
-            for n in store.nodes.values():
-                if n["props"].get("name") == target_name:
-                    target_uid = n["props"]["uid"]
-                    break
-
-        if source_uid and target_uid:
-            edge_props = {}
-            # Extract SET properties from params
-            for key in ["confidence", "priority", "provenance", "source", "score",
-                        "matched_skills", "matched_areas", "justification",
-                        "calculated_by"]:
-                if key in params:
-                    edge_props[key] = params[key]
-            edge_props["created_at"] = datetime.now().isoformat()
-
-            store.add_edge(source_uid, target_uid, edge_type, edge_props)
-        return []
-
-    # Node MERGE: (s:Label {name: $name})
-    import re
-    node_match = re.search(r'\((\w+):(\w+)\s*\{(\w+):\s*\$(\w+)\}', query)
-    if node_match:
-        label = node_match.group(2)
-        prop_key = node_match.group(3)
-        param_key = node_match.group(4)
-        value = params.get(param_key)
-
-        if value:
-            existing = store.find_node_by_prop(label, prop_key, value)
-            if not existing:
-                uid = str(uuid.uuid4())[:8]
-                props = {prop_key: value, "uid": uid, "created_at": datetime.now().isoformat()}
-                # Add extra params
-                for k in ["category"]:
-                    if k in params:
-                        props[k] = params[k]
-                store.add_node(uid, [label], props)
-    return []
-
-
-def _handle_match_return(query: str, params: dict, store: MemoryGraphStore) -> list[dict]:
-    """Handle MATCH...RETURN queries."""
-    q = query.upper()
-
-    # --- Generic Node Query (for NetworkX Enrichment) ---
-    if "MATCH (N)" in q and "RETURN" in q and "N.UID" in q:
-        results = []
-        for node in store.nodes.values():
-            props = node["props"]
-            result = {
-                "uid": props.get("uid"),
-                "name": props.get("name") or props.get("title") or props.get("uid"),
-                "type": node["labels"][0] if node.get("labels") else "Unknown",
-                "goals": props.get("o_que_busco", ""),
-            }
-            # Retorna TODOS os props armazenados para permitir extração rica
-            for key, val in props.items():
-                if key not in result:
-                    result[key] = val
-            results.append(result)
-        return results
-
-    # --- Basic Node Query (fallback) ---
-    if "MATCH (N)" in q and "RETURN" in q and not any(k in q for k in ["-", "[", "->", ":"]):
-        results = []
-        for node in store.nodes.values():
-            results.append({
-                "uid": node["props"].get("uid"),
-                "name": node["props"].get("name") or node["props"].get("title") or node["props"].get("uid"),
-                "type": node["labels"][0] if node.get("labels") else "Unknown"
-            })
-        return results
-
-    # --- Generic Edge Query (for NetworkX) ---
-    if "MATCH (S)-[R]->(T)" in q and "RETURN" in q:
-        results = []
-        for edge in store.edges:
-            results.append({
-                "source": edge["source"],
-                "target": edge["target"],
-                "label": edge["type"]
-            })
-        return results
-
-    # Stats query: count nodes and edges
-    if "COUNT(N)" in q and "COUNT(R)" in q:
-        return [{"nodes": store.count_nodes(), "edges": store.count_edges()}]
-
-    # Count specific edges
-    if "COUNT(R)" in q and "ELIGIBLE_FOR" in q:
-        count = store.count_edges("ELIGIBLE_FOR")
-        return [{"total_matches": count, "avg_score": 0.0, "max_score": 0.0,
-                 "min_score": 0.0, "median_score": 0.0}]
-
-    if "COUNT(S)" in q and "REQUIRES_SKILL" in q:
-        edital_uid = params.get("uid")
-        edges = store.get_edges(source=edital_uid, edge_type="REQUIRES_SKILL")
-        return [{"total": len(edges)}]
-
-    if "COUNT(A)" in q and "TARGETS_AREA" in q:
-        edital_uid = params.get("uid")
-        edges = store.get_edges(source=edital_uid, edge_type="TARGETS_AREA")
-        return [{"total": len(edges)}]
-
-    if "COUNT(S)" in q or "COUNT(A)" in q:
-        return [{"total": 0}]
-
-    # Academic and Edital entities query
-    if ("STUDENT" in q or "RESEARCHER" in q or "PROFESSOR" in q or "EDITAL" in q) and "RETURN" in q and not any(k in q for k in ["HAS_SKILL", "REQUIRES_SKILL", "TARGETS_AREA", "RESEARCHES_AREA", "ELIGIBLE_FOR"]):
-        results = []
-        labels_to_check = []
-        if "STUDENT" in q: labels_to_check.append("Student")
-        if "RESEARCHER" in q: labels_to_check.append("Researcher")
-        if "PROFESSOR" in q: labels_to_check.append("Professor")
-        if "EDITAL" in q: labels_to_check.append("Edital")
-
-        # Detect status filter: WHERE e.status = 'aberto'
-        filter_status = None
-        if "STATUS = 'ABERTO'" in q or 'STATUS = "ABERTO"' in q:
-            filter_status = "aberto"
-
-        # Detect LIMIT
-        import re as _re
-        limit_match = _re.search(r'LIMIT\s+(\d+)', q)
-        limit = int(limit_match.group(1)) if limit_match else 1000
-        
-        for label in labels_to_check:
-            for node in store.get_nodes_by_label(label):
-                uid_param = params.get("uid") or params.get("entity_uid")
-                if uid_param and node.get("uid") != uid_param:
-                    continue
-                # Apply status filter for Editais
-                if filter_status and label == "Edital" and node.get("status", "aberto") != filter_status:
-                    continue
-                results.append({
-                    "uid": node.get("uid"),
-                    "name": node.get("name") or node.get("title"),
-                    "title": node.get("title") or node.get("name"),
-                    "type": label,
-                    "level": node.get("level"),
-                    "institution": node.get("institution") or node.get("agency"),
-                    "bio": node.get("bio"),
-                    "course": node.get("course"),
-                    "maturidade": node.get("maturidade", 0.0),
-                    "min_maturidade": node.get("min_maturidade", 0.0),
-                    "funding": node.get("funding", 0.0),
-                    "agency": node.get("agency"),
-                    "status": node.get("status", "aberto"),
-                    "description": node.get("description", ""),
-                    "edital_type": node.get("edital_type", "pesquisa"),
-                })
-        return results[:limit]
-
-    # Shared skills query (HAS_SKILL + REQUIRES_SKILL)
-    if "HAS_SKILL" in q and "REQUIRES_SKILL" in q:
-        entity_uid = params.get("entity_uid")
-        edital_uid = params.get("edital_uid")
-        if entity_uid and edital_uid:
-            entity_skills = store.get_edges(source=entity_uid, edge_type="HAS_SKILL")
-            edital_skills = store.get_edges(source=edital_uid, edge_type="REQUIRES_SKILL")
-
-            entity_skill_targets = {e["target"] for e in entity_skills}
-            results = []
-            for es in edital_skills:
-                if es["target"] in entity_skill_targets:
-                    skill_node = store.get_node(es["target"])
-                    hs = next((e for e in entity_skills if e["target"] == es["target"]), {})
-                    results.append({
-                        "skill_name": skill_node["props"]["name"] if skill_node else "",
-                        "confidence": hs.get("props", {}).get("confidence", 0.8),
-                        "priority": es.get("props", {}).get("priority", "desirable"),
-                    })
-            return results
-        return []
-
-    # Shared areas query (RESEARCHES_AREA + TARGETS_AREA)
-    if "RESEARCHES_AREA" in q and "TARGETS_AREA" in q:
-        entity_uid = params.get("entity_uid")
-        edital_uid = params.get("edital_uid")
-        if entity_uid and edital_uid:
-            entity_areas = store.get_edges(source=entity_uid, edge_type="RESEARCHES_AREA")
-            edital_areas = store.get_edges(source=edital_uid, edge_type="TARGETS_AREA")
-
-            entity_area_targets = {e["target"] for e in entity_areas}
-            results = []
-            for ea in edital_areas:
-                if ea["target"] in entity_area_targets:
-                    area_node = store.get_node(ea["target"])
-                    results.append({
-                        "area_name": area_node["props"]["name"] if area_node else "",
-                    })
-            return results
-        return []
-
-    # Level data query
-    if "A.LEVEL" in q or "ENTITY_LEVEL" in q:
-        entity_uid = params.get("entity_uid")
-        edital_uid = params.get("edital_uid")
-        entity = store.get_node(entity_uid) if entity_uid else None
-        edital = store.get_node(edital_uid) if edital_uid else None
-        if entity and edital:
-            return [{
-                "entity_level": entity["props"].get("level", "graduacao"),
-                "min_level": edital["props"].get("min_level", "graduacao"),
-            }]
-        return []
-
-    # Essential skills query
-    if "PRIORITY" in q and "ESSENTIAL" in q.upper():
-        edital_uid = params.get("uid")
-        edges = store.get_edges(source=edital_uid, edge_type="REQUIRES_SKILL")
-        results = []
-        for e in edges:
-            if e["props"].get("priority") == "essential":
-                skill = store.get_node(e["target"])
-                results.append({"name": skill["props"]["name"] if skill else ""})
-        return results
-
-    # ELIGIBLE_FOR matches query
-    if "ELIGIBLE_FOR" in q:
-        entity_uid = params.get("entity_uid")
-        edital_uid = params.get("edital_uid")
-        threshold = params.get("threshold", 0.0)
-        limit = params.get("limit", 100)
-
-        edges = store.get_edges(edge_type="ELIGIBLE_FOR")
-        results = []
-        for edge in edges:
-            if entity_uid and edge["source"] != entity_uid:
-                continue
-            if edital_uid and edge["target"] != edital_uid:
-                continue
-            score = edge["props"].get("score", 0)
-            if score < threshold:
-                continue
-            source_node = store.get_node(edge["source"])
-            target_node = store.get_node(edge["target"])
-            if source_node and target_node:
-                results.append({
-                    "entity_uid": edge["source"],
-                    "entity_name": source_node["props"].get("name", ""),
-                    "entity_type": source_node["labels"][0] if source_node.get("labels") else "",
-                    "edital_uid": edge["target"],
-                    "edital_title": target_node["props"].get("title", ""),
-                    "agency": target_node["props"].get("agency", ""),
-                    "funding": target_node["props"].get("funding", 0),
-                    "score": score,
-                    "matched_skills": edge["props"].get("matched_skills", []),
-                    "matched_areas": edge["props"].get("matched_areas", []),
-                    "justification": edge["props"].get("justification", ""),
-                    "calculated_at": edge["props"].get("calculated_at"),
-                })
-        results.sort(key=lambda x: x.get("score", 0), reverse=True)
-        return results[:limit]
-
-    return []
-
-
-def _handle_delete(query: str, params: dict, store: MemoryGraphStore) -> list[dict]:
-    """Handle DELETE operations."""
-    if "ELIGIBLE_FOR" in query.upper():
-        store.delete_edges("ELIGIBLE_FOR")
-    return []
-
-
-def _handle_count(query: str, params: dict, store: MemoryGraphStore) -> list[dict]:
-    return [{"count": store.count_nodes()}]
-
-
-# ═══════════════════════════════════════════
-# PUBLIC API (same interface as original)
-# ═══════════════════════════════════════════
 
 def get_driver():
-    """Get or create Neo4j driver singleton. Falls back to memory mode only on real connection failure."""
-    global _driver, _use_memory
-    if _use_memory:
-        return None
+    """Get or create Neo4j driver singleton."""
+    global _driver
     if _driver is None:
         try:
-            from neo4j import GraphDatabase
-            from app.core.config import settings
-            import os
-
-            # Detecção de ambiente Vercel/Produção (Runtime)
-            is_vercel = any(os.environ.get(k) for k in ["VERCEL", "VERCEL_URL", "VERCEL_REGION"])
-            is_localhost = "localhost" in settings.neo4j_uri or "127.0.0.1" in settings.neo4j_uri
-
-            if is_vercel and is_localhost:
-                logger.warning("[NEO4J] ⚠️  Vercel detectado + URI localhost. Sem acesso ao Neo4j local. Usando modo memória.")
-                _use_memory = True
-                return None
-
-            if not settings.neo4j_password:
-                logger.warning("[NEO4J] ⚠️  Senha Neo4j não configurada. Usando modo memória.")
-                _use_memory = True
-                return None
-
             logger.info(f"[NEO4J] 🔌 Tentando conectar em {settings.neo4j_uri} (user={settings.neo4j_user})...")
             _driver = GraphDatabase.driver(
                 settings.neo4j_uri,
                 auth=(settings.neo4j_user, settings.neo4j_password),
-                connection_timeout=3.0,
+                connection_timeout=5.0,
             )
 
             # Verificação REAL de conectividade
@@ -630,56 +32,47 @@ def get_driver():
                 total = result["total"] if result else 0
 
             logger.info(f"[NEO4J] ✅ Conectado em {settings.neo4j_uri} ({total} nós no banco).")
-            _use_memory = False
         except Exception as e:
-            logger.warning(f"[NEO4J] ⚠️  Falha ao conectar: {e}. Usando modo memória.")
-
+            logger.error(f"[NEO4J] ❌ Falha crítica ao conectar: {e}. O sistema exige o Neo4j Aura para funcionar.")
             if _driver:
                 try: _driver.close()
                 except: pass
             _driver = None
-            _use_memory = True
+            raise
     return _driver
 
 
 def close_driver():
     """Close the Neo4j driver."""
-    global _driver, _use_memory
+    global _driver
     if _driver:
         _driver.close()
         _driver = None
-    _use_memory = False
 
+
+# --- Dummy functions to prevent import errors in other files for now ---
+# --- (These will naturally be bypassed since is_memory_mode is False) ---
 
 def is_memory_mode() -> bool:
-    """Check if we're using in-memory fallback. Initializes if needed."""
-    if not _use_memory and _driver is None:
-        get_driver()
-    return _use_memory
-
+    return False
 
 def force_memory_mode():
-    """Manually trigger memory mode if other components (like neomodel) fail."""
-    global _use_memory, _driver
-    if _driver:
-        try: _driver.close()
-        except: pass
-    _driver = None
-    _use_memory = True
-    logger.warning("🚨 Memory Mode FORCED by external component failure.")
+    pass
 
+def get_memory_store(*args, **kwargs):
+    return None
+
+# ---------------------------------------------------------------------
 
 async def run_query(query: str, params: dict | None = None) -> list[dict]:
     """Async wrapper for run_cypher to support service layer."""
-    import asyncio
     return run_cypher(query, params)
 
 def run_cypher(query: str, params: dict | None = None) -> list[dict]:
-    """Execute a Cypher query. Uses Neo4j if available, memory store otherwise."""
+    """Execute a Cypher query on Neo4j."""
     driver = get_driver()
-
-    if _use_memory or driver is None:
-        return _interpret_cypher(query, params)
+    if driver is None:
+        return []
 
     try:
         with driver.session() as session:
