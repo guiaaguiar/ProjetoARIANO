@@ -26,10 +26,12 @@ def init_db() -> None:
         from neomodel import config as neo_config
         from app.core.config import settings
 
+        # Limpa o protocolo do URI para montar a string correta
+        clean_uri = settings.neo4j_uri.replace("neo4j+s://", "").replace("bolt://", "").replace("neo4j://", "")
         neo_config.DATABASE_URL = (
-            f"bolt://{settings.neo4j_user}:{settings.neo4j_password}"
-            f"@{settings.neo4j_uri.replace('bolt://', '')}"
+            f"neo4j+s://{settings.neo4j_user}:{settings.neo4j_password}@{clean_uri}"
         )
+        neo_config.MAX_CONNECTION_POOL_SIZE = 5 # Essencial para serverless (Vercel)
         try:
             neo_config.AUTO_INSTALL_LABELS = True
             logger.info("✅ Neo4j + neomodel initialized")

@@ -67,6 +67,7 @@ class ProfileAnalyzer:
                     openai_api_base=settings.openrouter_base_url,
                     temperature=0.1,
                     max_tokens=2048,
+                    timeout=25.0, # Previne Timeout do Vercel (>60s)
                     default_headers={
                         "HTTP-Referer": "https://github.com/guiaaguiar/ProjetoARIANO",
                         "X-Title": "ARIANO - ProfileAnalyzer Agent",
