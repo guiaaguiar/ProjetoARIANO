@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { LoopTypewriter } from './TypewriterText';
-import { FileText, Briefcase, Users, Network, Award, FileBadge, Link2, Lightbulb, Brain } from 'lucide-react';
+import { FileText, Briefcase, Users, Network, Award, FileBadge, Link2, Lightbulb, Brain, Search } from 'lucide-react';
 
 interface EmptyNodeRadarProps {
   userName: string;
