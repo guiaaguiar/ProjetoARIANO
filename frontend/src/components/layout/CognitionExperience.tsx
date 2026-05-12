@@ -184,19 +184,6 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({
           style={{ background: 'rgba(99,102,241,0.06)' }} />
       </div>
 
-      {/* Skip button — only visible once matches are ready */}
-      {matches.length > 0 && phase !== 'matches' && (
-        <motion.button
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-          onClick={skipToMatches}
-          className="absolute bottom-8 right-8 flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold uppercase tracking-widest transition-all hover:scale-105"
-          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.35)' }}
-        >
-          <SkipForward className="w-3.5 h-3.5" />
-          Pular Animação
-        </motion.button>
-      )}
-
       <AnimatePresence mode="wait">
 
         {/* ── PHASE 0: WAITING API ── */}

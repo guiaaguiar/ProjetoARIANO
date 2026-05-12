@@ -248,12 +248,15 @@ async def finalize_registration(body: FinalizeRequest):
                 if edital_uid:
                     run_cypher("""
                         MATCH (u {uid: $uid})
-                        MATCH (e:Edital {uid: $euid})
+                        MERGE (e:Edital {uid: $euid})
+                        ON CREATE SET e.name = $ename, e.institution = $einst, e.theme = 'Auto-Generated'
                         MERGE (u)-[r:ELIGIBLE_FOR]->(e)
                         SET r.score = $score, r.justification = $just, r.source = 'cognition_v3'
                     """, {
                         "uid": uid,
                         "euid": edital_uid,
+                        "ename": match.get("edital_name", f"Edital {edital_uid}"),
+                        "einst": match.get("institution", "Unknown"),
                         "score": match.get("score", 0.75),
                         "just": match.get("justification", ""),
                     })

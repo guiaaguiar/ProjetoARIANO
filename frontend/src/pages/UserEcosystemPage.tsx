@@ -29,6 +29,7 @@ export default function UserEcosystemPage() {
   const { user } = useAuthStore();
   const [insight, setInsight] = useState<string>('O Orquestrador está analisando sua centralidade...');
   const [personalStats, setPersonalStats] = useState<PersonalStats | null>(null);
+  const [selectedNode, setSelectedNode] = useState<any | null>(null);
   const navigateRef = useRef<((uid: string) => void) | null>(null);
 
   useEffect(() => {
@@ -82,30 +83,98 @@ export default function UserEcosystemPage() {
         </div>
       </header>
 
-      <div className="grid grid-cols-1 xl:grid-cols-4 gap-10">
+      <div className="space-y-6">
         {/* Graph Canvas — NetworkXGraphView real */}
-        <div className="xl:col-span-3 aspect-video lg:aspect-auto lg:h-[650px] rounded-[3rem] relative overflow-hidden shadow-2xl">
+        <div className="w-full aspect-square lg:aspect-auto lg:h-[750px] rounded-[3rem] relative overflow-hidden shadow-2xl bg-card/20 border border-border">
           {personalApiUrl ? (
-            <NetworkXGraphView
-              apiUrl={personalApiUrl}
-              onStatsLoaded={handleStatsLoaded}
-              onNavigateToNode={navigateRef}
-              showCoT={true}
-              filterPanelOpen={false}
-              detailPanelOpen={false}
-            />
+            <>
+              <NetworkXGraphView
+                apiUrl={personalApiUrl}
+                onStatsLoaded={handleStatsLoaded}
+                onNavigateToNode={navigateRef}
+                showCoT={true}
+                filterPanelOpen={false}
+                detailPanelOpen={!!selectedNode}
+                onNodeClick={(node) => setSelectedNode(node)}
+                onBackgroundClick={() => setSelectedNode(null)}
+                selectedNodeId={selectedNode?.id}
+              />
+              
+              {/* Painel de Detalhes do Nó */}
+              {selectedNode && (
+                <div className="absolute top-0 right-0 h-full w-80 bg-background/95 backdrop-blur-xl border-l border-border p-6 shadow-[0_0_40px_rgba(0,0,0,0.5)] overflow-y-auto z-10 transition-transform">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-black text-foreground leading-tight">{selectedNode.label}</h3>
+                    <button 
+                      onClick={() => setSelectedNode(null)}
+                      className="p-1.5 hover:bg-white/10 rounded-full transition-colors text-muted-foreground hover:text-white"
+                    >
+                      <Zap className="w-4 h-4" /> {/* Botão de fechar (substituir por X ou Zap) */}
+                    </button>
+                  </div>
+                  
+                  <div className="inline-block px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider mb-6 bg-primary/10 text-primary border border-primary/20">
+                    Tipo: {selectedNode.type}
+                  </div>
+                  
+                  {/* Descrição / Tema */}
+                  {(selectedNode.metadata?.description || selectedNode.cluster_theme) && (
+                    <div className="mb-6 space-y-2">
+                      <p className="text-[10px] text-info font-bold uppercase tracking-widest">Detalhes</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {selectedNode.metadata?.description as string || `Relacionado ao cluster ${selectedNode.cluster_theme}`}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Conexões (apenas com o usuário) */}
+                  <div className="space-y-3">
+                    <p className="text-[10px] text-success font-bold uppercase tracking-widest flex items-center gap-1">
+                      <Network className="w-3 h-3" /> Sua Conexão
+                    </p>
+                    
+                    <div className="space-y-2">
+                      {selectedNode.connections
+                        ?.filter((conn: any) => conn.uid === user?.uid || selectedNode.id === user?.uid)
+                        .map((conn: any, i: number) => (
+                        <div key={i} className="p-3 bg-muted/20 border border-border/40 rounded-xl relative overflow-hidden group">
+                          <div className="absolute left-0 top-0 bottom-0 w-1 bg-success/50 group-hover:bg-success transition-colors" />
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1 font-semibold">
+                            {conn.edge_type.replace(/_/g, ' ')}
+                          </p>
+                          <p className="text-sm font-bold text-foreground">
+                            {conn.uid === user?.uid ? 'Você' : conn.label}
+                          </p>
+                          {conn.score && (
+                            <div className="mt-2 text-xs font-mono text-success">
+                              Match: {Math.round(conn.score * 100)}%
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                      
+                      {(!selectedNode.connections || selectedNode.connections.filter((conn: any) => conn.uid === user?.uid || selectedNode.id === user?.uid).length === 0) && (
+                        <div className="p-3 bg-muted/10 border border-border/20 rounded-xl text-center">
+                          <p className="text-xs text-muted-foreground">Você não possui conexão direta com este nó no grafo.</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
           ) : (
-            <div className="flex flex-col items-center justify-center h-full bg-card/20 border border-border rounded-[3rem]">
+            <div className="flex flex-col items-center justify-center h-full">
               <Network className="w-10 h-10 text-muted-foreground mb-3" />
               <p className="text-muted-foreground text-sm">Faça login para ver seu ecossistema.</p>
             </div>
           )}
         </div>
 
-        {/* Sidebar Insights */}
-        <div className="space-y-6">
+        {/* Sidebar Insights agora embaixo, em grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Graph Insights */}
-          <div className="p-8 rounded-[2.5rem] bg-card/40 border border-border backdrop-blur-xl flex flex-col gap-6 relative overflow-hidden">
+          <div className="lg:col-span-2 p-8 rounded-[2.5rem] bg-card/40 border border-border backdrop-blur-xl flex flex-col gap-6 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
 
             <h3 className="text-xl font-bold text-foreground flex items-center gap-3 relative z-10">
@@ -113,17 +182,17 @@ export default function UserEcosystemPage() {
               Graph Insights
             </h3>
 
-            <div className="space-y-5 relative z-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
               <div className="space-y-2">
                 <p className="text-[10px] text-primary font-bold uppercase tracking-[0.15em]">Centralidade</p>
-                <div className="p-4 rounded-2xl bg-muted/30 border border-border/50 text-[13px] text-foreground/80 leading-relaxed italic">
+                <div className="p-4 rounded-2xl bg-muted/30 border border-border/50 text-[13px] text-foreground/80 leading-relaxed italic h-full">
                   "{insight}"
                 </div>
               </div>
 
               <div className="space-y-2">
                 <p className="text-[10px] text-info font-bold uppercase tracking-[0.15em]">Topologia</p>
-                <div className="p-4 rounded-2xl bg-muted/30 border border-border/50 text-[13px] text-foreground/80 leading-relaxed">
+                <div className="p-4 rounded-2xl bg-muted/30 border border-border/50 text-[13px] text-foreground/80 leading-relaxed h-full">
                   {personalStats ? (
                     <>
                       Sua comunidade possui densidade de{' '}
@@ -135,24 +204,20 @@ export default function UserEcosystemPage() {
                   )}
                 </div>
               </div>
-
-              {personalStats && (
-                <div className="flex gap-4 text-center">
-                  <div className="flex-1 p-3 rounded-xl bg-muted/20 border border-border/40">
-                    <p className="text-xs font-bold text-primary mb-1">Nós</p>
-                    <p className="text-lg font-black text-foreground">{personalStats.node_count}</p>
-                  </div>
-                  <div className="flex-1 p-3 rounded-xl bg-muted/20 border border-border/40">
-                    <p className="text-xs font-bold text-info mb-1">Arestas</p>
-                    <p className="text-lg font-black text-foreground">{personalStats.edge_count}</p>
-                  </div>
-                </div>
-              )}
             </div>
 
-            <button className="w-full py-4 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-2xl text-[12px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 mt-2">
-              Explorar Cluster <ChevronRight className="w-4 h-4" />
-            </button>
+            {personalStats && (
+              <div className="flex gap-4 text-center mt-2 relative z-10">
+                <div className="flex-1 p-3 rounded-xl bg-muted/20 border border-border/40 flex items-center justify-center gap-3">
+                  <p className="text-xs font-bold text-primary">Nós na rede:</p>
+                  <p className="text-lg font-black text-foreground">{personalStats.node_count}</p>
+                </div>
+                <div className="flex-1 p-3 rounded-xl bg-muted/20 border border-border/40 flex items-center justify-center gap-3">
+                  <p className="text-xs font-bold text-info">Conexões ativas:</p>
+                  <p className="text-lg font-black text-foreground">{personalStats.edge_count}</p>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Conectividade Global */}
@@ -160,7 +225,7 @@ export default function UserEcosystemPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="p-8 rounded-[2.5rem] bg-gradient-to-br from-primary/20 to-transparent border border-primary/20 relative overflow-hidden"
+            className="p-8 rounded-[2.5rem] bg-gradient-to-br from-primary/20 to-transparent border border-primary/20 relative overflow-hidden flex flex-col justify-center"
           >
             <div className="flex items-center gap-2 text-primary font-bold uppercase tracking-widest text-[9px] mb-4">
               <Activity className="w-3 h-3" /> Conectividade Global
@@ -184,6 +249,10 @@ export default function UserEcosystemPage() {
                 <Info className="w-3 h-3" /> Carregando dados do grafo…
               </p>
             )}
+            
+            <button className="w-full py-3 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 mt-6">
+              Ver Detalhes do Cluster <ChevronRight className="w-4 h-4" />
+            </button>
           </motion.div>
         </div>
       </div>
