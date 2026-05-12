@@ -6,6 +6,7 @@ import { useAuthStore } from '../../store/authStore';
 import { EmptyNodeRadar } from '../EmptyNodeRadar';
 import { NeonGraphCanvas, NeonNode } from '../NeonGraphCanvas';
 import { TypewriterText } from '../TypewriterText';
+import { CognitionTerminal } from '../CognitionTerminal';
 
 interface CognitionExperienceProps {
   userName: string;
@@ -35,6 +36,8 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({
   const [editalNodes, setEditalNodes]   = useState<EditalNode[]>([]);
   const [networkNodes, setNetworkNodes] = useState<NetworkNode[]>([]);
   const [matches, setMatches]           = useState<Match[]>([]);
+  const [apiResponse, setApiResponse]   = useState<any>(null);
+  const [apiError, setApiError]         = useState(false);
   const isMounted = useRef(true);
 
   useEffect(() => { isMounted.current = true; return () => { isMounted.current = false; }; }, []);
@@ -81,11 +84,14 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({
       if (cognitionRes && (cognitionRes as Response).ok) {
         try {
           const payload = await (cognitionRes as Response).json();
+          setApiResponse(payload);
           const data = payload.data || {};
           edital_nodes  = data.edital_nodes  || [];
           network_nodes = data.network_nodes || [];
           llmMatches    = data.matches        || [];
-        } catch (_) { /* fallback below */ }
+        } catch (_) { setApiError(true); }
+      } else {
+        setApiError(true);
       }
 
       // Use fallbacks if API returned nothing
@@ -376,6 +382,13 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Terminal de visualização dos comandos do OpenRouter */}
+      <CognitionTerminal 
+        formData={formData} 
+        apiResponse={apiResponse} 
+        isError={apiError} 
+      />
     </div>
   );
 };
