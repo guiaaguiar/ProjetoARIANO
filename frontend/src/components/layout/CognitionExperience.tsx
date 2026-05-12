@@ -24,7 +24,7 @@ interface Match {
   institution: string; justification: string; score: number;
 }
 
-const PHASE_DURATION = 4200; // ms for editais and network phases
+const PHASE_DURATION = 7000; // ms for editais and network phases
 
 export const CognitionExperience: React.FC<CognitionExperienceProps> = ({
   userName, userId, formData, onComplete,
@@ -118,14 +118,14 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({
       setMatches(finalMatches);
       setCachedMatches(finalMatches);
 
-      // ── Phase 1: EDITAIS — 4.2s ──
+      // ── Phase 1: EDITAIS — 7.0s ──
       if (!isMounted.current) return;
       setEditalNodes(finalEditais);
       setStatusMsg(`${finalEditais.length} editais estratégicos identificados`);
       setPhase('editais');
       await delay(PHASE_DURATION);
 
-      // ── Phase 2: NETWORK — 4.2s ──
+      // ── Phase 2: NETWORK — 7.0s ──
       if (!isMounted.current) return;
       setNetworkNodes(finalNetwork);
       setStatusMsg('Sua rede de inovação mapeada');
@@ -197,7 +197,7 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({
           <motion.div key="waiting" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.94 }} transition={{ duration: 0.5 }}
             className="flex flex-col items-center gap-10 text-center">
-            <EmptyNodeRadar userName={userName} size={120} />
+            <EmptyNodeRadar userName={userName} size={400} />
             <div className="space-y-2">
               <h1 className="text-3xl lg:text-4xl font-black tracking-tight text-white">
                 ARIANO está mapeando seu perfil cognitivo
