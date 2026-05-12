@@ -240,3 +240,9 @@
   border: 1px solid hsl(var(--border) / 0.5);
   border-radius: 2rem;
 }
+
+/* TypewriterText cursor blink */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}

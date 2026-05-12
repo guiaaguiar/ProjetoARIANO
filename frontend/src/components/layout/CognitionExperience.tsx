@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, ArrowRight, RefreshCw, Zap } from 'lucide-react';
+import { CheckCircle2, ArrowRight, Zap, SkipForward } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { EmptyNodeRadar } from '../EmptyNodeRadar';
+import { NeonGraphCanvas, NeonNode } from '../NeonGraphCanvas';
+import { TypewriterText } from '../TypewriterText';
 
 interface CognitionExperienceProps {
   userName: string;
@@ -13,72 +14,41 @@ interface CognitionExperienceProps {
   onComplete: () => void;
 }
 
-// Phase types for the 3-phase animation
-type Phase = 'loading' | 'editais' | 'network' | 'matches' | 'done' | 'error';
+type Phase = 'waiting_api' | 'editais' | 'network' | 'matches' | 'done';
 
-interface EditalNode {
-  name: string;
-  uid: string;
-}
-
-interface NetworkNode {
-  name: string;
-  type: 'professor' | 'student' | 'researcher';
-}
-
+interface EditalNode  { name: string; uid: string; score?: number; }
+interface NetworkNode { name: string; type: 'professor' | 'student' | 'researcher'; }
 interface Match {
-  edital_name: string;
-  edital_uid: string;
-  institution: string;
-  justification: string;
-  score: number;
+  edital_name: string; edital_uid: string;
+  institution: string; justification: string; score: number;
 }
 
-const NODE_TYPE_COLORS: Record<string, string> = {
-  professor: 'bg-purple-500/20 border-purple-500/60 text-purple-300',
-  student: 'bg-teal-500/20 border-teal-500/60 text-teal-300',
-  researcher: 'bg-blue-500/20 border-blue-500/60 text-blue-300',
-};
-
-const NODE_TYPE_LABEL: Record<string, string> = {
-  professor: 'Professor',
-  student: 'Estudante',
-  researcher: 'Pesquisador',
-};
+const PHASE_DURATION = 4200; // ms for editais and network phases
 
 export const CognitionExperience: React.FC<CognitionExperienceProps> = ({
-  userName,
-  userId,
-  formData,
-  onComplete,
+  userName, userId, formData, onComplete,
 }) => {
-  const navigate = useNavigate();
+  const navigate  = useNavigate();
   const { setCachedMatches } = useAuthStore();
-  const [phase, setPhase] = useState<Phase>('loading');
-  const [statusMsg, setStatusMsg] = useState('Ativando motor cognitivo ARIANO...');
-  const [editalNodes, setEditalNodes] = useState<EditalNode[]>([]);
+  const [phase, setPhase]               = useState<Phase>('waiting_api');
+  const [statusMsg, setStatusMsg]       = useState('');
+  const [editalNodes, setEditalNodes]   = useState<EditalNode[]>([]);
   const [networkNodes, setNetworkNodes] = useState<NetworkNode[]>([]);
-  const [matches, setMatches] = useState<Match[]>([]);
-  const [errorMsg, setErrorMsg] = useState('');
+  const [matches, setMatches]           = useState<Match[]>([]);
   const isMounted = useRef(true);
 
-  useEffect(() => {
-    isMounted.current = true;
-    return () => { isMounted.current = false; };
-  }, []);
+  useEffect(() => { isMounted.current = true; return () => { isMounted.current = false; }; }, []);
+  useEffect(() => { if (formData) runCognition(); }, [formData]); // eslint-disable-line
 
-  useEffect(() => {
-    if (!formData) return;
-    runCognition();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData]);
+  const delay = (ms: number) => new Promise<void>(res => setTimeout(res, ms));
 
-  const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
+  const skipToMatches = () => {
+    if (matches.length > 0) { setPhase('matches'); }
+  };
 
   const runCognition = async () => {
-    // ── Fire API call immediately in background ──
+    // Fire API immediately, radar shows while we wait
     let cognitionRes: Response | null = null;
-    let cognitionError: Error | null = null;
 
     const cognitionPromise = fetch('/api/agents/v2/cognition-full', {
       method: 'POST',
@@ -94,345 +64,328 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({
         curriculo_texto: formData.curriculo_texto || '',
         user_type: formData.user_type || 'student',
       }),
-    }).then(r => { cognitionRes = r; return r; })
-      .catch(e => { cognitionError = e; throw e; });
+    })
+      .then(r => { cognitionRes = r; return r; })
+      .catch(() => null);
 
     try {
-      // ── Phase 1: Editais (Immediate — cinematic scanner) ──
-      setStatusMsg('Escaneando editais compatíveis...');
-      setPhase('editais');
-      setEditalNodes([
-        { name: 'Analisando Base FACEPE...', uid: 'scan-1' },
-        { name: 'Analisando Base CNPq...', uid: 'scan-2' },
-        { name: 'Analisando Projetos MCTI...', uid: 'scan-3' }
-      ]);
-
-      // Wait at least 3.5s for animation OR until the API returns — whichever is last
-      await Promise.allSettled([delay(3500), cognitionPromise]);
-
+      // ── Wait for real API response (radar keeps spinning) ──
+      await cognitionPromise;
       if (!isMounted.current) return;
 
       // Parse response
-      let edital_nodes: EditalNode[] = [];
+      let edital_nodes: EditalNode[]  = [];
       let network_nodes: NetworkNode[] = [];
-      let llmMatches: Match[] = [];
+      let llmMatches: Match[]          = [];
 
       if (cognitionRes && (cognitionRes as Response).ok) {
         try {
           const payload = await (cognitionRes as Response).json();
           const data = payload.data || {};
-          edital_nodes = data.edital_nodes || [];
+          edital_nodes  = data.edital_nodes  || [];
           network_nodes = data.network_nodes || [];
-          llmMatches = data.matches || [];
-        } catch (_) {
-          console.warn('[CognitionExperience] JSON parse failed, using fallback');
-        }
+          llmMatches    = data.matches        || [];
+        } catch (_) { /* fallback below */ }
       }
 
-      // Update Phase 1 with real data (or fallback)
-      if (isMounted.current) {
-        setEditalNodes(edital_nodes.length > 0 ? edital_nodes : [
-          { name: 'FACEPE — Iniciação Científica 2026', uid: 'fallback-1' },
-          { name: 'CNPq — Pesquisa Universal', uid: 'fallback-2' },
-          { name: 'MCTI — Inovação Tecnológica', uid: 'fallback-3' }
-        ]);
-        setStatusMsg('Editais estratégicos identificados!');
-      }
-      await delay(1800);
+      // Use fallbacks if API returned nothing
+      const finalEditais = edital_nodes.length > 0 ? edital_nodes : [
+        { name: 'FACEPE — Iniciação Científica 2026', uid: 'f1', score: 0.87 },
+        { name: 'CNPq — Pesquisa Universal',          uid: 'f2', score: 0.74 },
+        { name: 'MCTI — Inovação Tecnológica',        uid: 'f3', score: 0.68 },
+      ];
+      const finalNetwork = network_nodes.length > 0 ? network_nodes : [
+        { name: 'Prof. Dr. Antonio Guimarães', type: 'professor' as const },
+        { name: 'Mariana Costa Silva',         type: 'student'   as const },
+        { name: 'Dr. Ricardo Barros',          type: 'researcher' as const },
+      ];
+      const finalMatches = llmMatches.length > 0 ? llmMatches : [
+        {
+          edital_name: 'FACEPE — Iniciação Científica 2026',
+          edital_uid: 'facepe-ic', institution: 'FACEPE',
+          justification: 'Perfil altamente compatível com os critérios de iniciação científica identificados pelo motor ARIANO.',
+          score: 0.87,
+        },
+      ];
 
-      // ── Phase 2: Network ──
-      if (isMounted.current) {
-        setStatusMsg('Mapeando sua rede de inovação...');
-        setNetworkNodes(network_nodes.length > 0 ? network_nodes : [
-          { name: 'Prof. Dr. Antonio Guimarães', type: 'professor' },
-          { name: 'Mariana Costa Silva', type: 'student' },
-          { name: 'Dr. Ricardo Barros', type: 'researcher' }
-        ]);
-        setPhase('network');
-      }
-      await delay(3000);
+      // Store matches early so skip button works
+      setMatches(finalMatches);
+      setCachedMatches(finalMatches);
 
-      // ── Phase 3: Matches ──
-      if (isMounted.current) {
-        const finalMatches = llmMatches.length > 0 ? llmMatches : [
-          {
-            edital_name: 'FACEPE — Iniciação Científica 2026',
-            edital_uid: 'fallback-1',
-            institution: 'FACEPE',
-            justification: 'Perfil compatível com os requisitos de iniciação científica identificados pelo motor ARIANO.',
-            score: 0.82
-          }
-        ];
-        setStatusMsg('Conexões cognitivas estabelecidas!');
-        setMatches(finalMatches);
-        setCachedMatches(finalMatches);
-        setPhase('matches');
-      }
-      await delay(800);
+      // ── Phase 1: EDITAIS — 4.2s ──
+      if (!isMounted.current) return;
+      setEditalNodes(finalEditais);
+      setStatusMsg(`${finalEditais.length} editais estratégicos identificados`);
+      setPhase('editais');
+      await delay(PHASE_DURATION);
 
-      if (isMounted.current) setPhase('done');
+      // ── Phase 2: NETWORK — 4.2s ──
+      if (!isMounted.current) return;
+      setNetworkNodes(finalNetwork);
+      setStatusMsg('Sua rede de inovação mapeada');
+      setPhase('network');
+      await delay(PHASE_DURATION);
 
-    } catch (err: any) {
-      console.warn('[CognitionExperience] resilient mode activated:', err);
-      if (isMounted.current) {
-        // Move forward with fallback matches — never show error screen
-        const fallback = [
-          {
-            edital_name: 'FACEPE — Iniciação Científica 2026',
-            edital_uid: 'facepe-ic',
-            institution: 'FACEPE',
-            justification: 'Baseado no seu perfil acadêmico detectado pelo sistema.',
-            score: 0.80
-          }
-        ];
-        setMatches(fallback);
-        setCachedMatches(fallback);
-        setStatusMsg('Bem-vindo ao ARIANO! Explorando seu ecossistema...');
-        setPhase('done');
-      }
+      // ── Phase 3: MATCHES ──
+      if (!isMounted.current) return;
+      setPhase('matches');
+
+    } catch (err) {
+      console.warn('[CognitionExperience] fallback activated:', err);
+      if (!isMounted.current) return;
+      const fallback = [{
+        edital_name: 'FACEPE — Iniciação Científica 2026',
+        edital_uid: 'facepe-ic', institution: 'FACEPE',
+        justification: 'Baseado no seu perfil acadêmico detectado pelo sistema.',
+        score: 0.80,
+      }];
+      setMatches(fallback);
+      setCachedMatches(fallback);
+      setPhase('matches');
     }
   };
 
-  // ── Finalize: called when user clicks a match or "Explorar Perfil" ──
-  const finalize = async (selectedMatch?: Match) => {
+  const finalize = async () => {
     try {
       await fetch('/api/users/finalize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          uid: userId,
-          profile_data: { ...formData, user_type: formData.user_type || 'student' },
-          matches,
-        }),
+        body: JSON.stringify({ uid: userId, profile_data: { ...formData, user_type: formData.user_type || 'student' }, matches }),
       });
-    } catch (e) {
-      console.warn('Finalize request failed (non-blocking):', e);
-    }
+    } catch (_) { /* non-blocking */ }
   };
 
   const handleMatchClick = async (match: Match) => {
-    await finalize(match);
+    await finalize();
     navigate(`/user/ecossistema?highlight=${match.edital_uid}`);
   };
 
-  const handleExploreProfile = async () => {
-    await finalize();
-    onComplete();
-  };
+  const handleExplore = async () => { await finalize(); onComplete(); };
 
-  // ────────────────────────────────────────────
-  // RENDER
-  // ────────────────────────────────────────────
+  // Build NeonNode arrays
+  const editalNeonNodes: NeonNode[] = editalNodes.map((e, i) => ({
+    id: e.uid || `e${i}`, label: e.name, score: e.score, type: 'edital',
+  }));
+  const networkNeonNodes: NeonNode[] = [
+    ...editalNodes.map((e, i): NeonNode => ({ id: e.uid || `e${i}`, label: e.name, score: e.score, type: 'edital' })),
+    ...networkNodes.map((n, i): NeonNode => ({ id: `n${i}`, label: n.name, type: n.type })),
+  ];
 
+  // ── RENDER ──
   return (
-    <div className="fixed inset-0 z-50 bg-[#050a0f] flex flex-col items-center justify-center p-6 lg:p-12 overflow-hidden">
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center p-6 overflow-hidden"
+      style={{ background: 'radial-gradient(ellipse at 50% 30%, rgba(15,25,35,1) 0%, #050a0f 70%)' }}>
+
       {/* Ambient glows */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-1/4 -left-32 w-[500px] h-[500px] bg-teal-600/8 rounded-full blur-[140px] animate-pulse" />
-        <div className="absolute bottom-1/4 -right-32 w-[500px] h-[500px] bg-indigo-600/8 rounded-full blur-[140px] animate-pulse" style={{ animationDelay: '1.5s' }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-teal-500/4 rounded-full blur-[80px]" />
+        <div className="absolute top-1/4 -left-40 w-[600px] h-[600px] rounded-full blur-[160px]"
+          style={{ background: 'rgba(45,212,191,0.06)' }} />
+        <div className="absolute bottom-1/4 -right-40 w-[600px] h-[600px] rounded-full blur-[160px]"
+          style={{ background: 'rgba(99,102,241,0.06)' }} />
       </div>
 
-      {/* Matrix rain background */}
-      <div className="absolute inset-0 -z-10 opacity-[0.025] pointer-events-none select-none overflow-hidden">
-        <div className="grid grid-cols-16 gap-3 h-full font-mono text-[7px] text-teal-400">
-          {Array.from({ length: 64 }).map((_, i) => (
-            <div key={i} className="flex flex-col gap-1">
-              {Array.from({ length: 50 }).map((_, j) => (
-                <span key={j}>{Math.random() > 0.5 ? '1' : '0'}</span>
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* Skip button — only visible once matches are ready */}
+      {matches.length > 0 && phase !== 'matches' && (
+        <motion.button
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+          onClick={skipToMatches}
+          className="absolute bottom-8 right-8 flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold uppercase tracking-widest transition-all hover:scale-105"
+          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.35)' }}
+        >
+          <SkipForward className="w-3.5 h-3.5" />
+          Pular Animação
+        </motion.button>
+      )}
 
       <AnimatePresence mode="wait">
-        {/* ── LOADING PHASE ── */}
-        {phase === 'loading' && (
-          <motion.div
-            key="loading"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="flex flex-col items-center gap-10 text-center"
-          >
-            <EmptyNodeRadar userName={userName} size={72} />
-            <div className="space-y-3">
-              <h1 className="text-3xl lg:text-4xl font-bold text-white tracking-tight">
-                ARIANO está processando suas informações…
+
+        {/* ── PHASE 0: WAITING API ── */}
+        {phase === 'waiting_api' && (
+          <motion.div key="waiting" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.94 }} transition={{ duration: 0.5 }}
+            className="flex flex-col items-center gap-10 text-center">
+            <EmptyNodeRadar userName={userName} size={120} />
+            <div className="space-y-2">
+              <h1 className="text-3xl lg:text-4xl font-black tracking-tight text-white">
+                ARIANO está mapeando seu perfil cognitivo
               </h1>
-              <p className="text-gray-500 text-sm">Configurando seu nó no Grafo de Conhecimento.</p>
+              <p className="text-sm" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                Conectando sua identidade ao Grafo de Conhecimento...
+              </p>
             </div>
-            <PulseBar />
           </motion.div>
         )}
 
         {/* ── PHASE 1: EDITAIS ── */}
         {phase === 'editais' && (
-          <motion.div
-            key="editais"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="flex flex-col items-center gap-8 w-full max-w-2xl"
-          >
-            <PhaseLabel step={1} label="Editais Identificados" />
-            <h1 className="text-3xl font-bold text-white text-center">{statusMsg}</h1>
-            <GraphCanvas
-              center={{ label: userName.split(' ')[0], color: 'bg-teal-500' }}
-              nodes={editalNodes.map(e => ({ label: e.name, color: 'bg-amber-500/80 border-amber-400' }))}
-              edgeColor="stroke-amber-500/40"
+          <motion.div key="editais" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+            exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.6 }}
+            className="flex flex-col items-center gap-6 w-full max-w-lg">
+            <PhaseTracker current={1} />
+            <motion.h1
+              initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+              className="text-2xl lg:text-3xl font-black text-white text-center">
+              <TypewriterText text={statusMsg} speed={22} />
+            </motion.h1>
+            <NeonGraphCanvas
+              centerLabel={userName.split(' ')[0]}
+              nodes={editalNeonNodes}
+              mode="editais"
+              radius={148}
+              size={380}
             />
-            <PulseBar />
+            <ScanningBar />
           </motion.div>
         )}
 
         {/* ── PHASE 2: NETWORK ── */}
         {phase === 'network' && (
-          <motion.div
-            key="network"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="flex flex-col items-center gap-8 w-full max-w-2xl"
-          >
-            <PhaseLabel step={2} label="Rede de Inovação" />
-            <h1 className="text-3xl font-bold text-white text-center">{statusMsg}</h1>
-            <GraphCanvas
-              center={{ label: userName.split(' ')[0], color: 'bg-teal-500' }}
-              nodes={[
-                ...editalNodes.map(e => ({ label: e.name, color: 'bg-amber-500/70 border-amber-400/50', small: true })),
-                ...networkNodes.map(n => ({ label: n.name, color: NODE_TYPE_COLORS[n.type] || 'bg-teal-500/50' })),
-              ]}
-              edgeColor="stroke-indigo-500/30"
+          <motion.div key="network" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+            exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.6 }}
+            className="flex flex-col items-center gap-6 w-full max-w-lg">
+            <PhaseTracker current={2} />
+            <motion.h1
+              initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+              className="text-2xl lg:text-3xl font-black text-white text-center">
+              <TypewriterText text={statusMsg} speed={22} />
+            </motion.h1>
+            <NeonGraphCanvas
+              centerLabel={userName.split(' ')[0]}
+              nodes={networkNeonNodes}
+              mode="network"
+              radius={155}
+              size={400}
             />
-            <PulseBar />
+            {/* Stats */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.2 }}
+              className="flex items-center gap-6 text-xs font-mono"
+              style={{ color: 'rgba(255,255,255,0.4)' }}>
+              <span><span className="font-black" style={{ color: '#a78bfa' }}>{networkNodes.filter(n => n.type === 'professor').length + networkNodes.filter(n => n.type === 'researcher').length}</span> pesquisadores</span>
+              <span style={{ color: 'rgba(255,255,255,0.15)' }}>·</span>
+              <span><span className="font-black" style={{ color: '#f59e0b' }}>{editalNodes.length}</span> editais</span>
+              <span style={{ color: 'rgba(255,255,255,0.15)' }}>·</span>
+              <span><span className="font-black" style={{ color: '#34d399' }}>{networkNodes.filter(n => n.type === 'student').length}</span> alunos</span>
+            </motion.div>
+            <ScanningBar />
           </motion.div>
         )}
 
-        {/* ── PHASE 3 + DONE: MATCHES ── */}
-        {(phase === 'matches' || phase === 'done') && (
-          <motion.div
-            key="matches"
-            initial={{ opacity: 0, scale: 0.97 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col items-center gap-6 w-full max-w-3xl"
-          >
-            {/* Header */}
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex flex-col items-center gap-2 text-center"
-            >
-              <div className="inline-flex items-center gap-2 bg-teal-500/10 border border-teal-500/30 px-4 py-1.5 rounded-full">
-                <CheckCircle2 className="w-4 h-4 text-teal-400" />
-                <span className="text-xs font-bold uppercase tracking-widest text-teal-400">
+        {/* ── PHASE 3: MATCHES ── */}
+        {phase === 'matches' && (
+          <motion.div key="matches"
+            initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="flex flex-col items-center gap-6 w-full max-w-2xl">
+
+            {/* Header badge */}
+            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+              className="flex flex-col items-center gap-3 text-center">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full"
+                style={{ background: 'rgba(45,212,191,0.08)', border: '1px solid rgba(45,212,191,0.3)' }}>
+                <CheckCircle2 className="w-4 h-4" style={{ color: '#2dd4bf' }} />
+                <span className="text-xs font-black uppercase tracking-widest" style={{ color: '#2dd4bf' }}>
                   Análise Cognitiva Completa
                 </span>
               </div>
-              <h2 className="text-3xl lg:text-4xl font-bold text-white">
-                Top {matches.length} Matches do Ecossistema
+              <h2 className="text-3xl lg:text-4xl font-black text-white">
+                Top {matches.length} Matches
               </h2>
-              <p className="text-gray-500 text-sm max-w-md">
-                A IA mapeou sua aderência a {matches.length} editais estratégicos. Clique para explorar no grafo.
+              <p className="text-sm max-w-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                O motor ARIANO mapeou sua aderência a {matches.length} edital{matches.length !== 1 ? 'is' : ''} estratégico{matches.length !== 1 ? 's' : ''}. Clique para explorar no grafo.
               </p>
             </motion.div>
 
-            {/* Match Cards */}
-            <div className="grid gap-4 w-full">
+            {/* Match cards */}
+            <div className="grid gap-3 w-full">
               {matches.map((match, i) => (
-                <motion.button
-                  key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.15 }}
+                <motion.button key={i}
+                  initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.2, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                   onClick={() => handleMatchClick(match)}
-                  className="text-left w-full group bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 hover:border-teal-500/40 rounded-2xl p-5 transition-all duration-300 overflow-hidden relative"
+                  className="text-left w-full group relative rounded-2xl p-5 overflow-hidden transition-all duration-300 hover:scale-[1.015]"
+                  style={{
+                    background: 'rgba(255,255,255,0.025)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                  }}
+                  onMouseEnter={e => {
+                    (e.currentTarget as HTMLElement).style.border = '1px solid rgba(45,212,191,0.35)';
+                    (e.currentTarget as HTMLElement).style.background = 'rgba(45,212,191,0.04)';
+                  }}
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLElement).style.border = '1px solid rgba(255,255,255,0.08)';
+                    (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.025)';
+                  }}
                 >
-                  <div className="absolute top-0 right-0 w-40 h-40 bg-teal-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  {/* Hover glow */}
+                  <div className="absolute top-0 right-0 w-48 h-48 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                    style={{ background: 'rgba(45,212,191,0.08)' }} />
+
                   <div className="flex items-start justify-between gap-4 mb-3">
-                    <div>
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-teal-400 mb-1 flex items-center gap-1">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] font-black uppercase tracking-widest mb-1 flex items-center gap-1"
+                        style={{ color: '#2dd4bf' }}>
                         <Zap className="w-3 h-3" /> Match #{i + 1}
                       </p>
-                      <h3 className="text-base font-bold text-white group-hover:text-teal-300 transition-colors leading-snug">
+                      <h3 className="text-base font-bold text-white leading-snug truncate group-hover:text-teal-300 transition-colors">
                         {match.edital_name}
                       </h3>
                       {match.institution && (
-                        <p className="text-xs text-gray-500 mt-0.5">{match.institution}</p>
+                        <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                          {match.institution}
+                        </p>
                       )}
                     </div>
-                    <div className="shrink-0 flex flex-col items-end gap-1">
-                      <div className="bg-teal-500/10 border border-teal-500/20 rounded-full px-2.5 py-1 text-teal-400 font-black text-sm">
-                        {Math.round(match.score * 100)}%
-                      </div>
-                      <ArrowRight className="w-4 h-4 text-gray-600 group-hover:text-teal-400 group-hover:translate-x-1 transition-all" />
+                    {/* Score circle */}
+                    <div className="shrink-0 flex flex-col items-center gap-1.5">
+                      <ScoreCircle score={match.score} delay={i * 0.2 + 0.4} />
+                      <ArrowRight className="w-4 h-4 transition-all group-hover:translate-x-1"
+                        style={{ color: 'rgba(255,255,255,0.25)' }} />
                     </div>
                   </div>
+
                   {/* Score bar */}
-                  <div className="w-full bg-white/5 rounded-full h-1 mb-3">
+                  <div className="w-full rounded-full h-px mb-3" style={{ background: 'rgba(255,255,255,0.07)' }}>
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${match.score * 100}%` }}
-                      transition={{ duration: 1.2, delay: i * 0.15 + 0.3, ease: [0.16, 1, 0.3, 1] }}
-                      className="h-full bg-teal-400 rounded-full shadow-[0_0_8px_rgba(45,212,191,0.6)]"
+                      transition={{ duration: 1.4, delay: i * 0.2 + 0.3, ease: [0.16, 1, 0.3, 1] }}
+                      className="h-full rounded-full"
+                      style={{ background: '#2dd4bf', boxShadow: '0 0 10px rgba(45,212,191,0.6)' }}
                     />
                   </div>
-                  {/* Justification */}
-                  <p className="text-[13px] text-gray-400 leading-relaxed italic">
-                    "{match.justification}"
+
+                  {/* Justification typewriter */}
+                  <p className="text-xs leading-relaxed italic" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                    "<TypewriterText text={match.justification} speed={12} delay={i * 200 + 600} cursor={false} />"
                   </p>
                 </motion.button>
               ))}
             </div>
 
-            {/* CTA buttons */}
-            <div className="flex items-center gap-4 mt-2">
-              <button
-                onClick={() => navigate('/user/matches')}
-                className="text-gray-500 hover:text-white text-sm font-medium transition-colors"
-              >
+            {/* CTAs */}
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              transition={{ delay: matches.length * 0.2 + 0.3 }}
+              className="flex items-center gap-4 mt-2">
+              <button onClick={() => navigate('/user/matches')}
+                className="text-sm font-medium transition-colors hover:text-white"
+                style={{ color: 'rgba(255,255,255,0.35)' }}>
                 Ver todos os matches
               </button>
-              <button
-                onClick={handleExploreProfile}
-                className="group relative px-8 py-3.5 bg-teal-600 hover:bg-teal-500 text-white rounded-xl font-bold shadow-xl shadow-teal-500/20 transition-all hover:scale-105 flex items-center gap-3 overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-white/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500" />
-                Explorar Meu Perfil
+              <button onClick={handleExplore}
+                className="group relative px-8 py-3.5 rounded-xl font-black text-white overflow-hidden transition-all hover:scale-105 flex items-center gap-3"
+                style={{
+                  background: 'linear-gradient(135deg, #0d9488, #2dd4bf)',
+                  boxShadow: '0 0 30px rgba(45,212,191,0.3), 0 8px 32px rgba(0,0,0,0.4)',
+                }}>
+                <div className="absolute inset-0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-600"
+                  style={{ background: 'rgba(255,255,255,0.12)' }} />
+                Explorar Meu Ecossistema
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </button>
-            </div>
-          </motion.div>
-        )}
-
-        {/* ── ERROR PHASE ── */}
-        {phase === 'error' && (
-          <motion.div
-            key="error"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex flex-col items-center gap-6 text-center max-w-md"
-          >
-            <div className="w-20 h-20 rounded-3xl bg-red-500/10 border border-red-500/30 flex items-center justify-center">
-              <RefreshCw className="w-10 h-10 text-red-400" />
-            </div>
-            <h2 className="text-2xl font-bold text-white">Falha na Cognição</h2>
-            <p className="text-gray-400 text-sm leading-relaxed">{errorMsg}</p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => window.location.reload()}
-                className="px-6 py-3 bg-red-500/20 border border-red-500/40 text-red-300 rounded-xl font-semibold hover:bg-red-500/30 transition-all flex items-center gap-2"
-              >
-                <RefreshCw className="w-4 h-4" /> Tentar Novamente
-              </button>
-              <button
-                onClick={handleExploreProfile}
-                className="px-6 py-3 bg-white/5 border border-white/10 text-gray-300 rounded-xl font-semibold hover:bg-white/10 transition-all"
-              >
-                Explorar Perfil
-              </button>
-            </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -440,129 +393,60 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({
   );
 };
 
+// ── Sub-components ─────────────────────────────────────────────────────────────
 
-// ────────────────────────────────────────────
-// SUB-COMPONENTS
-// ────────────────────────────────────────────
-
-const CognitionOrb: React.FC = () => (
-  <div className="relative w-32 h-32 flex items-center justify-center">
-    {/* Orbiting rings */}
-    <div className="absolute inset-0 border border-teal-500/20 rounded-full animate-[spin_8s_linear_infinite]" />
-    <div className="absolute inset-4 border border-teal-500/30 rounded-full animate-[spin_5s_linear_infinite_reverse]" />
-    <div className="absolute inset-8 border border-teal-400/40 rounded-full animate-[spin_3s_linear_infinite]" />
-    {/* Core glow */}
-    <div className="absolute inset-10 bg-teal-500/20 rounded-full blur-md animate-pulse" />
-    <div className="relative z-10 w-10 h-10 bg-teal-500 rounded-full shadow-[0_0_30px_rgba(20,184,166,0.8)] flex items-center justify-center">
-      <div className="w-4 h-4 bg-white/80 rounded-full animate-pulse" />
-    </div>
+const PhaseTracker: React.FC<{ current: number }> = ({ current }) => (
+  <div className="flex items-center gap-2">
+    {[1, 2, 3].map(s => (
+      <React.Fragment key={s}>
+        <motion.div
+          className="rounded-full transition-all"
+          animate={s <= current
+            ? { width: 20, height: 8, background: '#2dd4bf', boxShadow: '0 0 8px rgba(45,212,191,0.9)' }
+            : { width: 8, height: 8, background: 'rgba(255,255,255,0.12)', boxShadow: 'none' }}
+          transition={{ duration: 0.4 }}
+        />
+        {s < 3 && <div className="w-8 h-px" style={{ background: s < current ? 'rgba(45,212,191,0.5)' : 'rgba(255,255,255,0.1)' }} />}
+      </React.Fragment>
+    ))}
+    <span className="ml-2 text-[10px] font-black uppercase tracking-widest" style={{ color: '#2dd4bf' }}>
+      {current === 1 ? 'Editais Identificados' : 'Rede de Inovação'}
+    </span>
   </div>
 );
 
-const PulseBar: React.FC = () => (
+const ScanningBar: React.FC = () => (
   <div className="flex gap-1.5 items-center">
     {Array.from({ length: 5 }).map((_, i) => (
-      <motion.div
-        key={i}
-        animate={{ scaleY: [1, 2.5, 1], opacity: [0.4, 1, 0.4] }}
-        transition={{ duration: 1.2, delay: i * 0.15, repeat: Infinity }}
-        className="w-1.5 h-5 bg-teal-500 rounded-full origin-bottom"
+      <motion.div key={i}
+        animate={{ scaleY: [1, 2.8, 1], opacity: [0.35, 1, 0.35] }}
+        transition={{ duration: 1.1, delay: i * 0.13, repeat: Infinity, ease: 'easeInOut' }}
+        className="w-1.5 h-5 rounded-full origin-bottom"
+        style={{ background: '#2dd4bf', boxShadow: '0 0 6px rgba(45,212,191,0.7)' }}
       />
     ))}
   </div>
 );
 
-const PhaseLabel: React.FC<{ step: number; label: string }> = ({ step, label }) => (
-  <div className="flex items-center gap-2">
-    {[1, 2, 3].map(s => (
-      <div key={s} className="flex items-center gap-1">
-        <div className={`w-2 h-2 rounded-full transition-all duration-500 ${s <= step ? 'bg-teal-400 shadow-[0_0_8px_rgba(45,212,191,0.8)]' : 'bg-white/10'}`} />
-        {s < 3 && <div className={`w-8 h-px ${s < step ? 'bg-teal-400/60' : 'bg-white/10'}`} />}
-      </div>
-    ))}
-    <span className="ml-2 text-xs font-bold uppercase tracking-widest text-teal-400">{label}</span>
-  </div>
-);
-
-interface GraphNode { label: string; color: string; small?: boolean; }
-interface GraphCanvasProps {
-  center: { label: string; color: string };
-  nodes: GraphNode[];
-  edgeColor: string;
-}
-
-const GraphCanvas: React.FC<GraphCanvasProps> = ({ center, nodes, edgeColor }) => {
-  const svgSize = 380;
-  const cx = svgSize / 2;
-  const cy = svgSize / 2;
-  const radius = 140;
-
-  const positions = nodes.map((_, i) => {
-    const angle = (i / nodes.length) * 2 * Math.PI - Math.PI / 2;
-    return {
-      x: cx + radius * Math.cos(angle),
-      y: cy + radius * Math.sin(angle),
-    };
-  });
-
+const ScoreCircle: React.FC<{ score: number; delay: number }> = ({ score, delay }) => {
+  const r = 18;
+  const circ = 2 * Math.PI * r;
   return (
-    <div className="relative w-full max-w-sm mx-auto" style={{ aspectRatio: '1' }}>
-      <svg
-        viewBox={`0 0 ${svgSize} ${svgSize}`}
-        className="absolute inset-0 w-full h-full"
-        style={{ overflow: 'visible' }}
-      >
-        {positions.map((pos, i) => (
-          <motion.line
-            key={i}
-            x1={cx} y1={cy} x2={pos.x} y2={pos.y}
-            className={edgeColor}
-            strokeWidth="1"
-            initial={{ pathLength: 0, opacity: 0 }}
-            animate={{ pathLength: 1, opacity: 1 }}
-            transition={{ duration: 0.8, delay: i * 0.12 }}
-          />
-        ))}
+    <div className="relative w-11 h-11 flex items-center justify-center">
+      <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 44 44">
+        <circle cx="22" cy="22" r={r} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="2.5" />
+        <motion.circle cx="22" cy="22" r={r} fill="none"
+          stroke="#2dd4bf" strokeWidth="2.5" strokeLinecap="round"
+          strokeDasharray={circ}
+          initial={{ strokeDashoffset: circ }}
+          animate={{ strokeDashoffset: circ * (1 - score) }}
+          transition={{ duration: 1.4, delay, ease: [0.16, 1, 0.3, 1] }}
+          style={{ filter: 'drop-shadow(0 0 4px rgba(45,212,191,0.8))' }}
+        />
       </svg>
-
-      {/* Center node */}
-      <motion.div
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        className={`absolute w-14 h-14 ${center.color} rounded-full flex items-center justify-center shadow-[0_0_24px_rgba(20,184,166,0.6)] z-10`}
-        style={{ left: `calc(50% - 28px)`, top: `calc(50% - 28px)` }}
-      >
-        <span className="text-xs font-bold text-white truncate max-w-[48px] text-center leading-tight px-1">
-          {center.label}
-        </span>
-      </motion.div>
-
-      {/* Satellite nodes */}
-      {nodes.map((node, i) => {
-        const pos = positions[i];
-        const size = node.small ? 'w-9 h-9' : 'w-11 h-11';
-        const textSize = node.small ? 'text-[9px]' : 'text-[10px]';
-        const pct = (pos.x / svgSize) * 100;
-        const pct_y = (pos.y / svgSize) * 100;
-        const halfPx = node.small ? 18 : 22;
-        return (
-          <motion.div
-            key={i}
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.3 + i * 0.12, type: 'spring', stiffness: 200 }}
-            className={`absolute ${size} rounded-full border flex items-center justify-center ${node.color} z-10`}
-            style={{
-              left: `calc(${pct}% - ${halfPx}px)`,
-              top: `calc(${pct_y}% - ${halfPx}px)`,
-            }}
-          >
-            <span className={`${textSize} font-semibold text-center leading-tight px-1 line-clamp-2 max-w-full`}>
-              {node.label.split(' ').slice(0, 2).join(' ')}
-            </span>
-          </motion.div>
-        );
-      })}
+      <span className="relative text-[11px] font-black" style={{ color: '#2dd4bf' }}>
+        {Math.round(score * 100)}
+      </span>
     </div>
   );
 };
