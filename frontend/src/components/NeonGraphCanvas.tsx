@@ -169,7 +169,7 @@ const CenterNode: React.FC<{ label: string; cx: number; cy: number; size: number
       <motion.div
         className="absolute inset-2 rounded-full"
         style={{ background: 'rgba(45,212,191,0.08)' }}
-        animate={{ opacity: [0.4, 1, 0.4], scale: [0.95, 1.05, 0.95] }}
+        animate={{ opacity: [0.2, 0.5, 0.2], scale: [0.95, 1.05, 0.95] }}
         transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
       />
       <span
@@ -230,7 +230,7 @@ const SatelliteNode: React.FC<{
         <motion.div
           className="absolute inset-0 rounded-full"
           style={{ background: cfg.bg }}
-          animate={{ opacity: [0.5, 1, 0.5] }}
+          animate={{ opacity: [0.2, 0.5, 0.2] }}
           transition={{ duration: 2.5, repeat: Infinity, delay: delay * 0.5 }}
         />
 
