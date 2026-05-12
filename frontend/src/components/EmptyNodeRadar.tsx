@@ -1,194 +1,171 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { LoopTypewriter } from './TypewriterText';
-import { FileText, Briefcase, Users, Network, Award, FileBadge, Link2, Lightbulb, Brain, Search } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface EmptyNodeRadarProps {
-  userName: string;
+  userName?: string;
   size?: number;
 }
 
-const TERMINAL_STRINGS = [
-  'Analisando perfil acadêmico...',
-  'Vetorizando currículo e bio...',
-  'Consultando base de editais...',
-  'Mapeando rede de inovação...',
-  'Calculando compatibilidade...',
-  'Aguardando resposta da IA...',
-];
+interface Blip {
+  id: number;
+  x: number;
+  y: number;
+  size: number;
+}
 
-const RADAR_COLOR = '#f97316'; // orange-500
-const RADAR_GLOW = 'rgba(249, 115, 22, 0.5)';
+const RADAR_COLOR = '#2dd4bf'; // teal-400
+const RADAR_GLOW = 'rgba(45, 212, 191, 0.4)';
 
-const SATELLITES = [
-  { id: 1, label: 'Histórico', icon: FileText, angle: 315, radius: 190 },
-  { id: 2, label: 'Documentos', icon: Briefcase, angle: 265, radius: 190 },
-  { id: 3, label: 'Sinistro/Leilão', icon: Search, angle: 220, radius: 190 },
-  { id: 4, label: 'Multas', icon: FileBadge, angle: 0, radius: 150 },
-  { id: 5, label: 'Restrições', icon: Award, angle: 180, radius: 150 },
-  { id: 6, label: 'IPVA', icon: Network, angle: 45, radius: 190 },
-  { id: 7, label: 'Licenciamento', icon: Link2, angle: 95, radius: 190 },
-  { id: 8, label: 'Débitos', icon: Lightbulb, angle: 140, radius: 190 },
-];
+export const EmptyNodeRadar: React.FC<EmptyNodeRadarProps> = ({ size = 480 }) => {
+  const [blips, setBlips] = useState<Blip[]>([]);
 
-export const EmptyNodeRadar: React.FC<EmptyNodeRadarProps> = ({ userName, size = 480 }) => {
-  const firstName = userName?.split(' ')[0] || 'Você';
-  const centerSize = 72;
+  // Random blip generator
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Spawn 1 to 2 blips randomly
+      const newBlipsCount = Math.floor(Math.random() * 2) + 1;
+      const newBlips: Blip[] = [];
+      
+      for (let i = 0; i < newBlipsCount; i++) {
+        // Random angle and radius (keep away from center and absolute edge)
+        const angle = Math.random() * 2 * Math.PI;
+        const radius = 40 + Math.random() * ((size / 2) - 80);
+        
+        newBlips.push({
+          id: Date.now() + i,
+          x: Math.cos(angle) * radius,
+          y: Math.sin(angle) * radius,
+          size: 6 + Math.random() * 6 // 6px to 12px
+        });
+      }
 
-  // Substituindo pelos icones que remetem ao ambiente acadêmico da plataforma
-  const ARIANO_SATELLITES = [
-    { id: 1, label: 'Histórico', icon: FileText, angle: 315, radius: 190 },
-    { id: 2, label: 'Documentos', icon: FileBadge, angle: 265, radius: 190 },
-    { id: 3, label: 'Sinistro/Leilão', icon: Search, angle: 220, radius: 190 },
-    { id: 4, label: 'Multas', icon: FileText, angle: 0, radius: 150 },
-    { id: 5, label: 'Restrições', icon: Award, angle: 180, radius: 150 },
-    { id: 6, label: 'IPVA', icon: Network, angle: 45, radius: 190 },
-    { id: 7, label: 'Licenciamento', icon: Link2, angle: 95, radius: 190 },
-    { id: 8, label: 'Débitos', icon: Lightbulb, angle: 140, radius: 190 },
-  ];
+      setBlips(prev => {
+        // Keep max 6 blips at a time
+        const combined = [...prev, ...newBlips];
+        return combined.slice(-6);
+      });
+    }, 1500);
+
+    return () => clearInterval(interval);
+  }, [size]);
 
   return (
-    <div className="flex flex-col items-center gap-8 select-none w-full max-w-3xl mx-auto overflow-hidden py-10">
+    <div className="flex flex-col items-center justify-center select-none w-full max-w-3xl mx-auto py-10 overflow-hidden">
       {/* ── Radar Container ── */}
       <div
-        className="relative flex items-center justify-center"
-        style={{ width: size, height: size }}
+        className="relative flex items-center justify-center rounded-full"
+        style={{ 
+          width: size, 
+          height: size,
+          background: 'rgba(11, 16, 26, 0.3)',
+          border: `2px solid rgba(45, 212, 191, 0.2)`,
+          boxShadow: `0 0 40px rgba(45, 212, 191, 0.05), inset 0 0 60px rgba(45, 212, 191, 0.1)`
+        }}
       >
         {/* Concentric Rings */}
-        {[100, 180, 260, 340, 420, 500].map((diameter, i) => (
+        {[0.2, 0.4, 0.6, 0.8].map((scale, i) => (
           <div
             key={i}
             className="absolute rounded-full"
             style={{
-              width: diameter,
-              height: diameter,
-              border: `1px solid rgba(249, 115, 22, ${0.12 - (i * 0.015)})`,
+              width: size * scale,
+              height: size * scale,
+              border: `1px solid rgba(45, 212, 191, ${0.15 - (i * 0.02)})`,
             }}
           />
         ))}
 
-        {/* Rotating Full-Diameter Line */}
-        <motion.div
-          className="absolute z-10"
-          style={{
-            width: size * 1.3,
-            height: '2px',
-            left: '50%',
-            top: '50%',
-            marginLeft: -(size * 1.3) / 2,
-            marginTop: '-1px',
-            background: 'linear-gradient(90deg, transparent 0%, rgba(249, 115, 22, 0.05) 20%, rgba(249, 115, 22, 0.8) 50%, rgba(249, 115, 22, 0.05) 80%, transparent 100%)',
-            boxShadow: '0 0 15px rgba(249, 115, 22, 0.4)',
-          }}
-          animate={{ rotate: 360 }}
-          transition={{ duration: 5, repeat: Infinity, ease: 'linear' }}
-        />
+        {/* Crosshairs */}
+        <div className="absolute w-full h-[1px]" style={{ background: 'rgba(45, 212, 191, 0.15)' }} />
+        <div className="absolute h-full w-[1px]" style={{ background: 'rgba(45, 212, 191, 0.15)' }} />
+        
+        {/* Radar Tick Marks (Optional detailing on the outer ring) */}
+        {Array.from({ length: 12 }).map((_, i) => (
+          <div 
+            key={`tick-${i}`}
+            className="absolute h-full w-[2px] pointer-events-none"
+            style={{ transform: `rotate(${i * 30}deg)` }}
+          >
+            <div className="w-full h-2" style={{ background: 'rgba(45, 212, 191, 0.4)' }} />
+          </div>
+        ))}
 
-        {/* Scanner Glow Overlay */}
+        {/* Scanning Cone */}
         <motion.div
-          className="absolute rounded-full z-0 pointer-events-none"
+          className="absolute rounded-full pointer-events-none"
           style={{
             width: size,
             height: size,
-            background: `conic-gradient(from 0deg at 50% 50%, transparent 0deg, transparent 170deg, rgba(249, 115, 22, 0.03) 180deg, transparent 190deg, transparent 350deg, rgba(249, 115, 22, 0.03) 360deg)`,
+            background: `conic-gradient(from 0deg at 50% 50%, transparent 0deg, transparent 270deg, rgba(45, 212, 191, 0.05) 300deg, rgba(45, 212, 191, 0.25) 355deg, rgba(45, 212, 191, 0.8) 360deg)`,
           }}
           animate={{ rotate: 360 }}
-          transition={{ duration: 5, repeat: Infinity, ease: 'linear' }}
-        />
+          transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+        >
+           {/* The solid leading line of the sweep */}
+           <div 
+             className="absolute top-0 left-1/2 w-[2px] h-1/2 origin-bottom" 
+             style={{ 
+               background: RADAR_COLOR,
+               boxShadow: `0 0 10px ${RADAR_COLOR}, 0 0 20px ${RADAR_COLOR}`,
+             }}
+           />
+        </motion.div>
 
         {/* Central Node */}
         <div
-          className="absolute rounded-full flex items-center justify-center z-20 bg-[#0b101a] backdrop-blur-sm"
+          className="absolute rounded-full flex items-center justify-center z-20"
           style={{
-            width: centerSize,
-            height: centerSize,
-            border: `1px solid ${RADAR_COLOR}`,
-            boxShadow: `0 0 30px rgba(249, 115, 22, 0.25), inset 0 0 20px rgba(249, 115, 22, 0.15)`,
+            width: 14,
+            height: 14,
+            background: RADAR_COLOR,
+            boxShadow: `0 0 20px ${RADAR_COLOR}, 0 0 40px ${RADAR_COLOR}`,
           }}
         >
-          {/* Pulsing inner glow */}
+          {/* Pulsing inner ring */}
           <motion.div
             className="absolute inset-0 rounded-full"
-            style={{ background: 'rgba(249, 115, 22, 0.1)' }}
-            animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.1, 0.5] }}
-            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+            style={{ border: `1px solid ${RADAR_COLOR}` }}
+            animate={{ scale: [1, 3, 5], opacity: [0.8, 0.3, 0] }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'easeOut' }}
           />
-          <Brain className="w-8 h-8 text-orange-500 z-10" />
         </div>
 
-        {/* Floating Satellites (Icons with Text) */}
-        {ARIANO_SATELLITES.map((sat) => {
-          // Convert angle and radius to x, y offsets
-          const rad = (sat.angle - 90) * (Math.PI / 180);
-          const x = sat.radius * Math.cos(rad);
-          const y = sat.radius * Math.sin(rad);
-
-          return (
-            <div
-              key={sat.id}
-              className="absolute flex flex-col items-center justify-center z-10"
+        {/* Random Blips */}
+        <AnimatePresence>
+          {blips.map((blip) => (
+            <motion.div
+              key={blip.id}
+              className="absolute rounded-full z-10"
               style={{
-                transform: `translate(${x}px, ${y}px)`,
+                width: blip.size,
+                height: blip.size,
+                marginLeft: -(blip.size / 2),
+                marginTop: -(blip.size / 2),
+                left: '50%',
+                top: '50%',
+                background: RADAR_COLOR,
+                boxShadow: `0 0 12px ${RADAR_COLOR}, 0 0 20px rgba(45, 212, 191, 0.6)`,
+              }}
+              initial={{ x: blip.x, y: blip.y, scale: 0, opacity: 0 }}
+              animate={{ scale: [0, 1.5, 1], opacity: [0, 1, 0.7] }}
+              exit={{ scale: 0, opacity: 0 }}
+              transition={{ 
+                duration: 4, 
+                ease: "easeOut",
+                opacity: { duration: 3, times: [0, 0.2, 1] } 
               }}
             >
-              <div 
-                className="w-[46px] h-[46px] rounded-full flex items-center justify-center bg-[#0b101a] backdrop-blur-md mb-2"
-                style={{
-                  border: `1px solid rgba(249, 115, 22, 0.35)`,
-                  boxShadow: `0 0 15px rgba(249, 115, 22, 0.08)`,
-                }}
-              >
-                <sat.icon className="w-[22px] h-[22px] text-orange-500" strokeWidth={1.5} />
-              </div>
-              <span 
-                className="text-orange-200/80 text-[11px] px-3 py-[3px] rounded-full bg-[#0b101a]/80"
-                style={{ border: '1px solid rgba(249, 115, 22, 0.15)' }}
-              >
-                {sat.label}
-              </span>
-            </div>
-          );
-        })}
+              {/* Blip local ping */}
+              <motion.div
+                className="absolute inset-0 rounded-full"
+                style={{ border: `1px solid ${RADAR_COLOR}` }}
+                animate={{ scale: [1, 2.5], opacity: [0.8, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeOut' }}
+              />
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </div>
-
-      {/* Terminal text / Status */}
-      <motion.div
-        className="flex flex-col items-center gap-3 mt-4"
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5, duration: 0.6 }}
-      >
-        <p
-          className="font-black tracking-widest uppercase"
-          style={{
-            fontFamily: 'monospace',
-            fontSize: '14px',
-            color: RADAR_COLOR,
-            textShadow: `0 0 12px ${RADAR_GLOW}`,
-          }}
-        >
-          {firstName}
-        </p>
-
-        {/* Terminal text */}
-        <div
-          className="flex items-center gap-2 px-4 py-2 rounded-lg"
-          style={{
-            background: 'rgba(249, 115, 22, 0.05)',
-            border: '1px solid rgba(249, 115, 22, 0.15)',
-          }}
-        >
-          <span style={{ color: 'rgba(249, 115, 22, 0.5)', fontSize: '12px', fontFamily: 'monospace' }}>
-            {'> '}
-          </span>
-          <LoopTypewriter
-            strings={TERMINAL_STRINGS}
-            speed={38}
-            pauseMs={1600}
-            className="font-mono text-xs text-orange-400/80"
-          />
-        </div>
-      </motion.div>
     </div>
   );
 };
