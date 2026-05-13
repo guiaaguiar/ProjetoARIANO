@@ -178,7 +178,7 @@ requests.exceptions.HTTPError: 502 Server Error: Bad Gateway for url
 };
 
 // Typewriter that appends text dynamically
-const TypewriterText: React.FC<{ text: string, speed: number, scrollRef?: React.RefObject<HTMLDivElement> }> = ({ text, speed, scrollRef }) => {
+const TypewriterText: React.FC<{ text: string, speed: number, scrollRef?: React.RefObject<HTMLDivElement | null> }> = ({ text, speed, scrollRef }) => {
   const [displayedText, setDisplayedText] = useState('');
 
   useEffect(() => {

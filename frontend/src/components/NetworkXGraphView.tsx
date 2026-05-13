@@ -3,6 +3,7 @@ import ForceGraph2D from 'react-force-graph-2d';
 import { Loader2, Zap, Maximize2, Network } from 'lucide-react';
 import * as api from '../lib/api';
 import { NODE_COLORS, type EntityType } from '../types';
+import { cn } from '../lib/utils';
 
 interface GraphNode {
   id: string; label: string; type: string;
@@ -155,10 +156,7 @@ export const NetworkXGraphView: React.FC<Props> = ({
         setClusters(loadedClusters);
         if (onClustersLoaded) onClustersLoaded(loadedClusters);
         if (onStatsLoaded && res.personal_stats) onStatsLoaded(res.personal_stats);
-        const data = {
-          nodes: res.nodes as GraphNode[],
-          links: (res.edges as any[]).map(e => ({ source: e.source, target: e.target, label: e.label })),
-        };
+        
         setRawData(data);
         dataRef.current = data;
         setTimeout(() => {
