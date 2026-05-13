@@ -26,23 +26,24 @@ export default function UserCommunitiesPage() {
          if (uNode) setUserCluster(uNode.cluster_id);
 
          const clusterList = Object.entries(groups).map(([id, members]) => {
+            const clusterTheme = members[0]?.cluster_theme || `Cluster 0${parseInt(id) + 1}`;
             const topSkills = members.filter((m: any) => m.type === 'skill').slice(0, 3).map((m: any) => m.label);
-            const name = topSkills.length > 0 ? topSkills.slice(0, 2).join(' & ') : `Cluster 0${parseInt(id) + 1}`;
+            
             return {
                id: parseInt(id),
-               name: name,
+               name: clusterTheme,
                members: members.length,
                topSkills,
                match: Math.floor(Math.random() * 40) + 60 
             };
          }).sort((a, b) => b.match - a.match);
          
-         // Only show clusters where the user has connection/presence
-         const userClusters = uNode 
-            ? clusterList.filter(c => c.id === uNode.cluster_id) // Em um grafo mais real, ele poderia ter arestas com múltiplos clusters
-            : clusterList;
+          // Only show clusters where the user has connection/presence
+          const userClusters = uNode 
+             ? clusterList.filter(c => c.id === uNode.cluster_id) 
+             : clusterList;
 
-         setClusters(userClusters);
+          setClusters(userClusters);
       }
     }).finally(() => setLoading(false));
   }, [user?.uid]);
@@ -94,7 +95,7 @@ export default function UserCommunitiesPage() {
                </div>
                
                <h2 className="text-5xl font-bold text-foreground tracking-tight leading-[1.1]">
-                  Seu perfil converge no <span className="text-primary">Cluster {userCluster !== null ? `0${userCluster + 1}` : '--'}</span>.
+                  Seu perfil converge no <span className="text-primary">{clusters.find(c => c.id === userCluster)?.name || 'Carregando...'}</span>.
                </h2>
                
                <p className="text-muted-foreground text-lg leading-relaxed max-w-xl">
