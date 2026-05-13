@@ -230,10 +230,15 @@ Retorne APENAS JSON válido:
 
     if analyzer.llm:
         try:
+            import concurrent.futures
             from langchain_core.messages import HumanMessage
             t3 = time.time()
-            # Adicionando um timeout implícito via invoke se possível, ou apenas logando
-            response = analyzer.llm.invoke([HumanMessage(content=prompt)])
+            
+            # Força o timeout usando ThreadPoolExecutor (protege a Vercel de hang)
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                future = executor.submit(analyzer.llm.invoke, [HumanMessage(content=prompt)])
+                response = future.result(timeout=15.0) # Corta em 15 segundos exatos
+                
             t4 = time.time()
             logger.info(f"⏱️ [cognition-full] LLM Inference: {t4-t3:.2f}s")
             
@@ -241,6 +246,9 @@ Retorne APENAS JSON válido:
             raw = re.sub(r'^```(?:json)?\s*', '', raw, flags=re.MULTILINE)
             raw = re.sub(r'\s*```$', '', raw, flags=re.MULTILINE)
             result_data = json.loads(raw.strip())
+        except concurrent.futures.TimeoutError:
+            logger.error(f"❌ cognition-full LLM TIMEOUT (15s excedidos). Fallback ativado.")
+            result_data = _cognition_fallback(request, editais_raw, network_raw)
         except Exception as e:
             logger.error(f"❌ cognition-full LLM failed: {e}. Fallback rule-based.")
             result_data = _cognition_fallback(request, editais_raw, network_raw)
