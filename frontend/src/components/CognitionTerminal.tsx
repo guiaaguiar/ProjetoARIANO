@@ -29,8 +29,6 @@ Bio/Currículo: ${formData.bio || ''} ${formData.curriculo_texto || ''}`;
 > python run_cognition.py --user "${formData.name || 'Desconhecido'}"
 
 # --- SCRIPT PYTHON EM EXECUÇÃO NO BACKEND ---
-import requests
-import json
 
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 HEADERS = {"Authorization": f"Bearer {OPENROUTER_API_KEY}"}
@@ -49,10 +47,6 @@ payload = {
     ]
 }
 
-print("[INFO] Enviando payload para LLM Cluster...")
-response = requests.post(OPENROUTER_URL, json=payload, headers=HEADERS)
-print("[INFO] Resposta recebida. Parseando JSON...")
-print(json.dumps(response.json(), indent=2))
 # --------------------------------------------
 
 > [INFO] Enviando payload para LLM Cluster...
@@ -70,7 +64,7 @@ ${JSON.stringify(apiResponse, null, 2)}
 
 > [SUCCESS] Construindo conexões (Edges) no Neo4j Graph DB...
 > MERGE (u:User {name: '${formData.name || 'Desconhecido'}'})
-> Fluxo finalizado e salvo em memória.
+> Fluxo de cadastro finalizado com sucesso e salvo no banco de dados.
 `;
       setLogs(prev => prev + responseLog);
     } else if (isError) {
@@ -100,12 +94,12 @@ requests.exceptions.HTTPError: 502 Server Error: Bad Gateway for url
         <motion.div
           initial={{ opacity: 0, scale: 0.8, y: 50, x: 50 }}
           animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
-          exit={{ 
-            opacity: 0, 
-            scale: 0.1, 
-            y: 200, 
+          exit={{
+            opacity: 0,
+            scale: 0.1,
+            y: 200,
             x: 150,
-            transition: { duration: 0.4, ease: "backIn" } 
+            transition: { duration: 0.4, ease: "backIn" }
           }}
           className="fixed bottom-6 right-6 z-[60] w-[450px] max-w-[90vw] h-[350px] flex flex-col rounded-xl overflow-hidden shadow-2xl"
           style={{
@@ -118,11 +112,11 @@ requests.exceptions.HTTPError: 502 Server Error: Bad Gateway for url
           {/* MacOS Window Title Bar */}
           <div className="flex items-center justify-between px-4 py-3 bg-slate-900/80 border-b border-teal-500/20 backdrop-blur-md">
             <div className="flex gap-2">
-              <button 
+              <button
                 onClick={() => setIsMinimized(true)}
                 className="w-3.5 h-3.5 rounded-full bg-red-500 hover:bg-red-400 transition-colors shadow-[0_0_8px_rgba(239,68,68,0.5)]"
               />
-              <button 
+              <button
                 onClick={() => setIsMinimized(true)}
                 className="w-3.5 h-3.5 rounded-full bg-yellow-500 hover:bg-yellow-400 transition-colors shadow-[0_0_8px_rgba(234,179,8,0.5)]"
               />
@@ -136,7 +130,7 @@ requests.exceptions.HTTPError: 502 Server Error: Bad Gateway for url
 
           {/* Terminal Content */}
           <div className="flex-1 p-4 overflow-y-auto font-mono text-xs leading-relaxed custom-scrollbar">
-            <pre 
+            <pre
               className="whitespace-pre-wrap break-words"
               style={{
                 color: '#2dd4bf',
@@ -144,7 +138,7 @@ requests.exceptions.HTTPError: 502 Server Error: Bad Gateway for url
                 fontFamily: '"Fira Code", "Courier New", monospace'
               }}
             >
-              <TypewriterText text={logs} speed={1} />
+              <TypewriterText text={logs} speed={1} scrollRef={endRef} />
             </pre>
             <div ref={endRef} />
           </div>
@@ -158,7 +152,7 @@ requests.exceptions.HTTPError: 502 Server Error: Bad Gateway for url
           className="fixed bottom-6 right-6 z-[60] cursor-pointer group"
           onClick={() => setIsMinimized(false)}
         >
-          <div 
+          <div
             className="w-14 h-14 rounded-2xl flex items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:scale-110"
             style={{
               background: 'rgba(11, 16, 26, 0.8)',
@@ -168,9 +162,9 @@ requests.exceptions.HTTPError: 502 Server Error: Bad Gateway for url
             }}
           >
             {/* Using an img tag with CSS filters to match the teal neon theme */}
-            <img 
-              src="/terminal_icon.png" 
-              alt="Terminal" 
+            <img
+              src="/terminal_icon.png"
+              alt="Terminal"
               className="w-8 h-8 object-contain opacity-80 group-hover:opacity-100 transition-opacity"
               style={{
                 filter: 'sepia(1) hue-rotate(130deg) saturate(300%) brightness(1.2)'
@@ -184,7 +178,7 @@ requests.exceptions.HTTPError: 502 Server Error: Bad Gateway for url
 };
 
 // Typewriter that appends text dynamically
-const TypewriterText: React.FC<{ text: string, speed: number }> = ({ text, speed }) => {
+const TypewriterText: React.FC<{ text: string, speed: number, scrollRef?: React.RefObject<HTMLDivElement> }> = ({ text, speed, scrollRef }) => {
   const [displayedText, setDisplayedText] = useState('');
 
   useEffect(() => {
@@ -194,13 +188,19 @@ const TypewriterText: React.FC<{ text: string, speed: number }> = ({ text, speed
     const intervalId = setInterval(() => {
       setDisplayedText(text.slice(0, currentIndex + 1));
       currentIndex++;
+      
+      // Auto-scroll instantly on new characters
+      if (scrollRef?.current) {
+        scrollRef.current.scrollIntoView({ behavior: 'auto' });
+      }
+
       if (currentIndex === text.length) {
         clearInterval(intervalId);
       }
     }, speed);
 
     return () => clearInterval(intervalId);
-  }, [text, speed]);
+  }, [text, speed, scrollRef]);
 
   return (
     <>
