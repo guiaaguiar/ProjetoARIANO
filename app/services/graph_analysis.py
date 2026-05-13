@@ -18,7 +18,7 @@ class GraphAnalysisService:
         try:
             nodes_data = await run_query(
                 "MATCH (n) RETURN n.uid as uid, labels(n)[0] as type, n.name as name, "
-                "n.bio as bio, n.o_que_busco as goals, n.description as description"
+                "n.title as title, n.bio as bio, n.o_que_busco as goals, n.description as description"
             )
             edges_data = await run_query(
                 "MATCH (s)-[r]->(t) RETURN s.uid as source, t.uid as target, type(r) as label"
@@ -32,14 +32,15 @@ class GraphAnalysisService:
                 uid = node.get('uid')
                 if not uid:
                     continue
-                G.add_node(uid, name=node.get('name'), type=node.get('type'))
+                node_name = node.get('name') or node.get('title')
+                G.add_node(uid, name=node_name, type=node.get('type'))
                 text_content = " ".join(filter(None, [
-                    node.get('name', ''),
+                    node_name,
                     node.get('bio', ''),
                     node.get('goals', ''),
                     node.get('description', ''),
                 ]))
-                node_metadata[uid] = {"name": node.get('name'), "type": node.get('type'), "text": text_content.lower()}
+                node_metadata[uid] = {"name": node_name, "type": node.get('type'), "text": text_content.lower()}
                 nodes_map[uid] = node
 
             for edge in edges_data:
