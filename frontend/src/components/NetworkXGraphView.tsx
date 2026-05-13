@@ -28,6 +28,7 @@ interface Props {
   apiUrl?: string;
   /** Métricas extras vindas do backend (personal_stats). */
   onStatsLoaded?: (stats: Record<string, unknown>) => void;
+  isUserMode?: boolean;
 }
 
 export const COT_COLORS = [
@@ -124,7 +125,7 @@ export const NetworkXGraphView: React.FC<Props> = ({
   selectedNodeId, onNavigateToNode,
   filterPanelOpen = false, detailPanelOpen = false,
   onBackgroundClick, onClustersLoaded,
-  apiUrl, onStatsLoaded,
+  apiUrl, onStatsLoaded, isUserMode = false,
 }) => {
   const [rawData, setRawData] = useState<{nodes:GraphNode[],links:GraphLink[]}|null>(null);
   const [clusters, setClusters] = useState<{id:number,theme:string}[]>([]);
@@ -139,7 +140,18 @@ export const NetworkXGraphView: React.FC<Props> = ({
       .then(r => r.json())
       .then(res => {
         if (res.error) { console.error('[GRAPH] Erro:', res.error); return; }
-        const loadedClusters = res.summary?.clusters || [];
+        
+        const data = {
+          nodes: res.nodes as GraphNode[],
+          links: (res.edges as any[]).map(e => ({ source: e.source, target: e.target, label: e.label })),
+        };
+        
+        let loadedClusters = res.summary?.clusters || [];
+        if (isUserMode) {
+           const activeClusterIds = new Set(data.nodes.map(n => n.cluster_id));
+           loadedClusters = loadedClusters.filter((c: any) => activeClusterIds.has(c.id));
+        }
+
         setClusters(loadedClusters);
         if (onClustersLoaded) onClustersLoaded(loadedClusters);
         if (onStatsLoaded && res.personal_stats) onStatsLoaded(res.personal_stats);
@@ -242,7 +254,7 @@ export const NetworkXGraphView: React.FC<Props> = ({
 
     Object.entries(groups).forEach(([cidStr, members]) => {
       const cid = parseInt(cidStr);
-      const color = COT_COLORS[cid % COT_COLORS.length];
+      const color = isUserMode ? '#06b6d4' : COT_COLORS[cid % COT_COLORS.length]; // Teal se user mode
       // margin = largest node radius in cluster + 8px
       const margin = Math.max(...members.map(n => getNodeSize(n))) + 8;
 
@@ -447,19 +459,21 @@ export const NetworkXGraphView: React.FC<Props> = ({
       {/* CoT Legend */}
       <div className="absolute top-4 left-4 pointer-events-none max-w-[220px]">
         <div className="bg-black/65 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl">
-          <h4 className="text-[9px] uppercase tracking-[0.2em] text-orange-400 font-black mb-3 flex items-center gap-1.5">
+          <h4 className={cn("text-[9px] uppercase tracking-[0.2em] font-black mb-3 flex items-center gap-1.5", isUserMode ? "text-[#06b6d4]" : "text-orange-400")}>
             <Zap className="w-2.5 h-2.5 animate-pulse" /> Comunidades de Pensamento
           </h4>
           <div className="space-y-2">
-            {clusters.slice(0, 6).map(c => (
+            {clusters.slice(0, 6).map(c => {
+              const clusterColor = isUserMode ? '#06b6d4' : COT_COLORS[c.id % COT_COLORS.length];
+              return (
               <div key={c.id} className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: COT_COLORS[c.id % COT_COLORS.length], boxShadow: `0 0 8px ${COT_COLORS[c.id % COT_COLORS.length]}` }} />
+                <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: clusterColor, boxShadow: `0 0 8px ${clusterColor}` }} />
                 <div>
                   <span className="text-[9px] text-white font-bold truncate block leading-tight">{c.theme}</span>
-                  <span className="text-[7px] text-gray-600 font-mono uppercase">CoT #{c.id}</span>
+                  {!isUserMode && <span className="text-[7px] text-gray-600 font-mono uppercase">CoT #{c.id}</span>}
                 </div>
               </div>
-            ))}
+            )})}
           </div>
         </div>
       </div>

@@ -98,6 +98,7 @@ export default function UserEcosystemPage() {
                 onNodeClick={(node) => setSelectedNode(node)}
                 onBackgroundClick={() => setSelectedNode(null)}
                 selectedNodeId={selectedNode?.id}
+                isUserMode={true}
               />
               
               {/* Painel de Detalhes do Nó */}

@@ -259,6 +259,39 @@ Retorne APENAS JSON válido:
     total_time = time.time() - start_time
     logger.info(f"🚀 [cognition-full] Total Pipeline Time: {total_time:.2f}s")
 
+    # Persiste os dados na base do Neo4j para não sumirem no Dashboard
+    try:
+        # Liga aos editais (ELIGIBLE_FOR)
+        for m in result_data.get("matches", []):
+            e_uid = m.get("edital_uid")
+            if e_uid:
+                run_cypher("""
+                    MATCH (u {uid: $uid}), (e:Edital {uid: $e_uid})
+                    MERGE (u)-[r:ELIGIBLE_FOR]->(e)
+                    SET r.score = toFloat($score), r.justification = $just, r.calculated_at = timestamp()
+                """, {"uid": request.uid, "e_uid": e_uid, "score": m.get("score", 0.8), "just": m.get("justification", "")})
+        
+        # Cria skill baseada no curso para o usuário se juntar aos clusters automaticamente
+        if request.course:
+            run_cypher("""
+                MATCH (u {uid: $uid})
+                MERGE (s:Skill {name: $course})
+                MERGE (u)-[:HAS_SKILL {confidence: 1.0}]->(s)
+            """, {"uid": request.uid, "course": request.course})
+
+        # Liga aos nós da rede (se aplicável, para gerar centralidade)
+        for n in result_data.get("network_nodes", []):
+            n_name = n.get("name")
+            if n_name:
+                run_cypher("""
+                    MATCH (u {uid: $uid}), (p {name: $n_name})
+                    WHERE p:Student OR p:Professor OR p:Researcher
+                    MERGE (u)-[:KNOWS]->(p)
+                """, {"uid": request.uid, "n_name": n_name})
+
+    except Exception as ex:
+        logger.error(f"⚠️ Erro ao persistir grafo do usuário {request.uid}: {ex}")
+
     return AgentResponse(
         status="success",
         message="Cognição completa gerada com sucesso.",

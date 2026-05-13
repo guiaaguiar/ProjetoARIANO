@@ -4,12 +4,14 @@ import { Users, Search, Globe, MessageSquare, ArrowRight, Loader2, Sparkles, Act
 import * as api from '../lib/api';
 import { useAuthStore } from '../store/authStore';
 import { cn } from '../lib/utils';
+import { CommunityChatModal } from '../components/CommunityChatModal';
 
 export default function UserCommunitiesPage() {
   const { user } = useAuthStore();
   const [loading, setLoading] = React.useState(true);
   const [clusters, setClusters] = React.useState<any[]>([]);
   const [userCluster, setUserCluster] = React.useState<number | null>(null);
+  const [chatCommunity, setChatCommunity] = React.useState<any | null>(null);
 
   React.useEffect(() => {
     api.getEnrichedGraph().then(data => {
@@ -20,18 +22,27 @@ export default function UserCommunitiesPage() {
             groups[n.cluster_id].push(n);
          });
          
-         const clusterList = Object.entries(groups).map(([id, members]) => ({
-            id: parseInt(id),
-            name: `Cluster 0${parseInt(id) + 1}`,
-            members: members.length,
-            topSkills: members.filter(m => m.type === 'skill').slice(0, 3).map(m => m.label),
-            match: Math.floor(Math.random() * 40) + 60 
-         }));
-         
-         setClusters(clusterList);
-         
          const uNode = data.nodes.find((n: any) => n.id === user?.uid);
          if (uNode) setUserCluster(uNode.cluster_id);
+
+         const clusterList = Object.entries(groups).map(([id, members]) => {
+            const topSkills = members.filter((m: any) => m.type === 'skill').slice(0, 3).map((m: any) => m.label);
+            const name = topSkills.length > 0 ? topSkills.slice(0, 2).join(' & ') : `Cluster 0${parseInt(id) + 1}`;
+            return {
+               id: parseInt(id),
+               name: name,
+               members: members.length,
+               topSkills,
+               match: Math.floor(Math.random() * 40) + 60 
+            };
+         }).sort((a, b) => b.match - a.match);
+         
+         // Only show clusters where the user has connection/presence
+         const userClusters = uNode 
+            ? clusterList.filter(c => c.id === uNode.cluster_id) // Em um grafo mais real, ele poderia ter arestas com múltiplos clusters
+            : clusterList;
+
+         setClusters(userClusters);
       }
     }).finally(() => setLoading(false));
   }, [user?.uid]);
@@ -139,6 +150,7 @@ export default function UserCommunitiesPage() {
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.1 }}
+                  onClick={() => setChatCommunity(community)}
                   className={cn(
                     "relative p-7 rounded-[2rem] border transition-all duration-500 group cursor-pointer overflow-hidden",
                     isActive 
@@ -164,13 +176,13 @@ export default function UserCommunitiesPage() {
                       <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{community.members} Membros</span>
                       <div className="w-1 h-1 rounded-full bg-border" />
                       <span className={cn("text-[10px] font-bold uppercase tracking-widest", isActive ? "text-primary" : "text-muted-foreground")}>
-                        {isActive ? 'Centralidade Alta' : 'Potencial'}
+                        {community.name.split('&')[0].trim()}
                       </span>
                    </div>
 
                    <div className="pt-6 border-t border-border/50 flex items-center justify-between">
                       <div className="space-y-0.5">
-                         <p className="text-[9px] text-muted-foreground uppercase font-black tracking-widest">Afinidade IA</p>
+                         <p className="text-[9px] text-muted-foreground uppercase font-black tracking-widest">Afinidade</p>
                          <p className={cn("text-xl font-bold", isActive ? "text-primary" : "text-foreground")}>{community.match}%</p>
                       </div>
                       <div className="p-2 rounded-full bg-muted/50 text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-all">
@@ -182,6 +194,12 @@ export default function UserCommunitiesPage() {
             })}
          </div>
       </div>
+
+      <CommunityChatModal 
+        isOpen={!!chatCommunity} 
+        onClose={() => setChatCommunity(null)} 
+        community={chatCommunity} 
+      />
     </div>
   );
 }
