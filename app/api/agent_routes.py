@@ -448,13 +448,13 @@ def extract_skills_v2(request: ExtractSkillsRequest):
             run_cypher(
                 """
                 MERGE (s:Skill {name: $name})
-                ON CREATE SET s.uid = $suid, s.created_at = timestamp()
+                ON CREATE SET s.uid = $suid, s.created_at = $created_at
                 WITH s
                 MATCH (u) WHERE u.uid = $uid
                 MERGE (u)-[r:HAS_SKILL]->(s)
                 SET r.source = 'v2_pipeline', r.confidence = 0.95
                 """,
-                {"name": s_name, "suid": str(uuid.uuid4())[:8], "uid": request.entity_uid}
+                {"name": s_name, "suid": str(uuid.uuid4())[:8], "uid": request.entity_uid, "created_at": datetime.now().timestamp()}
             )
             
         # Create Areas & Connections
@@ -462,13 +462,13 @@ def extract_skills_v2(request: ExtractSkillsRequest):
             run_cypher(
                 """
                 MERGE (a:Area {name: $name})
-                ON CREATE SET a.uid = $auid, a.created_at = timestamp()
+                ON CREATE SET a.uid = $auid, a.created_at = $created_at
                 WITH a
                 MATCH (u) WHERE u.uid = $uid
                 MERGE (u)-[r:WORKS_IN_AREA]->(a)
                 SET r.source = 'v2_pipeline'
                 """,
-                {"name": a_name, "auid": str(uuid.uuid4())[:8], "uid": request.entity_uid}
+                {"name": a_name, "auid": str(uuid.uuid4())[:8], "uid": request.entity_uid, "created_at": datetime.now().timestamp()}
             )
 
     if is_memory_mode():
@@ -566,13 +566,14 @@ def explain_matches_v2(request: ExplainMatchesRequest):
                 SET r.justification = $just,
                     r.score = 0.9,
                     r.source = 'v2_pipeline',
-                    r.created_at = timestamp()
+                    r.created_at = $created_at
                 """,
                 {
                     "uid": request.entity_uid,
                     "euid": match.get("uid"),
                     "title": match.get("title"),
-                    "just": match.get("justification")
+                    "just": match.get("justification"),
+                    "created_at": datetime.now().timestamp()
                 }
             )
 

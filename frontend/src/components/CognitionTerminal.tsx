@@ -42,7 +42,9 @@ payload = {
         },
         {
             "role": "user", 
-            "content": "USUÁRIO: ${formData.name || 'Desconhecido'} (${formData.course || 'N/A'}, ${formData.semester || 1}º sem)\\nBIO: ${formData.bio || 'N/A'}\\nOBJETIVOS: ${formData.o_que_busco || 'N/A'}"
+            "content": "USUÁRIO: ${formData.name || 'Desconhecido'} (${formData.course || 'N/A'}, ${formData.semester || 1}º sem)
+            BIO: ${formData.bio || 'N/A'}
+            OBJETIVOS: ${formData.o_que_busco || 'N/A'}"
         }
     ]
 }

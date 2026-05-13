@@ -10,6 +10,7 @@ LLM: NVIDIA Nemotron 3 Super (120B MoE, 12B active) via OpenRouter
 Part of PHASE 1 (Graph Configuration) — runs offline/async.
 """
 
+from datetime import datetime
 import json
 import logging
 
@@ -173,9 +174,9 @@ Responda APENAS em JSON válido com esta estrutura:
                 MERGE (s:Skill {name: $name})
                 ON CREATE SET s.uid = randomUUID(),
                               s.category = 'general',
-                              s.created_at = datetime()
+                              s.created_at = $created_at
                 """,
-                {"name": skill_data["name"]},
+                {"name": skill_data["name"], "created_at": datetime.now().timestamp()},
             )
 
             run_cypher(
@@ -185,12 +186,13 @@ Responda APENAS em JSON válido com esta estrutura:
                 MERGE (e)-[r:REQUIRES_SKILL]->(s)
                 ON CREATE SET r.priority = $priority,
                               r.source = 'agent:EditalInterpreter',
-                              r.created_at = datetime()
+                              r.created_at = $created_at
                 """,
                 {
                     "uid": edital_uid,
                     "skill_name": skill_data["name"],
                     "priority": skill_data.get("priority", "desirable"),
+                    "created_at": datetime.now().timestamp()
                 },
             )
             skills_connected += 1
@@ -200,9 +202,9 @@ Responda APENAS em JSON válido com esta estrutura:
                 """
                 MERGE (a:Area {name: $name})
                 ON CREATE SET a.uid = randomUUID(),
-                              a.created_at = datetime()
+                              a.created_at = $created_at
                 """,
-                {"name": area_name},
+                {"name": area_name, "created_at": datetime.now().timestamp()},
             )
 
             run_cypher(
@@ -211,9 +213,9 @@ Responda APENAS em JSON válido com esta estrutura:
                 MATCH (a:Area {name: $area_name})
                 MERGE (e)-[r:TARGETS_AREA]->(a)
                 ON CREATE SET r.source = 'agent:EditalInterpreter',
-                              r.created_at = datetime()
+                              r.created_at = $created_at
                 """,
-                {"uid": edital_uid, "area_name": area_name},
+                {"uid": edital_uid, "area_name": area_name, "created_at": datetime.now().timestamp()},
             )
             areas_connected += 1
 

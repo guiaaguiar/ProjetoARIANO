@@ -622,10 +622,10 @@ def get_matches(entity_uid: str | None = None, threshold: float = 0.0) -> list[M
                 
                 results.append(MatchResponse(
                     entity_uid=edge["source"],
-                    entity_name=source["props"].get("name", ""),
-                    entity_type=source["labels"][0] if source.get("labels") else "",
+                    entity_name=source["props"].get("name") or "Sem Nome",
+                    entity_type=source["labels"][0] if source.get("labels") else "Unknown",
                     edital_uid=edge["target"],
-                    edital_title=target["props"].get("title", ""),
+                    edital_title=target["props"].get("title") or "Sem Título",
                     score=score,
                     matched_skills=edge["props"].get("matched_skills", []),
                     matched_areas=edge["props"].get("matched_areas", []),
@@ -653,9 +653,14 @@ def get_matches(entity_uid: str | None = None, threshold: float = 0.0) -> list[M
     results_raw, _ = db.cypher_query(query, params)
     return [
         MatchResponse(
-            entity_uid=row[0], entity_name=row[1], entity_type=row[2],
-            edital_uid=row[3], edital_title=row[4], score=row[5],
-            matched_skills=row[6] or [], matched_areas=row[7] or [],
+            entity_uid=row[0] or "unknown", 
+            entity_name=row[1] or "Sem Nome", 
+            entity_type=row[2] or "Unknown",
+            edital_uid=row[3] or "unknown", 
+            edital_title=row[4] or "Sem Título", 
+            score=row[5] or 0.0,
+            matched_skills=row[6] or [], 
+            matched_areas=row[7] or [],
             justification=row[8] or "",
         )
         for row in results_raw

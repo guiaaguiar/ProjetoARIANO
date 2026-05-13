@@ -87,7 +87,7 @@ async def register_user(
             "bio": bio,
             "o_que_busco": o_que_busco,
             "curriculo_texto": final_text,
-            "created_at": datetime.now().isoformat()
+            "created_at": datetime.now().timestamp()
         }
 
         if is_memory_mode():
