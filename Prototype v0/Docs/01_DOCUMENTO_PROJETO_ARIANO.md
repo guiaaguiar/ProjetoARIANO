@@ -1,10 +1,10 @@
 # 📋 PROJETO ARIANO — Documento de Visão e Planejamento do MVP
 
-> **Versão:** 12.0.0  
-> **Data:** 02/05/2026  
-> **Status:** MVP 1.0.0 Online — Sprint 14 (UX Premium, Cadência Cognitiva & Justificativas Reais)
+> **Versão:** 15.0.0  
+> **Data:** 13/05/2026  
+> **Status:** MVP 1.1.0 Online — Sprint 15 (Comunidades Temáticas, Estabilidade & AuraDB)
 > **Metodologia:** SCRUM (adaptado para contexto acadêmico)  
-> **Última atualização:** 02/05/2026 — Sprint 14 (Cadência Cognitiva, Justificativas Profundas, Fix de Sessão)
+> **Última atualização:** 13/05/2026 — Sprint 15 (Graph Labels, AuraDB, Comunidades Vivas)
 
 ---
 
@@ -797,6 +797,23 @@ Finalizamos a integração total E2E, removendo mocks e estabilizando a comunica
 3. **Dinâmica de Foco e Glow (Neon Polish):** Nós selecionados recebem aumento de `shadowBlur`.
 
 ### Sprint 7 — Landing Page & Design Premium (Semana 11) ✅ CONCLUÍDA
+
+**Foco:** Criação de uma porta de entrada cinematográfica e polimento final de branding.  
+Desenvolvemos uma Landing Page de alto impacto com animações em Framer Motion, sistema de grids magnéticos e proposta de valor clara. O Design System foi consolidado para garantir consistência entre a área pública e os portais logados.
+
+### Sprint 15 — Estabilidade, Comunidades Temáticas & AuraDB (Semana 12) ✅ CONCLUÍDA
+
+**Foco:** Estabilização do pipeline de dados, persistência em nuvem e inteligência de comunidades.  
+Esta sprint focou em transformar o ARIANO de um protótipo efêmero em um sistema resiliente. Migramos a persistência para o **Neo4j AuraDB**, garantindo que os dados não sejam perdidos entre sessões. Resolvemos bugs críticos de inflação de datas (conflito ISO vs Timestamp) e implementamos a nomeação automática de clusters por IA.
+
+**Entregas Técnicas da Sprint 15:**
+- **Persistência Real (AuraDB):** Integração com banco de dados em nuvem, eliminando o modo In-Memory para dados de produção.
+- **Cognition Engine v2:** Refinamento dos agentes para lidar com contextos maiores e fallbacks rule-based mais robustos.
+- **Comunidades Temáticas (Louvain + LLM):** O sistema agora detecta clusters e a LLM atribui nomes reais (ex: "Machine Learning & Ciência") em vez de IDs genéricos.
+- **Chat de Comunidade:** Implementação de um módulo de chat para membros de um mesmo cluster (persistência via LocalStorage).
+- **Fixes de Integridade:** Correção de erros de validação Pydantic no Match Engine e labels dinâmicas no grafo (n.title vs n.name).
+- **Radar UX:** Refatoração da animação de radar para um estilo minimalista e fluído, removendo cintilações e pontos de ruído visual.
+- **Deployment CI/CD:** Otimização do build na Vercel para suportar o tamanho do bundle Python e dependências de ML.
 
 **Foco:** Criação de uma Landing Page impactante e refinamento da identidade visual global.
 

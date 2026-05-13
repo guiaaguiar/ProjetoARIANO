@@ -1,6 +1,6 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/status-MVP_v1_Online-green?style=for-the-badge" alt="Status: MVP v1 Online" />
-  <img src="https://img.shields.io/badge/versão-v1.0.0-informational?style=for-the-badge" alt="Versão: v1.0.0" />
+  <img src="https://img.shields.io/badge/status-MVP_v1.1_Online-green?style=for-the-badge" alt="Status: MVP v1.1 Online" />
+  <img src="https://img.shields.io/badge/versão-v1.1.0-informational?style=for-the-badge" alt="Versão: v1.1.0" />
   <img src="https://img.shields.io/badge/UNINASSAU-Tópicos_Integradores-purple?style=for-the-badge" alt="UNINASSAU" />
 </p>
 
@@ -123,7 +123,9 @@ FASE 2 — Match (online, instantâneo)
 | 📊 Sprint 1 — UI & Web Grafo| ✅ Concluído | Frontend consolidado (D3.js), Data Mock de nós refinada |
 | 🤖 Sprint 2 — Data & Agentes | ✅ Concluído | Modelagem Neo4j, Agentes IA Python, APIs CRUD |
 | 🚀 Sprint 3 — Deploy & Prod | ✅ Concluído | Deploy Fullstack Vercel, Security Hardening, Refactor |
-| ✨ Sprint 4 — Expansão | ⬜ Pendente | Novos eixos (Indústria), animações fluidas, polimento |
+| ✨ Sprint 4 — Expansão | ✅ Concluído | Portais User/Admin, Autenticação JWT, Cadastro Real-time |
+| 🧪 Sprint 5 — Estabilidade | ✅ Concluído | Migração Neo4j AuraDB, Fixes de Data (InflateError), Match robusto |
+| 🔗 Sprint 6 — Comunidades | ✅ Concluído | Nomeação de Clusters via IA, Chat de Comunidade, Radar Minimalista |
 
 ---
 
