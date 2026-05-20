@@ -163,10 +163,6 @@ function GraphScene({
   const tmpB = useMemo(() => new THREE.Vector3(), []);
   const tmpColor = useMemo(() => new THREE.Color(), []);
   const baseColor = useMemo(() => new THREE.Color(nodeHex), [nodeHex]);
-  const accentColor = useMemo(
-    () => new THREE.Color(nodeHex).lerp(new THREE.Color("#ffffff"), 0.55),
-    [nodeHex]
-  );
 
   // Init instance colors
   useEffect(() => {
@@ -520,22 +516,20 @@ export function Graph3D({
 }: Graph3DProps) {
   return (
     <div
-      style={{ width: size, height: size, cursor: "grab", touchAction: "none", position: 'relative' }}
+      style={{ width: size, height: size, cursor: "grab", touchAction: "none" }}
     >
-      <div style={{ position: 'absolute', top: -500, left: -500, right: -500, bottom: -500 }}>
-        <Canvas
-          camera={{ position: [0, 0, 5.2], fov: 50 }}
-          gl={{ antialias: true, alpha: true }}
-          style={{ background: "transparent" }}
-        >
-          <GraphScene
-            lineHex={lineHex}
-            nodeHex={nodeHex ?? lineHex}
-            nodeCount={nodeCount}
-            connectionRadius={connectionRadius}
-          />
-        </Canvas>
-      </div>
+      <Canvas
+        camera={{ position: [0, 0, 5.2], fov: 50 }}
+        gl={{ antialias: true, alpha: true }}
+        style={{ background: "transparent" }}
+      >
+        <GraphScene
+          lineHex={lineHex}
+          nodeHex={nodeHex ?? lineHex}
+          nodeCount={nodeCount}
+          connectionRadius={connectionRadius}
+        />
+      </Canvas>
     </div>
   );
 }

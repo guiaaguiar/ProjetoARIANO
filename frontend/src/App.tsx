@@ -19,6 +19,13 @@ import Landing from './pages/Landing';
 import { useAuthStore } from './store/authStore';
 import { useEffect } from 'react';
 import { AppBackground } from './components/AppBackground';
+import PublicHome from './pages/PublicHome';
+import PublicEditais from './pages/PublicEditais';
+import PublicComunidades from './pages/PublicComunidades';
+import PublicEcossistema from './pages/PublicEcossistema';
+import PublicProfile from './pages/PublicProfile';
+import PublicProfileEdit from './pages/PublicProfileEdit';
+import PublicEditalDetail from './pages/PublicEditalDetail';
 
 function UserPlaceholder({ title }: { title: string }) {
   return <div className="text-white p-4"><h1>{title}</h1><p className="text-gray-400 mt-2 font-mono text-sm opacity-60 italic">{'>'} Agente Orchestrator preparando visualização...</p></div>;
@@ -55,7 +62,22 @@ export default function App() {
 
           {/* User Portal */}
           <Route element={<ProtectedRoute allowedRoles={['student', 'researcher', 'professor']} />}>
-            <Route path="/user" element={<UserLayout />}>
+            <Route path="/home" element={<PublicHome />} />
+            <Route path="/editais" element={<PublicEditais />} />
+            <Route path="/comunidades" element={<PublicComunidades />} />
+            <Route path="/ecossistema" element={<PublicEcossistema />} />
+            <Route path="/profile" element={<PublicProfile />} />
+            <Route path="/profile/edit" element={<PublicProfileEdit />} />
+            <Route path="/editais/:uid" element={<PublicEditalDetail />} />
+            
+            {/* Redirect legacy user routes to new public paths */}
+            <Route path="/user" element={<Navigate to="/home" replace />} />
+            <Route path="/user/matches" element={<Navigate to="/home" replace />} />
+            <Route path="/user/ecossistema" element={<Navigate to="/ecossistema" replace />} />
+            <Route path="/user/comunidades" element={<Navigate to="/comunidades" replace />} />
+            
+            {/* Kept as fallback in case any deep links exist */}
+            <Route path="/user-legacy" element={<UserLayout />}>
               <Route index element={<UserDashboard />} />
               <Route path="matches" element={<UserMatchesPage />} />
               <Route path="ecossistema" element={<UserEcosystemPage />} />
