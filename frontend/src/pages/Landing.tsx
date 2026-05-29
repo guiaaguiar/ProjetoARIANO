@@ -448,9 +448,7 @@ const Landing = () => {
               ))}
             </div>
           </div>
-        </div>
-      </section>
-
+        </motion.div>
       </section>
 
       {/* Radar Chart / Technology Section */}
