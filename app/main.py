@@ -15,7 +15,6 @@ from app.api.status_routes import router as status_router
 from app.core.config import settings
 from app.core.database import init_db
 
-# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -25,21 +24,11 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Initialize database on startup, auto-seed in memory mode, cleanup on shutdown."""
+    """Initialize Neo4j Aura connection on startup, cleanup on shutdown."""
     logger.info("🚀 ARIANO API starting up...")
     init_db()
-
-    from app.core.neo4j_driver import is_memory_mode
-
-    if is_memory_mode():
-        logger.info("📦 Memory mode detected — seeding will occur on first request if needed")
-        from app.services.seed_native import seed_native
-        seed_native() # Still seed once at startup if possible
-    else:
-        logger.info("✅ Neo4j connection initialized")
-
+    logger.info("✅ Neo4j Aura connection initialized")
     yield
-    # Cleanup
     from app.core.neo4j_driver import close_driver
     close_driver()
     logger.info("👋 ARIANO API shut down")
@@ -52,7 +41,7 @@ app = FastAPI(
         "**ARIANO** — Arquitetura de Inteligência Artificial Naturalmente Ordenada\n\n"
         "Motor de Matchmaking Inteligente para a plataforma CORETO.\n\n"
         "## Endpoints principais:\n"
-        "- `/api/` — CRUD para entidades (Students, Researchers, Professors, Editais)\n"
+        "- `/api/` — CRUD para entidades (Students, Docentes, Editais)\n"
         "- `/api/agents/` — Operações dos Agentes IA (análise, interpretação, cálculo de matches)\n"
         "- `/api/graph` — Dados do grafo para visualização\n"
         "- `/api/agents/matches` — Consulta de matches O(1) via Cypher\n"
@@ -64,7 +53,6 @@ app = FastAPI(
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    import logging
     logger = logging.getLogger("app.main")
     logger.error(f"❌ Global unexpected error: {exc}", exc_info=True)
     return JSONResponse(
@@ -80,7 +68,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers
 app.include_router(auth_router, prefix="/api/auth")
 app.include_router(user_router, prefix="/api/users")
 app.include_router(status_router, prefix="/api/users")
@@ -90,12 +77,11 @@ app.include_router(agent_router, prefix="/api")
 
 @app.get("/api/health")
 def health():
-    from app.core.neo4j_driver import is_memory_mode
     return {
         "status": "ok",
         "version": settings.app_version,
         "service": "ARIANO API",
-        "graph_mode": "in-memory" if is_memory_mode() else "neo4j",
+        "graph_mode": "neo4j_aura",
         "llm_provider": "OpenRouter (Nemotron 3 Super)",
         "llm_configured": bool(settings.openrouter_api_key),
     }

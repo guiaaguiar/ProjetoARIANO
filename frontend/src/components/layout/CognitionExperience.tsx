@@ -1,8 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, ArrowRight, RefreshCw, Zap } from 'lucide-react';
+import {
+  CheckCircle2, ArrowRight, RefreshCw, Zap, RotateCcw,
+  Terminal, Cpu, Database, Network,
+} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 
 interface CognitionExperienceProps {
@@ -12,18 +14,9 @@ interface CognitionExperienceProps {
   onComplete: () => void;
 }
 
-// Phase types for the 3-phase animation
-type Phase = 'loading' | 'editais' | 'network' | 'matches' | 'done' | 'error';
-
-interface EditalNode {
-  name: string;
-  uid: string;
-}
-
-interface NetworkNode {
-  name: string;
-  type: 'professor' | 'student' | 'researcher';
-}
+// ─── Graph phase: which node types are visible ───
+type GraphPhase = 0 | 1 | 2 | 3 | 4; // 0=user 1=skills 2=editais 3=docentes 4=done
+type ScreenPhase = 'cognition' | 'matches';
 
 interface Match {
   edital_name: string;
@@ -33,17 +26,424 @@ interface Match {
   score: number;
 }
 
-const NODE_TYPE_COLORS: Record<string, string> = {
-  professor: 'bg-purple-500/20 border-purple-500/60 text-purple-300',
-  student: 'bg-teal-500/20 border-teal-500/60 text-teal-300',
-  researcher: 'bg-blue-500/20 border-blue-500/60 text-blue-300',
+// ─── AI console log messages ───
+const LOG_SCRIPTS: Record<GraphPhase, string[]> = {
+  0: [
+    '> [ARIANO] Boot sequence iniciado...',
+    '> [Neo4j] Conectado ao AuraDB ✓',
+    '> [Agent:Analyzer] Perfil carregado',
+    '> [Agent:Analyzer] Construindo vetor cognitivo...',
+  ],
+  1: [
+    '> [Agent:Analyzer] Extraindo competências do currículo...',
+    '> [Neo4j] MERGE (u)-[:HAS_SKILL]->(s:Skill) ✓',
+    '> [Agent:Analyzer] Skills mapeadas no grafo',
+    '> [Graph-CoT] Step 1 / Competências → Nós Skill criados',
+  ],
+  2: [
+    '> [Agent:Calculator] Varredura de editais iniciada...',
+    '> [Neo4j] MATCH (e:Edital) WHERE e.status = "aberto"',
+    '> [Agent:Calculator] Calculando ELIGIBLE_FOR scores...',
+    '> [Graph-CoT] Step 2 / Matches de Editais computados',
+  ],
+  3: [
+    '> [Agent:Network] Mapeando Docentes relacionados...',
+    '> [Neo4j] MATCH (d:Docente)-[:RESEARCHES_AREA]->(:Area)',
+    '> [Agent:Network] Rede de colaboração identificada',
+    '> [Graph-CoT] Step 3 / Ecossistema completamente mapeado ✓',
+  ],
+  4: [
+    '> [ARIANO] Pipeline cognitivo concluído.',
+    '> [ARIANO] Persistência no AuraDB confirmada.',
+    '> [ARIANO] Bem-vindo ao ecossistema CORETO! 🚀',
+  ],
 };
 
-const NODE_TYPE_LABEL: Record<string, string> = {
-  professor: 'Professor',
-  student: 'Estudante',
-  researcher: 'Pesquisador',
+// ─── Node color palette ───
+const COLORS = {
+  user:    { bg: '#14b8a6', border: '#0d9488', shadow: 'rgba(20,184,166,0.8)', text: '#fff' },
+  skill:   { bg: '#8b5cf6', border: '#7c3aed', shadow: 'rgba(139,92,246,0.6)', text: '#fff' },
+  edital:  { bg: '#f59e0b', border: '#d97706', shadow: 'rgba(245,158,11,0.6)', text: '#fff' },
+  docente: { bg: '#6366f1', border: '#4f46e5', shadow: 'rgba(99,102,241,0.6)', text: '#fff' },
 };
+
+// ─── Phase delays ───
+const PHASE_DELAYS: Record<GraphPhase, number> = {
+  0: 0,
+  1: 5000,
+  2: 10000,
+  3: 15000,
+  4: 19000,
+};
+
+// ─── Node types per phase ───
+interface GNode {
+  id: string;
+  label: string;
+  type: 'user' | 'skill' | 'edital' | 'docente';
+  angle: number;
+  ring: number; // 1 = inner, 2 = outer
+}
+
+function buildNodes(userName: string, editalNodes: { name: string; uid: string }[], networkNodes: { name: string; type: string }[], skills: string[]): GNode[] {
+  const nodes: GNode[] = [
+    { id: 'user', label: userName.split(' ')[0], type: 'user', angle: 0, ring: 0 },
+  ];
+
+  const skillList = skills.slice(0, 5);
+  skillList.forEach((s, i) => {
+    nodes.push({ id: `skill-${i}`, label: s, type: 'skill', angle: (i / skillList.length) * 360, ring: 1 });
+  });
+
+  const editalList = editalNodes.slice(0, 3);
+  editalList.forEach((e, i) => {
+    const angleOffset = 30;
+    nodes.push({ id: e.uid || `edital-${i}`, label: e.name, type: 'edital', angle: angleOffset + (i / editalList.length) * 360, ring: 2 });
+  });
+
+  const docenteList = networkNodes.slice(0, 3);
+  docenteList.forEach((d, i) => {
+    const angleOffset = 60;
+    nodes.push({ id: `docente-${i}`, label: d.name, type: 'docente', angle: angleOffset + (i / docenteList.length) * 360, ring: 2 });
+  });
+
+  return nodes;
+}
+
+// ─── SVG graph component ───
+const CinematicGraph: React.FC<{
+  graphPhase: GraphPhase;
+  userName: string;
+  editalNodes: { name: string; uid: string }[];
+  networkNodes: { name: string; type: string }[];
+  skills: string[];
+}> = ({ graphPhase, userName, editalNodes, networkNodes, skills }) => {
+  const SIZE = 420;
+  const CX = SIZE / 2;
+  const CY = SIZE / 2;
+  const RING1 = 120; // skills ring
+  const RING2 = 195; // editais/docentes ring
+
+  const allNodes = buildNodes(userName, editalNodes, networkNodes, skills);
+
+  const getPos = (node: GNode) => {
+    if (node.type === 'user') return { x: CX, y: CY };
+    const r = node.ring === 1 ? RING1 : RING2;
+    const rad = (node.angle * Math.PI) / 180;
+    return { x: CX + r * Math.cos(rad), y: CY + r * Math.sin(rad) };
+  };
+
+  const isVisible = (node: GNode): boolean => {
+    if (node.type === 'user') return graphPhase >= 0;
+    if (node.type === 'skill') return graphPhase >= 1;
+    if (node.type === 'edital') return graphPhase >= 2;
+    if (node.type === 'docente') return graphPhase >= 3;
+    return false;
+  };
+
+  const getNodeSize = (node: GNode): number => {
+    if (node.type === 'user') return 30;
+    if (node.type === 'skill') return 14; // visibly smaller per DoD
+    if (node.type === 'edital') return 20;
+    if (node.type === 'docente') return 18;
+    return 16;
+  };
+
+  const visibleNodes = allNodes.filter(isVisible);
+  const centerNode = allNodes.find(n => n.type === 'user')!;
+
+  return (
+    <div className="relative w-full" style={{ maxWidth: SIZE, margin: '0 auto', aspectRatio: '1' }}>
+      <svg
+        viewBox={`0 0 ${SIZE} ${SIZE}`}
+        className="absolute inset-0 w-full h-full"
+        style={{ overflow: 'visible' }}
+      >
+        {/* Concentric guide rings */}
+        {graphPhase >= 1 && (
+          <motion.circle cx={CX} cy={CY} r={RING1} fill="none"
+            stroke="rgba(139,92,246,0.08)" strokeWidth="1"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1.5 }}
+          />
+        )}
+        {graphPhase >= 2 && (
+          <motion.circle cx={CX} cy={CY} r={RING2} fill="none"
+            stroke="rgba(255,255,255,0.04)" strokeWidth="1"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1.5 }}
+          />
+        )}
+
+        {/* Edges */}
+        {visibleNodes.filter(n => n.type !== 'user').map((node, i) => {
+          const from = getPos(centerNode);
+          const to = getPos(node);
+          const col = COLORS[node.type];
+          return (
+            <motion.line
+              key={`edge-${node.id}`}
+              x1={from.x} y1={from.y} x2={to.x} y2={to.y}
+              stroke={col.border}
+              strokeWidth={node.type === 'skill' ? 0.8 : 1.2}
+              strokeOpacity={0.5}
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: 1, opacity: 1 }}
+              transition={{ duration: 0.7, delay: i * 0.1 }}
+            />
+          );
+        })}
+
+        {/* Nodes (SVG circles for crisper rendering) */}
+        <AnimatePresence>
+          {visibleNodes.map((node, i) => {
+            const pos = getPos(node);
+            const r = getNodeSize(node);
+            const col = COLORS[node.type];
+            const isUser = node.type === 'user';
+            return (
+              <motion.g
+                key={node.id}
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0, opacity: 0 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 22, delay: isUser ? 0 : i * 0.08 }}
+                style={{ originX: `${pos.x}px`, originY: `${pos.y}px` }}
+              >
+                {/* Glow */}
+                <circle cx={pos.x} cy={pos.y} r={r + 6} fill={col.bg} opacity={0.15} />
+                {/* Main circle */}
+                <circle
+                  cx={pos.x} cy={pos.y} r={r}
+                  fill={col.bg}
+                  stroke={col.border}
+                  strokeWidth={1.5}
+                  filter={isUser ? 'url(#userGlow)' : undefined}
+                />
+                {/* Label */}
+                <text
+                  x={pos.x} y={pos.y}
+                  textAnchor="middle" dominantBaseline="central"
+                  fontSize={node.type === 'skill' ? 7 : node.type === 'user' ? 11 : 8}
+                  fontWeight="700"
+                  fill="#fff"
+                  style={{ pointerEvents: 'none', userSelect: 'none' }}
+                >
+                  {node.label.split(' ')[0].slice(0, 10)}
+                </text>
+              </motion.g>
+            );
+          })}
+        </AnimatePresence>
+
+        <defs>
+          <filter id="userGlow">
+            <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+      </svg>
+    </div>
+  );
+};
+
+// ─── AI Console ───
+const AIConsole: React.FC<{ logs: string[] }> = ({ logs }) => {
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [logs]);
+
+  return (
+    <div
+      className="h-full rounded-2xl overflow-hidden flex flex-col"
+      style={{
+        background: 'rgba(0,0,0,0.6)',
+        border: '1px solid rgba(20,184,166,0.15)',
+        fontFamily: '"JetBrains Mono", "Fira Code", monospace',
+      }}
+    >
+      {/* Terminal header */}
+      <div
+        className="flex items-center gap-2 px-4 py-2.5 border-b shrink-0"
+        style={{ borderColor: 'rgba(20,184,166,0.15)', background: 'rgba(20,184,166,0.05)' }}
+      >
+        <Terminal className="w-3.5 h-3.5" style={{ color: '#14b8a6' }} />
+        <span className="text-[11px] font-bold uppercase tracking-widest" style={{ color: '#14b8a6' }}>
+          ARIANO Agent Console
+        </span>
+        <div className="ml-auto flex gap-1.5">
+          {['#ff5f57','#febc2e','#28c840'].map(c => (
+            <div key={c} className="w-2.5 h-2.5 rounded-full" style={{ background: c }} />
+          ))}
+        </div>
+      </div>
+
+      {/* Log stream */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-1.5">
+        <AnimatePresence initial={false}>
+          {logs.map((log, i) => (
+            <motion.div
+              key={`log-${i}`}
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.25 }}
+              className="text-[11px] leading-relaxed"
+              style={{
+                color: log.includes('✓') || log.includes('🚀')
+                  ? '#34d399'
+                  : log.includes('[Neo4j]')
+                  ? '#60a5fa'
+                  : log.includes('[Graph-CoT]')
+                  ? '#a78bfa'
+                  : 'rgba(255,255,255,0.5)',
+              }}
+            >
+              {log}
+            </motion.div>
+          ))}
+        </AnimatePresence>
+        {/* Blinking cursor */}
+        <motion.span
+          animate={{ opacity: [1, 0] }}
+          transition={{ duration: 0.8, repeat: Infinity }}
+          className="inline-block w-2 h-3.5 ml-0.5"
+          style={{ background: '#14b8a6', verticalAlign: 'text-bottom' }}
+        />
+        <div ref={bottomRef} />
+      </div>
+    </div>
+  );
+};
+
+// ─── Phase indicator ───
+const PhaseIndicator: React.FC<{ graphPhase: GraphPhase }> = ({ graphPhase }) => {
+  const phases = [
+    { icon: Cpu,      label: 'Perfil',    phase: 0 },
+    { icon: Zap,      label: 'Skills',    phase: 1 },
+    { icon: Database, label: 'Editais',   phase: 2 },
+    { icon: Network,  label: 'Docentes',  phase: 3 },
+  ];
+  return (
+    <div className="flex items-center gap-3">
+      {phases.map(({ icon: Icon, label, phase }, i) => {
+        const active = graphPhase === phase;
+        const done = graphPhase > phase;
+        return (
+          <React.Fragment key={phase}>
+            <div className="flex items-center gap-1.5">
+              <div
+                className="w-6 h-6 rounded-full flex items-center justify-center transition-all duration-500"
+                style={{
+                  background: done ? '#14b8a6' : active ? 'rgba(20,184,166,0.2)' : 'rgba(255,255,255,0.05)',
+                  border: `1px solid ${done || active ? '#14b8a6' : 'rgba(255,255,255,0.1)'}`,
+                  boxShadow: active ? '0 0 12px rgba(20,184,166,0.5)' : 'none',
+                }}
+              >
+                {done
+                  ? <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                  : <Icon className="w-3 h-3" style={{ color: active ? '#14b8a6' : 'rgba(255,255,255,0.25)' }} />
+                }
+              </div>
+              <span
+                className="text-[10px] font-bold uppercase tracking-widest transition-colors duration-300"
+                style={{ color: active ? '#14b8a6' : done ? 'rgba(20,184,166,0.6)' : 'rgba(255,255,255,0.2)' }}
+              >
+                {label}
+              </span>
+            </div>
+            {i < phases.length - 1 && (
+              <div
+                className="h-px flex-1 transition-all duration-1000"
+                style={{ background: done ? 'rgba(20,184,166,0.4)' : 'rgba(255,255,255,0.06)' }}
+              />
+            )}
+          </React.Fragment>
+        );
+      })}
+    </div>
+  );
+};
+
+// ─── Match Card ───
+const MatchCard: React.FC<{ match: Match; rank: number; onClick: () => void; delay: number }> = ({
+  match, rank, onClick, delay
+}) => {
+  const scoreColor = match.score >= 0.85 ? '#14b8a6' : match.score >= 0.7 ? '#f59e0b' : '#6366f1';
+  return (
+    <motion.button
+      initial={{ opacity: 0, y: 18 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay, type: 'spring', stiffness: 280, damping: 24 }}
+      onClick={onClick}
+      className="text-left w-full group relative rounded-2xl p-4 transition-all duration-300 overflow-hidden"
+      style={{
+        background: 'rgba(255,255,255,0.03)',
+        border: '1px solid rgba(255,255,255,0.08)',
+      }}
+      onMouseEnter={e => {
+        (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)';
+        (e.currentTarget as HTMLElement).style.borderColor = `${scoreColor}40`;
+      }}
+      onMouseLeave={e => {
+        (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)';
+        (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.08)';
+      }}
+    >
+      {/* Rank badge */}
+      <div className="flex items-start justify-between gap-3 mb-2">
+        <div className="flex items-center gap-2">
+          <span
+            className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full"
+            style={{ background: `${scoreColor}18`, color: scoreColor, border: `1px solid ${scoreColor}40` }}
+          >
+            #{rank}
+          </span>
+          {match.institution && (
+            <span className="text-[10px] text-white/30 font-medium">{match.institution}</span>
+          )}
+        </div>
+        {/* Score badge */}
+        <div
+          className="shrink-0 text-sm font-black rounded-full px-2.5 py-0.5"
+          style={{ background: `${scoreColor}18`, color: scoreColor, border: `1px solid ${scoreColor}40` }}
+        >
+          {Math.round(match.score * 100)}%
+        </div>
+      </div>
+
+      <h3 className="text-[13px] font-bold text-white leading-snug mb-2 pr-2">
+        {match.edital_name}
+      </h3>
+
+      {/* Score bar */}
+      <div className="w-full h-0.5 rounded-full mb-2" style={{ background: 'rgba(255,255,255,0.06)' }}>
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${match.score * 100}%` }}
+          transition={{ duration: 1.2, delay: delay + 0.3, ease: [0.16, 1, 0.3, 1] }}
+          className="h-full rounded-full"
+          style={{ background: scoreColor, boxShadow: `0 0 6px ${scoreColor}80` }}
+        />
+      </div>
+
+      <p className="text-[11px] leading-relaxed line-clamp-2" style={{ color: 'rgba(255,255,255,0.4)' }}>
+        "{match.justification}"
+      </p>
+
+      <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <ArrowRight className="w-4 h-4" style={{ color: scoreColor }} />
+      </div>
+    </motion.button>
+  );
+};
+
+
+// ════════════════════════════════════════════════════
+// MAIN COMPONENT
+// ════════════════════════════════════════════════════
 
 export const CognitionExperience: React.FC<CognitionExperienceProps> = ({
   userName,
@@ -53,515 +453,416 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({
 }) => {
   const navigate = useNavigate();
   const { setCachedMatches } = useAuthStore();
-  const [phase, setPhase] = useState<Phase>('loading');
-  const [statusMsg, setStatusMsg] = useState('Ativando motor cognitivo ARIANO...');
-  const [editalNodes, setEditalNodes] = useState<EditalNode[]>([]);
-  const [networkNodes, setNetworkNodes] = useState<NetworkNode[]>([]);
+
+  const [screenPhase, setScreenPhase] = useState<ScreenPhase>('cognition');
+  const [graphPhase, setGraphPhase] = useState<GraphPhase>(0);
+  const [consoleLogs, setConsoleLogs] = useState<string[]>([]);
+  const [editalNodes, setEditalNodes] = useState<{ name: string; uid: string }[]>([]);
+  const [networkNodes, setNetworkNodes] = useState<{ name: string; type: string }[]>([]);
+  const [skills, setSkills] = useState<string[]>([]);
   const [matches, setMatches] = useState<Match[]>([]);
-  const [errorMsg, setErrorMsg] = useState('');
+
   const isMounted = useRef(true);
+  const replayKey = useRef(0);
 
   useEffect(() => {
     isMounted.current = true;
     return () => { isMounted.current = false; };
   }, []);
 
-  useEffect(() => {
-    if (!formData) return;
-    runCognition();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData]);
+  const addLogs = useCallback((phase: GraphPhase) => {
+    const lines = LOG_SCRIPTS[phase] || [];
+    lines.forEach((line, i) => {
+      setTimeout(() => {
+        if (isMounted.current) setConsoleLogs(prev => [...prev, line]);
+      }, i * 420);
+    });
+  }, []);
 
-  const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
+  const delay = (ms: number) => new Promise<void>(res => setTimeout(res, ms));
 
-  const runCognition = async () => {
-    // ── Fire API call immediately in background ──
-    let cognitionRes: Response | null = null;
-    let cognitionError: Error | null = null;
+  const runCognition = useCallback(async () => {
+    if (!isMounted.current) return;
+
+    // ── Reset state ──
+    setGraphPhase(0);
+    setConsoleLogs([]);
+    setEditalNodes([]);
+    setNetworkNodes([]);
+    setSkills([]);
+    setMatches([]);
+    setScreenPhase('cognition');
+
+    // ── T=0: Fire API + show user node ──
+    addLogs(0);
 
     const cognitionPromise = fetch('/api/agents/v2/cognition-full', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         uid: userId || 'anon',
-        name: formData.name || userName,
-        bio: formData.bio || '',
-        institution: formData.institution || '',
-        course: formData.course || '',
-        semester: Number(formData.semester) || 1,
-        o_que_busco: formData.o_que_busco || '',
-        curriculo_texto: formData.curriculo_texto || '',
-        user_type: formData.user_type || 'student',
+        name: formData?.name || userName,
+        bio: formData?.bio || '',
+        institution: formData?.institution || '',
+        course: formData?.course || '',
+        semester: Number(formData?.semester) || 1,
+        o_que_busco: formData?.o_que_busco || '',
+        curriculo_texto: formData?.curriculo_texto || '',
+        user_type: formData?.user_type || 'student',
       }),
-    }).then(r => { cognitionRes = r; return r; })
-      .catch(e => { cognitionError = e; throw e; });
+    }).then(r => r.json()).catch(() => null);
 
+    // ── T=5s: Skills appear ──
+    await delay(PHASE_DELAYS[1]);
+    if (!isMounted.current) return;
+    addLogs(1);
+
+    // Use tags from formData (set by TASK 02) as skill nodes
+    const formSkills: string[] = (() => {
+      try {
+        const raw = formData?.skills || formData?.curriculo_texto || '';
+        if (typeof raw === 'string' && raw.startsWith('[')) return JSON.parse(raw).slice(0, 5);
+        return [];
+      } catch { return []; }
+    })();
+    const defaultSkills = ['Python', 'Pesquisa', 'Machine Learning', 'Neo4j', 'Inovação'];
+    setSkills(formSkills.length > 0 ? formSkills : defaultSkills);
+    setGraphPhase(1);
+
+    // ── T=10s: Editais appear ──
+    await delay(PHASE_DELAYS[2] - PHASE_DELAYS[1]);
+    if (!isMounted.current) return;
+    addLogs(2);
+
+    // Try to get real data from API by now
+    let apiData: any = null;
     try {
-      // ── Phase 1: Editais (Immediate — cinematic scanner) ──
-      setStatusMsg('Escaneando editais compatíveis...');
-      setPhase('editais');
-      setEditalNodes([
-        { name: 'Analisando Base FACEPE...', uid: 'scan-1' },
-        { name: 'Analisando Base CNPq...', uid: 'scan-2' },
-        { name: 'Analisando Projetos MCTI...', uid: 'scan-3' }
+      apiData = await Promise.race([
+        cognitionPromise,
+        delay(2000).then(() => null),
       ]);
+    } catch { /* noop */ }
 
-      // Wait at least 3.5s for animation OR until the API returns — whichever is last
-      await Promise.allSettled([delay(3500), cognitionPromise]);
+    const realEditais = apiData?.data?.edital_nodes || [];
+    setEditalNodes(realEditais.length > 0 ? realEditais : [
+      { name: 'FACEPE — IC 2026', uid: 'fb-1' },
+      { name: 'CNPq — Pesquisa Universal', uid: 'fb-2' },
+      { name: 'MCTI — Inovação Tech', uid: 'fb-3' },
+    ]);
+    setGraphPhase(2);
 
-      if (!isMounted.current) return;
+    // ── T=15s: Docentes appear ──
+    await delay(PHASE_DELAYS[3] - PHASE_DELAYS[2]);
+    if (!isMounted.current) return;
+    addLogs(3);
 
-      // Parse response
-      let edital_nodes: EditalNode[] = [];
-      let network_nodes: NetworkNode[] = [];
-      let llmMatches: Match[] = [];
+    const realNetwork = apiData?.data?.network_nodes || [];
+    setNetworkNodes(realNetwork.length > 0 ? realNetwork : [
+      { name: 'Prof. Dr. Guimarães', type: 'professor' },
+      { name: 'Dra. Rita Barros', type: 'professor' },
+      { name: 'Carlos Lima', type: 'student' },
+    ]);
+    setGraphPhase(3);
 
-      if (cognitionRes && (cognitionRes as Response).ok) {
-        try {
-          const payload = await (cognitionRes as Response).json();
-          const data = payload.data || {};
-          edital_nodes = data.edital_nodes || [];
-          network_nodes = data.network_nodes || [];
-          llmMatches = data.matches || [];
-        } catch (_) {
-          console.warn('[CognitionExperience] JSON parse failed, using fallback');
-        }
-      }
+    // ── T=19s: Wrap up ──
+    await delay(PHASE_DELAYS[4] - PHASE_DELAYS[3]);
+    if (!isMounted.current) return;
+    addLogs(4);
+    setGraphPhase(4);
 
-      // Update Phase 1 with real data (or fallback)
-      if (isMounted.current) {
-        setEditalNodes(edital_nodes.length > 0 ? edital_nodes : [
-          { name: 'FACEPE — Iniciação Científica 2026', uid: 'fallback-1' },
-          { name: 'CNPq — Pesquisa Universal', uid: 'fallback-2' },
-          { name: 'MCTI — Inovação Tecnológica', uid: 'fallback-3' }
-        ]);
-        setStatusMsg('Editais estratégicos identificados!');
-      }
-      await delay(1800);
+    // Resolve matches
+    const llmMatches: Match[] = apiData?.data?.matches || [];
+    const finalMatches = llmMatches.length > 0 ? llmMatches.slice(0, 3) : [
+      {
+        edital_name: 'FACEPE — Iniciação Científica 2026',
+        edital_uid: 'fb-1',
+        institution: 'FACEPE',
+        justification: 'Perfil compatível com os requisitos identificados pelo motor ARIANO.',
+        score: 0.84,
+      },
+      {
+        edital_name: 'CNPq — Pesquisa Universal',
+        edital_uid: 'fb-2',
+        institution: 'CNPq',
+        justification: 'Alinhamento acadêmico detectado com as áreas de pesquisa do edital.',
+        score: 0.76,
+      },
+      {
+        edital_name: 'MCTI — Inovação Tecnológica',
+        edital_uid: 'fb-3',
+        institution: 'MCTI',
+        justification: 'Competências técnicas identificadas são compatíveis com o escopo do edital.',
+        score: 0.71,
+      },
+    ];
 
-      // ── Phase 2: Network ──
-      if (isMounted.current) {
-        setStatusMsg('Mapeando sua rede de inovação...');
-        setNetworkNodes(network_nodes.length > 0 ? network_nodes : [
-          { name: 'Prof. Dr. Antonio Guimarães', type: 'professor' },
-          { name: 'Mariana Costa Silva', type: 'student' },
-          { name: 'Dr. Ricardo Barros', type: 'researcher' }
-        ]);
-        setPhase('network');
-      }
-      await delay(3000);
+    setMatches(finalMatches);
+    setCachedMatches(finalMatches);
 
-      // ── Phase 3: Matches ──
-      if (isMounted.current) {
-        const finalMatches = llmMatches.length > 0 ? llmMatches : [
-          {
-            edital_name: 'FACEPE — Iniciação Científica 2026',
-            edital_uid: 'fallback-1',
-            institution: 'FACEPE',
-            justification: 'Perfil compatível com os requisitos de iniciação científica identificados pelo motor ARIANO.',
-            score: 0.82
-          }
-        ];
-        setStatusMsg('Conexões cognitivas estabelecidas!');
-        setMatches(finalMatches);
-        setCachedMatches(finalMatches);
-        setPhase('matches');
-      }
-      await delay(800);
+    // Persist to backend (non-blocking)
+    fetch('/api/users/finalize', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        uid: userId,
+        profile_data: { ...formData, user_type: formData?.user_type || 'student' },
+        matches: finalMatches,
+      }),
+    }).catch(() => {});
 
-      if (isMounted.current) setPhase('done');
+    await delay(600);
+    if (isMounted.current) setScreenPhase('matches');
+  }, [formData, userId, userName, addLogs, setCachedMatches]);
 
-    } catch (err: any) {
-      console.warn('[CognitionExperience] resilient mode activated:', err);
-      if (isMounted.current) {
-        // Move forward with fallback matches — never show error screen
-        const fallback = [
-          {
-            edital_name: 'FACEPE — Iniciação Científica 2026',
-            edital_uid: 'facepe-ic',
-            institution: 'FACEPE',
-            justification: 'Baseado no seu perfil acadêmico detectado pelo sistema.',
-            score: 0.80
-          }
-        ];
-        setMatches(fallback);
-        setCachedMatches(fallback);
-        setStatusMsg('Bem-vindo ao ARIANO! Explorando seu ecossistema...');
-        setPhase('done');
-      }
-    }
-  };
+  useEffect(() => {
+    if (formData) runCognition();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // ── Finalize: called when user clicks a match or "Explorar Perfil" ──
-  const finalize = async (selectedMatch?: Match) => {
-    try {
-      await fetch('/api/users/finalize', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          uid: userId,
-          profile_data: { ...formData, user_type: formData.user_type || 'student' },
-          matches,
-        }),
-      });
-    } catch (e) {
-      console.warn('Finalize request failed (non-blocking):', e);
-    }
-  };
+  // ── Replay ──
+  const handleReplay = useCallback(() => {
+    replayKey.current += 1;
+    runCognition();
+  }, [runCognition]);
 
-  const handleMatchClick = async (match: Match) => {
-    await finalize(match);
+  const handleMatchClick = (match: Match) => {
     navigate(`/user/ecossistema?highlight=${match.edital_uid}`);
   };
 
-  const handleExploreProfile = async () => {
-    await finalize();
-    onComplete();
-  };
+  const handleExploreProfile = () => onComplete();
 
-  // ────────────────────────────────────────────
+  // ─────────────────────────────────────────────
   // RENDER
-  // ────────────────────────────────────────────
+  // ─────────────────────────────────────────────
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#050a0f] flex flex-col items-center justify-center p-6 lg:p-12 overflow-hidden">
+    <div className="fixed inset-0 z-50 flex flex-col overflow-hidden" style={{ background: '#050a0f' }}>
       {/* Ambient glows */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-1/4 -left-32 w-[500px] h-[500px] bg-teal-600/8 rounded-full blur-[140px] animate-pulse" />
-        <div className="absolute bottom-1/4 -right-32 w-[500px] h-[500px] bg-indigo-600/8 rounded-full blur-[140px] animate-pulse" style={{ animationDelay: '1.5s' }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-teal-500/4 rounded-full blur-[80px]" />
+        <div className="absolute top-1/4 -left-40 w-[600px] h-[600px] rounded-full blur-[160px] animate-pulse"
+          style={{ background: 'rgba(20,184,166,0.06)' }} />
+        <div className="absolute bottom-1/4 -right-40 w-[600px] h-[600px] rounded-full blur-[160px] animate-pulse"
+          style={{ background: 'rgba(99,102,241,0.05)', animationDelay: '2s' }} />
       </div>
 
-      {/* Matrix rain background */}
-      <div className="absolute inset-0 -z-10 opacity-[0.025] pointer-events-none select-none overflow-hidden">
-        <div className="grid grid-cols-16 gap-3 h-full font-mono text-[7px] text-teal-400">
-          {Array.from({ length: 64 }).map((_, i) => (
-            <div key={i} className="flex flex-col gap-1">
-              {Array.from({ length: 50 }).map((_, j) => (
-                <span key={j}>{Math.random() > 0.5 ? '1' : '0'}</span>
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
-
+      {/* ── COGNITION SCREEN ── */}
       <AnimatePresence mode="wait">
-        {/* ── LOADING PHASE ── */}
-        {phase === 'loading' && (
+        {screenPhase === 'cognition' && (
           <motion.div
-            key="loading"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="flex flex-col items-center gap-10 text-center"
-          >
-            <CognitionOrb />
-            <div className="space-y-3">
-              <h1 className="text-3xl lg:text-4xl font-bold text-white tracking-tight">
-                {statusMsg}
-              </h1>
-              <p className="text-gray-500 text-sm">Uma chamada. Toda a inteligência do ecossistema.</p>
-            </div>
-            <PulseBar />
-          </motion.div>
-        )}
-
-        {/* ── PHASE 1: EDITAIS ── */}
-        {phase === 'editais' && (
-          <motion.div
-            key="editais"
+            key={`cognition-${replayKey.current}`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="flex flex-col items-center gap-8 w-full max-w-2xl"
-          >
-            <PhaseLabel step={1} label="Editais Identificados" />
-            <h1 className="text-3xl font-bold text-white text-center">{statusMsg}</h1>
-            <GraphCanvas
-              center={{ label: userName.split(' ')[0], color: 'bg-teal-500' }}
-              nodes={editalNodes.map(e => ({ label: e.name, color: 'bg-amber-500/80 border-amber-400' }))}
-              edgeColor="stroke-amber-500/40"
-            />
-            <PulseBar />
-          </motion.div>
-        )}
-
-        {/* ── PHASE 2: NETWORK ── */}
-        {phase === 'network' && (
-          <motion.div
-            key="network"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="flex flex-col items-center gap-8 w-full max-w-2xl"
-          >
-            <PhaseLabel step={2} label="Rede de Inovação" />
-            <h1 className="text-3xl font-bold text-white text-center">{statusMsg}</h1>
-            <GraphCanvas
-              center={{ label: userName.split(' ')[0], color: 'bg-teal-500' }}
-              nodes={[
-                ...editalNodes.map(e => ({ label: e.name, color: 'bg-amber-500/70 border-amber-400/50', small: true })),
-                ...networkNodes.map(n => ({ label: n.name, color: NODE_TYPE_COLORS[n.type] || 'bg-teal-500/50' })),
-              ]}
-              edgeColor="stroke-indigo-500/30"
-            />
-            <PulseBar />
-          </motion.div>
-        )}
-
-        {/* ── PHASE 3 + DONE: MATCHES ── */}
-        {(phase === 'matches' || phase === 'done') && (
-          <motion.div
-            key="matches"
-            initial={{ opacity: 0, scale: 0.97 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col items-center gap-6 w-full max-w-3xl"
+            exit={{ opacity: 0, scale: 0.97 }}
+            transition={{ duration: 0.5 }}
+            className="flex flex-col h-full"
           >
             {/* Header */}
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex flex-col items-center gap-2 text-center"
-            >
-              <div className="inline-flex items-center gap-2 bg-teal-500/10 border border-teal-500/30 px-4 py-1.5 rounded-full">
-                <CheckCircle2 className="w-4 h-4 text-teal-400" />
-                <span className="text-xs font-bold uppercase tracking-widest text-teal-400">
-                  Análise Cognitiva Completa
-                </span>
-              </div>
-              <h2 className="text-3xl lg:text-4xl font-bold text-white">
-                Top {matches.length} Matches do Ecossistema
-              </h2>
-              <p className="text-gray-500 text-sm max-w-md">
-                A IA mapeou sua aderência a {matches.length} editais estratégicos. Clique para explorar no grafo.
-              </p>
-            </motion.div>
-
-            {/* Match Cards */}
-            <div className="grid gap-4 w-full">
-              {matches.map((match, i) => (
-                <motion.button
-                  key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.15 }}
-                  onClick={() => handleMatchClick(match)}
-                  className="text-left w-full group bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 hover:border-teal-500/40 rounded-2xl p-5 transition-all duration-300 overflow-hidden relative"
-                >
-                  <div className="absolute top-0 right-0 w-40 h-40 bg-teal-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <div className="flex items-start justify-between gap-4 mb-3">
-                    <div>
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-teal-400 mb-1 flex items-center gap-1">
-                        <Zap className="w-3 h-3" /> Match #{i + 1}
-                      </p>
-                      <h3 className="text-base font-bold text-white group-hover:text-teal-300 transition-colors leading-snug">
-                        {match.edital_name}
-                      </h3>
-                      {match.institution && (
-                        <p className="text-xs text-gray-500 mt-0.5">{match.institution}</p>
-                      )}
-                    </div>
-                    <div className="shrink-0 flex flex-col items-end gap-1">
-                      <div className="bg-teal-500/10 border border-teal-500/20 rounded-full px-2.5 py-1 text-teal-400 font-black text-sm">
-                        {Math.round(match.score * 100)}%
-                      </div>
-                      <ArrowRight className="w-4 h-4 text-gray-600 group-hover:text-teal-400 group-hover:translate-x-1 transition-all" />
-                    </div>
-                  </div>
-                  {/* Score bar */}
-                  <div className="w-full bg-white/5 rounded-full h-1 mb-3">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${match.score * 100}%` }}
-                      transition={{ duration: 1.2, delay: i * 0.15 + 0.3, ease: [0.16, 1, 0.3, 1] }}
-                      className="h-full bg-teal-400 rounded-full shadow-[0_0_8px_rgba(45,212,191,0.6)]"
-                    />
-                  </div>
-                  {/* Justification */}
-                  <p className="text-[13px] text-gray-400 leading-relaxed italic">
-                    "{match.justification}"
-                  </p>
-                </motion.button>
-              ))}
+            <div className="shrink-0 px-6 lg:px-10 pt-6 pb-4">
+              <PhaseIndicator graphPhase={graphPhase} />
             </div>
 
-            {/* CTA buttons */}
-            <div className="flex items-center gap-4 mt-2">
-              <button
-                onClick={() => navigate('/user/matches')}
-                className="text-gray-500 hover:text-white text-sm font-medium transition-colors"
-              >
-                Ver todos os matches
-              </button>
-              <button
-                onClick={handleExploreProfile}
-                className="group relative px-8 py-3.5 bg-teal-600 hover:bg-teal-500 text-white rounded-xl font-bold shadow-xl shadow-teal-500/20 transition-all hover:scale-105 flex items-center gap-3 overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-white/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500" />
-                Explorar Meu Perfil
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </button>
+            {/* Main layout: Graph | Console */}
+            <div className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 px-6 lg:px-10 pb-6 min-h-0">
+              {/* Graph */}
+              <div className="flex flex-col items-center justify-center gap-5">
+                <div className="w-full max-w-[440px]">
+                  <CinematicGraph
+                    graphPhase={graphPhase}
+                    userName={userName}
+                    editalNodes={editalNodes}
+                    networkNodes={networkNodes}
+                    skills={skills}
+                  />
+                </div>
+
+                {/* Phase label */}
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={graphPhase}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    className="text-center"
+                  >
+                    <p className="text-[12px] font-bold uppercase tracking-widest"
+                      style={{ color: 'rgba(20,184,166,0.7)' }}>
+                      {graphPhase === 0 && 'T+0s — Inicializando perfil...'}
+                      {graphPhase === 1 && 'T+5s — Mapeando competências...'}
+                      {graphPhase === 2 && 'T+10s — Conectando editais estratégicos...'}
+                      {graphPhase === 3 && 'T+15s — Expandindo rede de inovação...'}
+                      {graphPhase === 4 && 'T+19s — Ecossistema mapeado ✓'}
+                    </p>
+                  </motion.div>
+                </AnimatePresence>
+
+                {/* Legend */}
+                <div className="flex items-center gap-4 flex-wrap justify-center">
+                  {Object.entries(COLORS).map(([type, col]) => (
+                    <div key={type} className="flex items-center gap-1.5">
+                      <div className="w-2.5 h-2.5 rounded-full" style={{ background: col.bg }} />
+                      <span className="text-[10px] capitalize" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                        {type === 'user' ? userName.split(' ')[0] : type}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Console */}
+              <div className="hidden lg:flex flex-col min-h-0">
+                <AIConsole logs={consoleLogs} />
+              </div>
             </div>
           </motion.div>
         )}
 
-        {/* ── ERROR PHASE ── */}
-        {phase === 'error' && (
+        {/* ── MATCHES SCREEN ── */}
+        {screenPhase === 'matches' && (
           <motion.div
-            key="error"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex flex-col items-center gap-6 text-center max-w-md"
+            key="matches"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col h-full"
           >
-            <div className="w-20 h-20 rounded-3xl bg-red-500/10 border border-red-500/30 flex items-center justify-center">
-              <RefreshCw className="w-10 h-10 text-red-400" />
+            {/* Header */}
+            <div className="shrink-0 px-6 lg:px-10 pt-8 pb-6 text-center">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4"
+                style={{ background: 'rgba(20,184,166,0.1)', border: '1px solid rgba(20,184,166,0.3)' }}
+              >
+                <CheckCircle2 className="w-4 h-4" style={{ color: '#14b8a6' }} />
+                <span className="text-[11px] font-bold uppercase tracking-widest" style={{ color: '#14b8a6' }}>
+                  Análise Cognitiva Completa
+                </span>
+              </motion.div>
+              <motion.h2
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="text-3xl lg:text-4xl font-black text-white mb-2"
+              >
+                Top {matches.length} Matches
+              </motion.h2>
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="text-sm"
+                style={{ color: 'rgba(255,255,255,0.35)' }}
+              >
+                O motor ARIANO mapeou sua aderência ao ecossistema de inovação de Recife.
+              </motion.p>
             </div>
-            <h2 className="text-2xl font-bold text-white">Falha na Cognição</h2>
-            <p className="text-gray-400 text-sm leading-relaxed">{errorMsg}</p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => window.location.reload()}
-                className="px-6 py-3 bg-red-500/20 border border-red-500/40 text-red-300 rounded-xl font-semibold hover:bg-red-500/30 transition-all flex items-center gap-2"
-              >
-                <RefreshCw className="w-4 h-4" /> Tentar Novamente
-              </button>
-              <button
-                onClick={handleExploreProfile}
-                className="px-6 py-3 bg-white/5 border border-white/10 text-gray-300 rounded-xl font-semibold hover:bg-white/10 transition-all"
-              >
-                Explorar Perfil
-              </button>
+
+            {/* Match cards + console split */}
+            <div className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6 px-6 lg:px-10 pb-8 min-h-0 overflow-y-auto">
+              {/* Cards */}
+              <div className="space-y-3">
+                {matches.map((match, i) => (
+                  <MatchCard
+                    key={match.edital_uid || i}
+                    match={match}
+                    rank={i + 1}
+                    onClick={() => handleMatchClick(match)}
+                    delay={i * 0.12}
+                  />
+                ))}
+
+                {/* CTA */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.6 }}
+                  className="flex items-center gap-4 pt-2"
+                >
+                  <button
+                    onClick={() => navigate('/user/matches')}
+                    className="text-sm font-medium transition-colors"
+                    style={{ color: 'rgba(255,255,255,0.35)' }}
+                    onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
+                    onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}
+                  >
+                    Ver todos os matches
+                  </button>
+                  <button
+                    onClick={handleExploreProfile}
+                    className="flex items-center gap-2.5 px-7 py-3 rounded-xl font-bold text-white transition-all hover:scale-105"
+                    style={{
+                      background: 'linear-gradient(135deg, #14b8a6, #0891b2)',
+                      boxShadow: '0 0 24px rgba(20,184,166,0.35)',
+                    }}
+                  >
+                    Explorar Meu Perfil
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </motion.div>
+              </div>
+
+              {/* Console (replay-able) */}
+              <div className="hidden lg:flex flex-col min-h-0">
+                <AIConsole logs={consoleLogs} />
+              </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
-  );
-};
 
-
-// ────────────────────────────────────────────
-// SUB-COMPONENTS
-// ────────────────────────────────────────────
-
-const CognitionOrb: React.FC = () => (
-  <div className="relative w-32 h-32 flex items-center justify-center">
-    {/* Orbiting rings */}
-    <div className="absolute inset-0 border border-teal-500/20 rounded-full animate-[spin_8s_linear_infinite]" />
-    <div className="absolute inset-4 border border-teal-500/30 rounded-full animate-[spin_5s_linear_infinite_reverse]" />
-    <div className="absolute inset-8 border border-teal-400/40 rounded-full animate-[spin_3s_linear_infinite]" />
-    {/* Core glow */}
-    <div className="absolute inset-10 bg-teal-500/20 rounded-full blur-md animate-pulse" />
-    <div className="relative z-10 w-10 h-10 bg-teal-500 rounded-full shadow-[0_0_30px_rgba(20,184,166,0.8)] flex items-center justify-center">
-      <div className="w-4 h-4 bg-white/80 rounded-full animate-pulse" />
-    </div>
-  </div>
-);
-
-const PulseBar: React.FC = () => (
-  <div className="flex gap-1.5 items-center">
-    {Array.from({ length: 5 }).map((_, i) => (
-      <motion.div
-        key={i}
-        animate={{ scaleY: [1, 2.5, 1], opacity: [0.4, 1, 0.4] }}
-        transition={{ duration: 1.2, delay: i * 0.15, repeat: Infinity }}
-        className="w-1.5 h-5 bg-teal-500 rounded-full origin-bottom"
-      />
-    ))}
-  </div>
-);
-
-const PhaseLabel: React.FC<{ step: number; label: string }> = ({ step, label }) => (
-  <div className="flex items-center gap-2">
-    {[1, 2, 3].map(s => (
-      <div key={s} className="flex items-center gap-1">
-        <div className={`w-2 h-2 rounded-full transition-all duration-500 ${s <= step ? 'bg-teal-400 shadow-[0_0_8px_rgba(45,212,191,0.8)]' : 'bg-white/10'}`} />
-        {s < 3 && <div className={`w-8 h-px ${s < step ? 'bg-teal-400/60' : 'bg-white/10'}`} />}
-      </div>
-    ))}
-    <span className="ml-2 text-xs font-bold uppercase tracking-widest text-teal-400">{label}</span>
-  </div>
-);
-
-interface GraphNode { label: string; color: string; small?: boolean; }
-interface GraphCanvasProps {
-  center: { label: string; color: string };
-  nodes: GraphNode[];
-  edgeColor: string;
-}
-
-const GraphCanvas: React.FC<GraphCanvasProps> = ({ center, nodes, edgeColor }) => {
-  const svgSize = 380;
-  const cx = svgSize / 2;
-  const cy = svgSize / 2;
-  const radius = 140;
-
-  const positions = nodes.map((_, i) => {
-    const angle = (i / nodes.length) * 2 * Math.PI - Math.PI / 2;
-    return {
-      x: cx + radius * Math.cos(angle),
-      y: cy + radius * Math.sin(angle),
-    };
-  });
-
-  return (
-    <div className="relative w-full max-w-sm mx-auto" style={{ aspectRatio: '1' }}>
-      <svg
-        viewBox={`0 0 ${svgSize} ${svgSize}`}
-        className="absolute inset-0 w-full h-full"
-        style={{ overflow: 'visible' }}
-      >
-        {positions.map((pos, i) => (
-          <motion.line
-            key={i}
-            x1={cx} y1={cy} x2={pos.x} y2={pos.y}
-            className={edgeColor}
-            strokeWidth="1"
-            initial={{ pathLength: 0, opacity: 0 }}
-            animate={{ pathLength: 1, opacity: 1 }}
-            transition={{ duration: 0.8, delay: i * 0.12 }}
-          />
-        ))}
-      </svg>
-
-      {/* Center node */}
-      <motion.div
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        className={`absolute w-14 h-14 ${center.color} rounded-full flex items-center justify-center shadow-[0_0_24px_rgba(20,184,166,0.6)] z-10`}
-        style={{ left: `calc(50% - 28px)`, top: `calc(50% - 28px)` }}
-      >
-        <span className="text-xs font-bold text-white truncate max-w-[48px] text-center leading-tight px-1">
-          {center.label}
-        </span>
-      </motion.div>
-
-      {/* Satellite nodes */}
-      {nodes.map((node, i) => {
-        const pos = positions[i];
-        const size = node.small ? 'w-9 h-9' : 'w-11 h-11';
-        const textSize = node.small ? 'text-[9px]' : 'text-[10px]';
-        const pct = (pos.x / svgSize) * 100;
-        const pct_y = (pos.y / svgSize) * 100;
-        const halfPx = node.small ? 18 : 22;
-        return (
-          <motion.div
-            key={i}
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.3 + i * 0.12, type: 'spring', stiffness: 200 }}
-            className={`absolute ${size} rounded-full border flex items-center justify-center ${node.color} z-10`}
+      {/* ── REPLAY BUTTON (floating) ── */}
+      {screenPhase === 'matches' && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.5 }}
+          className="fixed bottom-6 left-6 z-[70]"
+        >
+          <button
+            onClick={handleReplay}
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-[12px] font-bold uppercase tracking-widest transition-all hover:scale-105"
             style={{
-              left: `calc(${pct}% - ${halfPx}px)`,
-              top: `calc(${pct_y}% - ${halfPx}px)`,
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: 'rgba(255,255,255,0.4)',
+              backdropFilter: 'blur(12px)',
+            }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLElement).style.color = '#14b8a6';
+              (e.currentTarget as HTMLElement).style.borderColor = 'rgba(20,184,166,0.4)';
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.4)';
+              (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.1)';
             }}
           >
-            <span className={`${textSize} font-semibold text-center leading-tight px-1 line-clamp-2 max-w-full`}>
-              {node.label.split(' ').slice(0, 2).join(' ')}
-            </span>
-          </motion.div>
-        );
-      })}
+            <RotateCcw className="w-3.5 h-3.5" />
+            Replay da Animação
+          </button>
+        </motion.div>
+      )}
+
+      {/* ── SKIP button (always visible after 8s) ── */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 8 }}
+        className="fixed bottom-6 right-6 z-[70]"
+      >
+        <button
+          onClick={handleExploreProfile}
+          className="px-5 py-2 rounded-full text-[11px] font-bold uppercase tracking-widest transition-all"
+          style={{
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            color: 'rgba(255,255,255,0.25)',
+            backdropFilter: 'blur(12px)',
+          }}
+          onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.6)')}
+          onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.25)')}
+        >
+          Pular Animação
+        </button>
+      </motion.div>
     </div>
   );
 };

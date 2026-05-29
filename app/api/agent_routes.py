@@ -21,7 +21,7 @@ from fastapi import APIRouter, HTTPException, BackgroundTasks
 from pydantic import BaseModel, Field
 
 from app.core.config import settings
-from app.core.neo4j_driver import run_cypher, is_memory_mode, get_memory_store
+from app.core.neo4j_driver import run_cypher
 # Agent imports moved inside getters for lazy loading
 from app.services.match_engine import (
     get_all_matches,
@@ -74,7 +74,7 @@ def _get_eligibility_calculator() -> EligibilityCalculator:
 
 class AnalyzeProfileRequest(BaseModel):
     entity_uid: str
-    entity_type: str = "Student"  # Student, Researcher, Professor
+    entity_type: str = "Student"  # Student, Docente
     name: str = ""
     bio: str = ""
     institution: str = ""
@@ -183,7 +183,7 @@ def cognition_full(request: CognitionFullRequest):
 
     # 2. Fetch network peers for context
     network_raw = run_cypher(
-        "MATCH (u) WHERE (u:Student OR u:Professor OR u:Researcher) RETURN u.name AS name, labels(u)[0] AS type LIMIT 5"
+        "MATCH (u) WHERE (u:Student OR u:Docente) RETURN u.name AS name, labels(u)[0] AS type LIMIT 5"
     )
     t2 = time.time()
     logger.info(f"⏱️ [cognition-full] Graph Fetch (Network): {t2-t1:.2f}s")
@@ -303,16 +303,12 @@ def analyze_profile_v2(request: ProfileContextRequest):
         if user_check:
             exists = True
             break
-        if is_memory_mode():
-            logger.info(f"⏳ Stage 1: Usuário {request.entity_uid} não encontrado (tentativa {i+1}/3). Recarregando KV...")
-            get_memory_store(force_refresh=True)
-            time.sleep(1.5) # Espera 1.5s entre retries para propagação KV
 
     if not exists:
-        logger.error(f"❌ Stage 1: User {request.entity_uid} not found in graph. (Modo Memória detectado - dados perdidos)" if is_memory_mode() else f"❌ Stage 1: User {request.entity_uid} not found.")
+        logger.error(f"❌ Stage 1: User {request.entity_uid} not found in graph.")
         return AgentResponse(
             status="error",
-            message=f"Usuário {request.entity_uid} não encontrado no grafo. {'(Modo Memória detectado - dados perdidos)' if is_memory_mode() else ''}",
+            message=f"Usuário {request.entity_uid} não encontrado no grafo.",
             data={}
         )
 
@@ -341,8 +337,6 @@ def analyze_profile_v2(request: ProfileContextRequest):
 @router.post("/v2/extract-skills", response_model=AgentResponse)
 def extract_skills_v2(request: ExtractSkillsRequest):
     # Verify user existence
-    from app.core.neo4j_driver import run_cypher, is_memory_mode
-    # Verify user existence (with retry if memory mode)
     import time
     exists = False
     for i in range(3):
@@ -350,10 +344,6 @@ def extract_skills_v2(request: ExtractSkillsRequest):
         if user_check:
             exists = True
             break
-        if is_memory_mode():
-            logger.info(f"⏳ Stage 2: Usuário {request.entity_uid} não encontrado (tentativa {i+1}/3). Recarregando KV...")
-            get_memory_store(force_refresh=True)
-            time.sleep(1.0)
             
     if not exists:
         logger.error(f"❌ Stage 2: User {request.entity_uid} not found.")
@@ -393,8 +383,6 @@ def extract_skills_v2(request: ExtractSkillsRequest):
         }
     
     # PERSISTENCE IN NEO4J (Batched for Performance)
-    from app.core.neo4j_driver import get_memory_store, is_memory_mode
-    
     def _save_skills_and_areas():
         # Update User with scratchpad
         run_cypher(
@@ -430,11 +418,7 @@ def extract_skills_v2(request: ExtractSkillsRequest):
                 {"name": a_name, "auid": str(uuid.uuid4())[:8], "uid": request.entity_uid}
             )
 
-    if is_memory_mode():
-        with get_memory_store().batch_update():
-            _save_skills_and_areas()
-    else:
-        _save_skills_and_areas()
+    _save_skills_and_areas()
         
     return AgentResponse(status="success", message="Skills persistidas no grafo", data=data)
 
@@ -513,8 +497,6 @@ def explain_matches_v2(request: ExplainMatchesRequest):
             return AgentResponse(status="error", message="Falha ao gerar justificativas", data={})
 
     # PERSISTENCE IN NEO4J (Batched for Performance)
-    from app.core.neo4j_driver import get_memory_store, is_memory_mode
-    
     def _save_matches():
         for match in data.get("matches", []):
             run_cypher(
@@ -535,11 +517,7 @@ def explain_matches_v2(request: ExplainMatchesRequest):
                 }
             )
 
-    if is_memory_mode():
-        with get_memory_store().batch_update():
-            _save_matches()
-    else:
-        _save_matches()
+    _save_matches()
 
     return AgentResponse(status="success", message="Matches e justificativas salvos no grafo", data=data)
 
@@ -670,7 +648,7 @@ def orchestrate_user(uid: str, background_tasks: BackgroundTasks):
 
     query = """
     MATCH (u)
-    WHERE (u:Student OR u:Researcher OR u:Professor) AND u.uid = $uid
+    WHERE (u:Student OR u:Docente) AND u.uid = $uid
     RETURN u.name AS name, labels(u)[0] AS type, u.bio AS bio, 
            u.institution AS institution, u.course AS course, 
            u.level AS level, u.semester AS semester, u.curriculo_texto AS curriculo_texto
@@ -740,11 +718,12 @@ def run_full_pipeline():
         # Step 1: Analyze all academic profiles
         academics = run_cypher("""
             MATCH (a)
-            WHERE a:Student OR a:Researcher OR a:Professor
+            WHERE a:Student OR a:Docente
             RETURN a.uid AS uid, labels(a)[0] AS type, a.name AS name,
                    a.bio AS bio, a.institution AS institution,
                    a.course AS course, a.level AS level
         """)
+
 
         for academic in academics:
             profile_data = {
@@ -856,43 +835,27 @@ def detect_communities():
     """Detect communities using NetworkX Louvain algorithm based on ELIGIBLE_FOR and HAS_SKILL."""
     import networkx as nx
     G = nx.Graph()
-    
-    if is_memory_mode():
-        store = get_memory_store()
-        for node_id, node in store.nodes.items():
-            G.add_node(node_id, type=node["labels"][0], name=node["props"].get("name") or node["props"].get("title", ""))
-            
-        for edge in store.edges:
-            G.add_edge(edge["source"], edge["target"], weight=1.0)
-    else:
-        nodes = run_cypher("MATCH (n) RETURN n.uid as id, labels(n)[0] as type, coalesce(n.name, n.title) as name")
-        for n in nodes:
-            G.add_node(n["id"], type=n["type"], name=n["name"])
-            
-        edges = run_cypher("MATCH (a)-[r]->(b) RETURN a.uid as source, b.uid as target")
-        for e in edges:
-            G.add_edge(e["source"], e["target"], weight=1.0)
-            
-    # Remove isolated nodes to avoid noise
+
+    nodes = run_cypher("MATCH (n) RETURN n.uid as id, labels(n)[0] as type, coalesce(n.name, n.title) as name")
+    for n in nodes:
+        G.add_node(n["id"], type=n["type"], name=n["name"])
+
+    edges = run_cypher("MATCH (a)-[r]->(b) RETURN a.uid as source, b.uid as target")
+    for e in edges:
+        G.add_edge(e["source"], e["target"], weight=1.0)
+
     G.remove_nodes_from(list(nx.isolates(G)))
 
     try:
-        # Louvain algorithm
         communities = nx.community.louvain_communities(G, weight='weight')
-        
         clusters = []
         for i, comm in enumerate(communities):
             members = []
             for node_id in comm:
                 node_data = G.nodes[node_id]
                 members.append({"id": node_id, "type": node_data.get("type"), "name": node_data.get("name")})
-            
-            clusters.append({
-                "cluster_id": i + 1,
-                "size": len(comm),
-                "members": members
-            })
-            
+            clusters.append({"cluster_id": i + 1, "size": len(comm), "members": members})
+
         return AgentResponse(
             status="success",
             message=f"Detected {len(clusters)} communities",
@@ -913,7 +876,7 @@ def agent_status():
         status="success",
         message="Agent status retrieved",
         data={
-            "is_memory_mode": is_memory_mode(),
+            "graph_mode": "neo4j_aura",
             "llm_provider": "OpenRouter",
             "llm_model": settings.openrouter_model,
             "profile_analyzer": {

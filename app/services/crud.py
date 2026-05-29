@@ -1,15 +1,16 @@
 from __future__ import annotations
 
-"""CRUD service layer — unified for both Neo4j (neomodel) and in-memory modes."""
+"""CRUD service layer — Neo4j Aura only. No in-memory fallback."""
 
 import logging
+import uuid
+import datetime
 
-from app.core.neo4j_driver import is_memory_mode, get_memory_store, run_cypher
+from app.core.neo4j_driver import run_cypher
 from app.models.schemas import (
     SkillResponse, AreaResponse,
     StudentCreate, StudentResponse,
-    ResearcherCreate, ResearcherResponse,
-    ProfessorCreate, ProfessorResponse,
+    DocenteCreate, DocenteResponse,
     EditalCreate, EditalResponse,
     GraphNode, GraphEdge, GraphData,
     MatchResponse, DashboardStats,
@@ -21,8 +22,7 @@ logger = logging.getLogger(__name__)
 NODE_COLORS = {
     "edital": "#0ea5e9",
     "student": "#06b6d4",
-    "researcher": "#10b981",
-    "professor": "#f59e0b",
+    "docente": "#10b981",
     "skill": "#8b5cf6",
     "area": "#6366f1",
 }
@@ -30,68 +30,20 @@ NODE_COLORS = {
 NODE_SIZES = {
     "edital": 12,
     "student": 8,
-    "researcher": 8,
-    "professor": 10,
+    "docente": 9,
     "skill": 5,
     "area": 5,
 }
 
 
 # ═══════════════════════════════════════════
-# HELPER — Get neomodel models (only when NOT in memory mode)
+# HELPER — Get neomodel models
 # ═══════════════════════════════════════════
 
 def _neomodel():
-    """Lazy import neomodel models — only used when Neo4j is available."""
-    from app.models.graph import Student, Researcher, Professor, Edital, Skill, Area
-    return Student, Researcher, Professor, Edital, Skill, Area
-
-
-# ═══════════════════════════════════════════
-# MEMORY MODE LIST/READ HELPERS
-# ═══════════════════════════════════════════
-
-def _mem_list_label(label: str) -> list[dict]:
-    store = get_memory_store()
-    return store.get_nodes_by_label(label)
-
-
-def _mem_get_node(uid: str) -> dict | None:
-    store = get_memory_store()
-    node = store.get_node(uid)
-    if node:
-        return node["props"]
-    return None
-
-
-def _mem_get_skills_for(uid: str) -> list[dict]:
-    store = get_memory_store()
-    edges = store.get_edges(source=uid, edge_type="HAS_SKILL")
-    skills = []
-    for edge in edges:
-        sk = store.get_node(edge["target"])
-        if sk:
-            skills.append(SkillResponse(
-                uid=sk["props"].get("uid", ""),
-                name=sk["props"].get("name", ""),
-                category=sk["props"].get("category", ""),
-            ))
-    return skills
-
-
-def _mem_get_areas_for(uid: str) -> list[dict]:
-    store = get_memory_store()
-    edges = store.get_edges(source=uid, edge_type="RESEARCHES_AREA")
-    areas = []
-    for edge in edges:
-        a = store.get_node(edge["target"])
-        if a:
-            areas.append(AreaResponse(
-                uid=a["props"].get("uid", ""),
-                name=a["props"].get("name", ""),
-                parent_area="",
-            ))
-    return areas
+    """Lazy import neomodel models — only used when neomodel ORM is needed."""
+    from app.models.graph import Student, Docente, Edital, Skill, Area
+    return Student, Docente, Edital, Skill, Area
 
 
 # ═══════════════════════════════════════════
@@ -99,42 +51,24 @@ def _mem_get_areas_for(uid: str) -> list[dict]:
 # ═══════════════════════════════════════════
 
 def list_skills() -> list[SkillResponse]:
-    if is_memory_mode():
-        return [
-            SkillResponse(uid=s.get("uid", ""), name=s.get("name", ""),
-                          category=s.get("category", ""))
-            for s in _mem_list_label("Skill")
-        ]
-    Student, Researcher, Professor, Edital, Skill, Area = _neomodel()
-    return [SkillResponse(uid=s.uid, name=s.name, category=s.category)
-            for s in Skill.nodes.all()]
+    results = run_cypher("MATCH (s:Skill) RETURN s.uid AS uid, s.name AS name, s.category AS category")
+    return [SkillResponse(uid=r["uid"] or "", name=r["name"] or "", category=r["category"] or "") for r in results]
 
 
 def create_skill(data) -> SkillResponse:
-    if is_memory_mode():
-        import uuid
-        uid = str(uuid.uuid4())[:8]
-        store = get_memory_store()
-        store.add_node(uid, ["Skill"], {"name": data.name, "category": data.category})
-        return SkillResponse(uid=uid, name=data.name, category=data.category)
-    _, _, _, _, Skill, _ = _neomodel()
-    skill = Skill(name=data.name, category=data.category).save()
-    return SkillResponse(uid=skill.uid, name=skill.name, category=skill.category)
+    uid = str(uuid.uuid4())[:8]
+    run_cypher(
+        "MERGE (s:Skill {name: $name}) ON CREATE SET s.uid = $uid, s.category = $category",
+        {"name": data.name, "uid": uid, "category": data.category},
+    )
+    row = run_cypher("MATCH (s:Skill {name: $name}) RETURN s.uid AS uid, s.name AS name, s.category AS category", {"name": data.name})
+    r = row[0] if row else {}
+    return SkillResponse(uid=r.get("uid", uid), name=data.name, category=data.category)
 
 
 def delete_skill(uid: str) -> bool:
-    if is_memory_mode():
-        store = get_memory_store()
-        if uid in store.nodes:
-            del store.nodes[uid]
-            return True
-        return False
-    _, _, _, _, Skill, _ = _neomodel()
-    try:
-        Skill.nodes.get(uid=uid).delete()
-        return True
-    except Skill.DoesNotExist:
-        return False
+    run_cypher("MATCH (s:Skill {uid: $uid}) DETACH DELETE s", {"uid": uid})
+    return True
 
 
 # ═══════════════════════════════════════════
@@ -142,41 +76,24 @@ def delete_skill(uid: str) -> bool:
 # ═══════════════════════════════════════════
 
 def list_areas() -> list[AreaResponse]:
-    if is_memory_mode():
-        return [
-            AreaResponse(uid=a.get("uid", ""), name=a.get("name", ""), parent_area="")
-            for a in _mem_list_label("Area")
-        ]
-    _, _, _, _, _, Area = _neomodel()
-    return [AreaResponse(uid=a.uid, name=a.name, parent_area=a.parent_area or "")
-            for a in Area.nodes.all()]
+    results = run_cypher("MATCH (a:Area) RETURN a.uid AS uid, a.name AS name, a.parent_area AS parent_area")
+    return [AreaResponse(uid=r["uid"] or "", name=r["name"] or "", parent_area=r.get("parent_area") or "") for r in results]
 
 
 def create_area(data) -> AreaResponse:
-    if is_memory_mode():
-        import uuid
-        uid = str(uuid.uuid4())[:8]
-        store = get_memory_store()
-        store.add_node(uid, ["Area"], {"name": data.name})
-        return AreaResponse(uid=uid, name=data.name, parent_area=data.parent_area or "")
-    _, _, _, _, _, Area = _neomodel()
-    area = Area(name=data.name, parent_area=data.parent_area).save()
-    return AreaResponse(uid=area.uid, name=area.name, parent_area=area.parent_area or "")
+    uid = str(uuid.uuid4())[:8]
+    run_cypher(
+        "MERGE (a:Area {name: $name}) ON CREATE SET a.uid = $uid, a.parent_area = $parent_area",
+        {"name": data.name, "uid": uid, "parent_area": data.parent_area or ""},
+    )
+    row = run_cypher("MATCH (a:Area {name: $name}) RETURN a.uid AS uid, a.name AS name, a.parent_area AS parent_area", {"name": data.name})
+    r = row[0] if row else {}
+    return AreaResponse(uid=r.get("uid", uid), name=data.name, parent_area=data.parent_area or "")
 
 
 def delete_area(uid: str) -> bool:
-    if is_memory_mode():
-        store = get_memory_store()
-        if uid in store.nodes:
-            del store.nodes[uid]
-            return True
-        return False
-    _, _, _, _, _, Area = _neomodel()
-    try:
-        Area.nodes.get(uid=uid).delete()
-        return True
-    except Area.DoesNotExist:
-        return False
+    run_cypher("MATCH (a:Area {uid: $uid}) DETACH DELETE a", {"uid": uid})
+    return True
 
 
 # ═══════════════════════════════════════════
@@ -184,316 +101,207 @@ def delete_area(uid: str) -> bool:
 # ═══════════════════════════════════════════
 
 def list_students() -> list[StudentResponse]:
-    if is_memory_mode():
-        results = []
-        for s in _mem_list_label("Student"):
-            results.append(StudentResponse(
-                uid=s.get("uid", ""), name=s.get("name", ""), email=s.get("email", ""),
-                institution=s.get("institution", ""), course=s.get("course", ""),
-                semester=s.get("semester", 1),
-                bio=s.get("bio", ""), curriculo_texto=s.get("curriculo_texto", ""),
-                maturidade=s.get("maturidade", 0.0), o_que_busco=s.get("o_que_busco", ""),
-                skills=_mem_get_skills_for(s.get("uid", "")),
-            ))
-        return results
-    Student, *_ = _neomodel()
-    return [StudentResponse(
-        uid=s.uid, name=s.name, email=s.email or "",
-        institution=s.institution or "", course=s.course or "",
-        semester=s.semester or 1, bio=s.bio or "",
-        curriculo_texto=s.curriculo_texto or "",
-        maturidade=s.maturidade or 0.0, o_que_busco=s.o_que_busco or "",
-        skills=[SkillResponse(uid=sk.uid, name=sk.name, category=sk.category)
-                for sk in s.skills.all()],
-    ) for s in Student.nodes.all()]
+    results = run_cypher("""
+        MATCH (s:Student)
+        OPTIONAL MATCH (s)-[:HAS_SKILL]->(sk:Skill)
+        RETURN s.uid AS uid, s.name AS name, s.email AS email,
+               s.institution AS institution, s.course AS course,
+               s.semester AS semester, s.bio AS bio,
+               s.curriculo_texto AS curriculo_texto,
+               s.maturidade AS maturidade, s.o_que_busco AS o_que_busco,
+               collect({uid: sk.uid, name: sk.name, category: sk.category}) AS skills
+    """)
+    return [_map_student(r) for r in results]
 
 
 def get_student(uid: str) -> StudentResponse | None:
-    if is_memory_mode():
-        s = _mem_get_node(uid)
-        if not s:
-            return None
-        return StudentResponse(
-            uid=s.get("uid", ""), name=s.get("name", ""), email=s.get("email", ""),
-            institution=s.get("institution", ""), course=s.get("course", ""),
-            semester=s.get("semester", 1),
-            bio=s.get("bio", ""), curriculo_texto=s.get("curriculo_texto", ""),
-            maturidade=s.get("maturidade", 0.0), o_que_busco=s.get("o_que_busco", ""),
-            skills=_mem_get_skills_for(uid),
-        )
-    Student, *_ = _neomodel()
-    try:
-        s = Student.nodes.get(uid=uid)
-        return StudentResponse(
-            uid=s.uid, name=s.name, email=s.email or "",
-            institution=s.institution or "", course=s.course or "",
-            semester=s.semester or 1, bio=s.bio or "",
-            curriculo_texto=s.curriculo_texto or "",
-            maturidade=s.maturidade or 0.0, o_que_busco=s.o_que_busco or "",
-            skills=[SkillResponse(uid=sk.uid, name=sk.name, category=sk.category)
-                    for sk in s.skills.all()],
-        )
-    except Student.DoesNotExist:
-        return None
+    results = run_cypher("""
+        MATCH (s:Student {uid: $uid})
+        OPTIONAL MATCH (s)-[:HAS_SKILL]->(sk:Skill)
+        RETURN s.uid AS uid, s.name AS name, s.email AS email,
+               s.institution AS institution, s.course AS course,
+               s.semester AS semester, s.bio AS bio,
+               s.curriculo_texto AS curriculo_texto,
+               s.maturidade AS maturidade, s.o_que_busco AS o_que_busco,
+               collect({uid: sk.uid, name: sk.name, category: sk.category}) AS skills
+    """, {"uid": uid})
+    return _map_student(results[0]) if results else None
+
+
+def _map_student(r: dict) -> StudentResponse:
+    raw_skills = r.get("skills") or []
+    skills = [
+        SkillResponse(uid=s.get("uid") or "", name=s.get("name") or "", category=s.get("category") or "")
+        for s in raw_skills if s.get("name")
+    ]
+    return StudentResponse(
+        uid=r.get("uid") or "", name=r.get("name") or "", email=r.get("email") or "",
+        institution=r.get("institution") or "", course=r.get("course") or "",
+        semester=r.get("semester") or 1, bio=r.get("bio") or "",
+        curriculo_texto=r.get("curriculo_texto") or "",
+        maturidade=r.get("maturidade") or 0.0, o_que_busco=r.get("o_que_busco") or "",
+        skills=skills,
+    )
 
 
 def create_student(data: StudentCreate) -> StudentResponse:
-    if is_memory_mode():
-        import uuid
-        uid = str(uuid.uuid4())[:8]
-        store = get_memory_store()
-        store.add_node(uid, ["Student"], {
-            "name": data.name, "email": data.email, "institution": data.institution,
-            "course": data.course, "semester": data.semester,
-            "bio": data.bio, "curriculo_texto": data.curriculo_texto,
-            "maturidade": data.maturidade, "o_que_busco": data.o_que_busco,
-            "password_hash": data.password,
+    from app.core.security import get_password_hash
+    uid = str(uuid.uuid4())[:8]
+    run_cypher("""
+        CREATE (s:Student {
+            uid: $uid, name: $name, email: $email, password_hash: $password_hash,
+            institution: $institution, course: $course, semester: $semester,
+            bio: $bio, curriculo_texto: $curriculo_texto,
+            maturidade: $maturidade, o_que_busco: $o_que_busco,
+            created_at: $created_at
         })
-        return get_student(uid)
-    Student, *_ = _neomodel()
-    student = Student(
-        name=data.name, email=data.email, institution=data.institution,
-        course=data.course, semester=data.semester, bio=data.bio,
-        curriculo_texto=data.curriculo_texto, maturidade=data.maturidade,
-        o_que_busco=data.o_que_busco, password_hash=data.password,
-    ).save()
-    return get_student(student.uid)
+    """, {
+        "uid": uid, "name": data.name, "email": data.email,
+        "password_hash": get_password_hash(data.password) if data.password else "",
+        "institution": data.institution, "course": data.course, "semester": data.semester,
+        "bio": data.bio, "curriculo_texto": data.curriculo_texto,
+        "maturidade": data.maturidade, "o_que_busco": data.o_que_busco,
+        "created_at": datetime.datetime.now().isoformat(),
+    })
+    return get_student(uid)
 
 
 def update_student(uid: str, data: StudentCreate) -> StudentResponse | None:
-    if is_memory_mode():
-        store = get_memory_store()
-        node = store.get_node(uid)
-        if not node:
-            return None
-        node["props"].update({"name": data.name, "email": data.email,
-                              "institution": data.institution, "course": data.course,
-                              "semester": data.semester, "bio": data.bio,
-                              "curriculo_texto": data.curriculo_texto, "maturidade": data.maturidade,
-                              "o_que_busco": data.o_que_busco})
-        return get_student(uid)
-    return get_student(uid)  # simplified for now
+    run_cypher("""
+        MATCH (s:Student {uid: $uid})
+        SET s.name = $name, s.email = $email, s.institution = $institution,
+            s.course = $course, s.semester = $semester, s.bio = $bio,
+            s.curriculo_texto = $curriculo_texto, s.maturidade = $maturidade,
+            s.o_que_busco = $o_que_busco, s.updated_at = $updated_at
+    """, {
+        "uid": uid, "name": data.name, "email": data.email,
+        "institution": data.institution, "course": data.course, "semester": data.semester,
+        "bio": data.bio, "curriculo_texto": data.curriculo_texto,
+        "maturidade": data.maturidade, "o_que_busco": data.o_que_busco,
+        "updated_at": datetime.datetime.now().isoformat(),
+    })
+    return get_student(uid)
 
 
 def delete_student(uid: str) -> bool:
-    if is_memory_mode():
-        store = get_memory_store()
-        if uid in store.nodes:
-            del store.nodes[uid]
-            return True
-        return False
-    Student, *_ = _neomodel()
-    try:
-        Student.nodes.get(uid=uid).delete()
-        return True
-    except Student.DoesNotExist:
-        return False
+    run_cypher("MATCH (s:Student {uid: $uid}) DETACH DELETE s", {"uid": uid})
+    return True
 
 
 # ═══════════════════════════════════════════
-# RESEARCHER CRUD
+# DOCENTE CRUD  (unified Researcher + Professor)
 # ═══════════════════════════════════════════
 
-def list_researchers() -> list[ResearcherResponse]:
-    if is_memory_mode():
-        results = []
-        for r in _mem_list_label("Researcher"):
-            uid = r.get("uid", "")
-            results.append(ResearcherResponse(
-                uid=uid, name=r.get("name", ""), email=r.get("email", ""),
-                institution=r.get("institution", ""),
-                bio=r.get("bio", ""), curriculo_texto=r.get("curriculo_texto", ""),
-                maturidade=r.get("maturidade", 0.0), o_que_busco=r.get("o_que_busco", ""),
-                skills=_mem_get_skills_for(uid), areas=_mem_get_areas_for(uid),
-            ))
-        return results
-    _, Researcher, *_ = _neomodel()
-    return [ResearcherResponse(
-        uid=r.uid, name=r.name, email=r.email or "",
-        institution=r.institution or "",
-        bio=r.bio or "", curriculo_texto=r.curriculo_texto or "",
-        maturidade=r.maturidade or 0.0, o_que_busco=r.o_que_busco or "",
-        skills=[SkillResponse(uid=sk.uid, name=sk.name, category=sk.category)
-                for sk in r.skills.all()],
-        areas=[AreaResponse(uid=a.uid, name=a.name, parent_area=a.parent_area or "")
-               for a in r.areas.all()],
-    ) for r in Researcher.nodes.all()]
+def list_docentes() -> list[DocenteResponse]:
+    results = run_cypher("""
+        MATCH (d:Docente)
+        OPTIONAL MATCH (d)-[:HAS_SKILL]->(sk:Skill)
+        OPTIONAL MATCH (d)-[:RESEARCHES_AREA]->(a:Area)
+        RETURN d.uid AS uid, d.name AS name, d.email AS email,
+               d.institution AS institution, d.department AS department,
+               d.research_group AS research_group, d.cargo AS cargo,
+               d.bio AS bio, d.curriculo_texto AS curriculo_texto,
+               d.maturidade AS maturidade, d.o_que_busco AS o_que_busco,
+               collect(DISTINCT {uid: sk.uid, name: sk.name, category: sk.category}) AS skills,
+               collect(DISTINCT {uid: a.uid, name: a.name, parent_area: a.parent_area}) AS areas
+    """)
+    return [_map_docente(r) for r in results]
 
 
-def get_researcher(uid: str) -> ResearcherResponse | None:
-    if is_memory_mode():
-        r = _mem_get_node(uid)
-        if not r:
-            return None
-        return ResearcherResponse(
-            uid=uid, name=r.get("name", ""), email=r.get("email", ""),
-            institution=r.get("institution", ""),
-            bio=r.get("bio", ""), curriculo_texto=r.get("curriculo_texto", ""),
-            maturidade=r.get("maturidade", 0.0), o_que_busco=r.get("o_que_busco", ""),
-            skills=_mem_get_skills_for(uid), areas=_mem_get_areas_for(uid),
-        )
-    _, Researcher, *_ = _neomodel()
-    try:
-        r = Researcher.nodes.get(uid=uid)
-        return ResearcherResponse(
-            uid=r.uid, name=r.name, email=r.email or "",
-            institution=r.institution or "",
-            bio=r.bio or "", curriculo_texto=r.curriculo_texto or "",
-            maturidade=r.maturidade or 0.0, o_que_busco=r.o_que_busco or "",
-            skills=[SkillResponse(uid=sk.uid, name=sk.name, category=sk.category)
-                    for sk in r.skills.all()],
-            areas=[AreaResponse(uid=a.uid, name=a.name, parent_area=a.parent_area or "")
-                   for a in r.areas.all()],
-        )
-    except Researcher.DoesNotExist:
-        return None
+def get_docente(uid: str) -> DocenteResponse | None:
+    results = run_cypher("""
+        MATCH (d:Docente {uid: $uid})
+        OPTIONAL MATCH (d)-[:HAS_SKILL]->(sk:Skill)
+        OPTIONAL MATCH (d)-[:RESEARCHES_AREA]->(a:Area)
+        RETURN d.uid AS uid, d.name AS name, d.email AS email,
+               d.institution AS institution, d.department AS department,
+               d.research_group AS research_group, d.cargo AS cargo,
+               d.bio AS bio, d.curriculo_texto AS curriculo_texto,
+               d.maturidade AS maturidade, d.o_que_busco AS o_que_busco,
+               collect(DISTINCT {uid: sk.uid, name: sk.name, category: sk.category}) AS skills,
+               collect(DISTINCT {uid: a.uid, name: a.name, parent_area: a.parent_area}) AS areas
+    """, {"uid": uid})
+    return _map_docente(results[0]) if results else None
 
 
-def create_researcher(data: ResearcherCreate) -> ResearcherResponse:
-    if is_memory_mode():
-        import uuid
-        uid = str(uuid.uuid4())[:8]
-        store = get_memory_store()
-        store.add_node(uid, ["Researcher"], {
-            "name": data.name, "email": data.email, "institution": data.institution,
-            "bio": data.bio, "curriculo_texto": data.curriculo_texto,
-            "maturidade": data.maturidade, "o_que_busco": data.o_que_busco,
-            "password_hash": data.password,
+def _map_docente(r: dict) -> DocenteResponse:
+    skills = [
+        SkillResponse(uid=s.get("uid") or "", name=s.get("name") or "", category=s.get("category") or "")
+        for s in (r.get("skills") or []) if s.get("name")
+    ]
+    areas = [
+        AreaResponse(uid=a.get("uid") or "", name=a.get("name") or "", parent_area=a.get("parent_area") or "")
+        for a in (r.get("areas") or []) if a.get("name")
+    ]
+    return DocenteResponse(
+        uid=r.get("uid") or "", name=r.get("name") or "", email=r.get("email") or "",
+        institution=r.get("institution") or "", department=r.get("department") or "",
+        research_group=r.get("research_group") or "", cargo=r.get("cargo") or "pesquisador",
+        bio=r.get("bio") or "", curriculo_texto=r.get("curriculo_texto") or "",
+        maturidade=r.get("maturidade") or 0.0, o_que_busco=r.get("o_que_busco") or "",
+        skills=skills, areas=areas,
+    )
+
+
+def create_docente(data: DocenteCreate) -> DocenteResponse:
+    from app.core.security import get_password_hash
+    uid = str(uuid.uuid4())[:8]
+    run_cypher("""
+        CREATE (d:Docente {
+            uid: $uid, name: $name, email: $email, password_hash: $password_hash,
+            institution: $institution, department: $department,
+            research_group: $research_group, cargo: $cargo,
+            bio: $bio, curriculo_texto: $curriculo_texto,
+            maturidade: $maturidade, o_que_busco: $o_que_busco,
+            created_at: $created_at
         })
-        return get_researcher(uid)
-    _, Researcher, *_ = _neomodel()
-    researcher = Researcher(
-        name=data.name, email=data.email, institution=data.institution,
-        bio=data.bio, curriculo_texto=data.curriculo_texto,
-        maturidade=data.maturidade, o_que_busco=data.o_que_busco,
-        password_hash=data.password,
-    ).save()
-    return get_researcher(researcher.uid)
+    """, {
+        "uid": uid, "name": data.name, "email": data.email,
+        "password_hash": get_password_hash(data.password) if data.password else "",
+        "institution": data.institution, "department": data.department,
+        "research_group": data.research_group, "cargo": data.cargo,
+        "bio": data.bio, "curriculo_texto": data.curriculo_texto,
+        "maturidade": data.maturidade, "o_que_busco": data.o_que_busco,
+        "created_at": datetime.datetime.now().isoformat(),
+    })
+    return get_docente(uid)
 
 
-def update_researcher(uid: str, data: ResearcherCreate) -> ResearcherResponse | None:
-    return get_researcher(uid)
+def update_docente(uid: str, data: DocenteCreate) -> DocenteResponse | None:
+    run_cypher("""
+        MATCH (d:Docente {uid: $uid})
+        SET d.name = $name, d.email = $email, d.institution = $institution,
+            d.department = $department, d.research_group = $research_group,
+            d.cargo = $cargo, d.bio = $bio, d.curriculo_texto = $curriculo_texto,
+            d.maturidade = $maturidade, d.o_que_busco = $o_que_busco,
+            d.updated_at = $updated_at
+    """, {
+        "uid": uid, "name": data.name, "email": data.email,
+        "institution": data.institution, "department": data.department,
+        "research_group": data.research_group, "cargo": data.cargo,
+        "bio": data.bio, "curriculo_texto": data.curriculo_texto,
+        "maturidade": data.maturidade, "o_que_busco": data.o_que_busco,
+        "updated_at": datetime.datetime.now().isoformat(),
+    })
+    return get_docente(uid)
 
 
-def delete_researcher(uid: str) -> bool:
-    if is_memory_mode():
-        store = get_memory_store()
-        if uid in store.nodes:
-            del store.nodes[uid]
-            return True
-        return False
-    _, Researcher, *_ = _neomodel()
-    try:
-        Researcher.nodes.get(uid=uid).delete()
-        return True
-    except Researcher.DoesNotExist:
-        return False
+def delete_docente(uid: str) -> bool:
+    run_cypher("MATCH (d:Docente {uid: $uid}) DETACH DELETE d", {"uid": uid})
+    return True
 
 
-# ═══════════════════════════════════════════
-# PROFESSOR CRUD
-# ═══════════════════════════════════════════
-
-def list_professors() -> list[ProfessorResponse]:
-    if is_memory_mode():
-        results = []
-        for p in _mem_list_label("Professor"):
-            uid = p.get("uid", "")
-            results.append(ProfessorResponse(
-                uid=uid, name=p.get("name", ""), email=p.get("email", ""),
-                institution=p.get("institution", ""), department=p.get("department", ""),
-                research_group=p.get("research_group", ""), bio=p.get("bio", ""),
-                curriculo_texto=p.get("curriculo_texto", ""),
-                maturidade=p.get("maturidade", 0.0), o_que_busco=p.get("o_que_busco", ""),
-                skills=_mem_get_skills_for(uid), areas=_mem_get_areas_for(uid),
-            ))
-        return results
-    _, _, Professor, *_ = _neomodel()
-    return [ProfessorResponse(
-        uid=p.uid, name=p.name, email=p.email or "",
-        institution=p.institution or "", department=p.department or "",
-        research_group=p.research_group or "", bio=p.bio or "",
-        curriculo_texto=p.curriculo_texto or "",
-        maturidade=p.maturidade or 0.0, o_que_busco=p.o_que_busco or "",
-        skills=[SkillResponse(uid=sk.uid, name=sk.name, category=sk.category)
-                for sk in p.skills.all()],
-        areas=[AreaResponse(uid=a.uid, name=a.name, parent_area=a.parent_area or "")
-               for a in p.areas.all()],
-    ) for p in Professor.nodes.all()]
-
-
-def get_professor(uid: str) -> ProfessorResponse | None:
-    if is_memory_mode():
-        p = _mem_get_node(uid)
-        if not p:
-            return None
-        return ProfessorResponse(
-            uid=uid, name=p.get("name", ""), email=p.get("email", ""),
-            institution=p.get("institution", ""), department=p.get("department", ""),
-            research_group=p.get("research_group", ""), bio=p.get("bio", ""),
-            curriculo_texto=p.get("curriculo_texto", ""),
-            maturidade=p.get("maturidade", 0.0), o_que_busco=p.get("o_que_busco", ""),
-            skills=_mem_get_skills_for(uid), areas=_mem_get_areas_for(uid),
-        )
-    _, _, Professor, *_ = _neomodel()
-    try:
-        p = Professor.nodes.get(uid=uid)
-        return ProfessorResponse(
-            uid=p.uid, name=p.name, email=p.email or "",
-            institution=p.institution or "", department=p.department or "",
-            research_group=p.research_group or "", bio=p.bio or "",
-            curriculo_texto=p.curriculo_texto or "",
-            maturidade=p.maturidade or 0.0, o_que_busco=p.o_que_busco or "",
-            skills=[SkillResponse(uid=sk.uid, name=sk.name, category=sk.category)
-                    for sk in p.skills.all()],
-            areas=[AreaResponse(uid=a.uid, name=a.name, parent_area=a.parent_area or "")
-                   for a in p.areas.all()],
-        )
-    except Professor.DoesNotExist:
-        return None
-
-
-def create_professor(data: ProfessorCreate) -> ProfessorResponse:
-    if is_memory_mode():
-        import uuid
-        uid = str(uuid.uuid4())[:8]
-        store = get_memory_store()
-        store.add_node(uid, ["Professor"], {
-            "name": data.name, "email": data.email, "institution": data.institution,
-            "department": data.department, "research_group": data.research_group,
-            "bio": data.bio, "curriculo_texto": data.curriculo_texto,
-            "maturidade": data.maturidade, "o_que_busco": data.o_que_busco,
-            "password_hash": data.password,
-        })
-        return get_professor(uid)
-    _, _, Professor, *_ = _neomodel()
-    prof = Professor(
-        name=data.name, email=data.email, institution=data.institution,
-        department=data.department, research_group=data.research_group,
-        bio=data.bio, curriculo_texto=data.curriculo_texto,
-        maturidade=data.maturidade, o_que_busco=data.o_que_busco,
-        password_hash=data.password,
-    ).save()
-    return get_professor(prof.uid)
-
-
-def update_professor(uid: str, data: ProfessorCreate) -> ProfessorResponse | None:
-    return get_professor(uid)
-
-
-def delete_professor(uid: str) -> bool:
-    if is_memory_mode():
-        store = get_memory_store()
-        if uid in store.nodes:
-            del store.nodes[uid]
-            return True
-        return False
-    _, _, Professor, *_ = _neomodel()
-    try:
-        Professor.nodes.get(uid=uid).delete()
-        return True
-    except Professor.DoesNotExist:
-        return False
+# Backward-compat aliases for routes not yet fully migrated
+list_researchers = list_docentes
+get_researcher = get_docente
+create_researcher = create_docente
+update_researcher = update_docente
+delete_researcher = delete_docente
+list_professors = list_docentes
+get_professor = get_docente
+create_professor = create_docente
+update_professor = update_docente
+delete_professor = delete_docente
 
 
 # ═══════════════════════════════════════════
@@ -501,276 +309,179 @@ def delete_professor(uid: str) -> bool:
 # ═══════════════════════════════════════════
 
 def list_editais() -> list[EditalResponse]:
-    if is_memory_mode():
-        store = get_memory_store()
-        results = []
-        for e in _mem_list_label("Edital"):
-            uid = e.get("uid", "")
-            # Get required skills
-            req_edges = store.get_edges(source=uid, edge_type="REQUIRES_SKILL")
-            req_skills = []
-            for edge in req_edges:
-                sk = store.get_node(edge["target"])
-                if sk:
-                    req_skills.append(SkillResponse(
-                        uid=sk["props"].get("uid", ""), name=sk["props"].get("name", ""),
-                        category=sk["props"].get("category", ""),
-                    ))
-            # Get target areas
-            area_edges = store.get_edges(source=uid, edge_type="TARGETS_AREA")
-            target_areas = []
-            for edge in area_edges:
-                a = store.get_node(edge["target"])
-                if a:
-                    target_areas.append(AreaResponse(
-                        uid=a["props"].get("uid", ""), name=a["props"].get("name", ""),
-                        parent_area="",
-                    ))
-            results.append(EditalResponse(
-                uid=uid, title=e.get("title", ""), description=e.get("description", ""),
-                instituicao=e.get("instituicao", ""), edital_type=e.get("edital_type", "pesquisa"),
-                funding=e.get("funding", 0.0), deadline=e.get("deadline", ""),
-                min_maturidade=e.get("min_maturidade", 0.0), status=e.get("status", "aberto"),
-                required_skills=req_skills, target_areas=target_areas,
-            ))
-        return results
-    _, _, _, Edital, Skill, Area = _neomodel()
-    return [EditalResponse(
-        uid=e.uid, title=e.title, description=e.description or "",
-        instituicao=e.instituicao or "", edital_type=e.edital_type or "pesquisa",
-        funding=e.funding or 0.0, deadline=e.deadline or "",
-        min_maturidade=e.min_maturidade or 0.0, status=e.status or "aberto",
-        required_skills=[SkillResponse(uid=sk.uid, name=sk.name, category=sk.category)
-                         for sk in e.requires_skills.all()],
-        target_areas=[AreaResponse(uid=a.uid, name=a.name, parent_area=a.parent_area or "")
-                      for a in e.targets_areas.all()],
-    ) for e in Edital.nodes.all()]
+    results = run_cypher("""
+        MATCH (e:Edital)
+        OPTIONAL MATCH (e)-[:REQUIRES_SKILL]->(sk:Skill)
+        OPTIONAL MATCH (e)-[:TARGETS_AREA]->(a:Area)
+        RETURN e.uid AS uid, e.title AS title, e.description AS description,
+               e.instituicao AS instituicao, e.edital_type AS edital_type,
+               e.funding AS funding, e.deadline AS deadline,
+               e.min_maturidade AS min_maturidade, e.status AS status,
+               collect(DISTINCT {uid: sk.uid, name: sk.name, category: sk.category}) AS required_skills,
+               collect(DISTINCT {uid: a.uid, name: a.name, parent_area: a.parent_area}) AS target_areas
+    """)
+    return [_map_edital(r) for r in results]
 
 
 def get_edital(uid: str) -> EditalResponse | None:
-    editais = list_editais()
-    for e in editais:
-        if e.uid == uid:
-            return e
-    return None
+    results = run_cypher("""
+        MATCH (e:Edital {uid: $uid})
+        OPTIONAL MATCH (e)-[:REQUIRES_SKILL]->(sk:Skill)
+        OPTIONAL MATCH (e)-[:TARGETS_AREA]->(a:Area)
+        RETURN e.uid AS uid, e.title AS title, e.description AS description,
+               e.instituicao AS instituicao, e.edital_type AS edital_type,
+               e.funding AS funding, e.deadline AS deadline,
+               e.min_maturidade AS min_maturidade, e.status AS status,
+               collect(DISTINCT {uid: sk.uid, name: sk.name, category: sk.category}) AS required_skills,
+               collect(DISTINCT {uid: a.uid, name: a.name, parent_area: a.parent_area}) AS target_areas
+    """, {"uid": uid})
+    return _map_edital(results[0]) if results else None
+
+
+def _map_edital(r: dict) -> EditalResponse:
+    skills = [
+        SkillResponse(uid=s.get("uid") or "", name=s.get("name") or "", category=s.get("category") or "")
+        for s in (r.get("required_skills") or []) if s.get("name")
+    ]
+    areas = [
+        AreaResponse(uid=a.get("uid") or "", name=a.get("name") or "", parent_area=a.get("parent_area") or "")
+        for a in (r.get("target_areas") or []) if a.get("name")
+    ]
+    return EditalResponse(
+        uid=r.get("uid") or "", title=r.get("title") or "", description=r.get("description") or "",
+        instituicao=r.get("instituicao") or "", edital_type=r.get("edital_type") or "pesquisa",
+        funding=r.get("funding") or 0.0, deadline=r.get("deadline") or "",
+        min_maturidade=r.get("min_maturidade") or 0.0, status=r.get("status") or "aberto",
+        required_skills=skills, target_areas=areas,
+    )
 
 
 def create_edital(data: EditalCreate) -> EditalResponse:
-    if is_memory_mode():
-        import uuid
-        uid = str(uuid.uuid4())[:8]
-        store = get_memory_store()
-        store.add_node(uid, ["Edital"], {
-            "title": data.title, "description": data.description,
-            "instituicao": data.instituicao, "edital_type": data.edital_type,
-            "funding": data.funding, "min_maturidade": data.min_maturidade,
-            "deadline": data.deadline,
-            "status": "aberto",
+    uid = str(uuid.uuid4())[:8]
+    run_cypher("""
+        CREATE (e:Edital {
+            uid: $uid, title: $title, description: $description,
+            instituicao: $instituicao, edital_type: $edital_type,
+            funding: $funding, deadline: $deadline,
+            min_maturidade: $min_maturidade, status: 'aberto',
+            created_at: $created_at
         })
-        return get_edital(uid)
-    _, _, _, Edital, *_ = _neomodel()
-    edital = Edital(
-        title=data.title, description=data.description, instituicao=data.instituicao,
-        edital_type=data.edital_type, funding=data.funding, min_maturidade=data.min_maturidade,
-        deadline=data.deadline, status="aberto"
-    ).save()
-    return get_edital(edital.uid)
+    """, {
+        "uid": uid, "title": data.title, "description": data.description,
+        "instituicao": data.instituicao, "edital_type": data.edital_type,
+        "funding": data.funding, "deadline": data.deadline,
+        "min_maturidade": data.min_maturidade,
+        "created_at": datetime.datetime.now().isoformat(),
+    })
+    return get_edital(uid)
 
 
 def update_edital(uid: str, data: EditalCreate) -> EditalResponse | None:
+    run_cypher("""
+        MATCH (e:Edital {uid: $uid})
+        SET e.title = $title, e.description = $description, e.instituicao = $instituicao,
+            e.edital_type = $edital_type, e.funding = $funding, e.deadline = $deadline,
+            e.min_maturidade = $min_maturidade, e.updated_at = $updated_at
+    """, {
+        "uid": uid, "title": data.title, "description": data.description,
+        "instituicao": data.instituicao, "edital_type": data.edital_type,
+        "funding": data.funding, "deadline": data.deadline,
+        "min_maturidade": data.min_maturidade,
+        "updated_at": datetime.datetime.now().isoformat(),
+    })
     return get_edital(uid)
 
 
 def delete_edital(uid: str) -> bool:
-    if is_memory_mode():
-        store = get_memory_store()
-        if uid in store.nodes:
-            del store.nodes[uid]
-            return True
-        return False
-    _, _, _, Edital, *_ = _neomodel()
-    try:
-        Edital.nodes.get(uid=uid).delete()
-        return True
-    except Edital.DoesNotExist:
-        return False
+    run_cypher("MATCH (e:Edital {uid: $uid}) DETACH DELETE e", {"uid": uid})
+    return True
 
 
 # ═══════════════════════════════════════════
-# MATCH ENGINE (Pure Cypher / Memory)
+# MATCH ENGINE (Pure Cypher)
 # ═══════════════════════════════════════════
 
 def get_matches(entity_uid: str | None = None, threshold: float = 0.0) -> list[MatchResponse]:
-    if is_memory_mode():
-        import datetime
-        today_str = datetime.date.today().isoformat()
-        store = get_memory_store()
-        edges = store.get_edges(edge_type="ELIGIBLE_FOR")
-        results = []
-        for edge in edges:
-            score = edge["props"].get("score", 0)
-            if score < threshold:
-                continue
-            if entity_uid and edge["source"] != entity_uid:
-                continue
-            source = store.get_node(edge["source"])
-            target = store.get_node(edge["target"])
-            if source and target:
-                deadline = target["props"].get("deadline", "")
-                if deadline and deadline < today_str:
-                    continue  # Expired edital
-                
-                results.append(MatchResponse(
-                    entity_uid=edge["source"],
-                    entity_name=source["props"].get("name", ""),
-                    entity_type=source["labels"][0] if source.get("labels") else "",
-                    edital_uid=edge["target"],
-                    edital_title=target["props"].get("title", ""),
-                    score=score,
-                    matched_skills=edge["props"].get("matched_skills", []),
-                    matched_areas=edge["props"].get("matched_areas", []),
-                    justification=edge["props"].get("justification", ""),
-                ))
-        results.sort(key=lambda x: x.score, reverse=True)
-        return results
-
-    from neomodel import db
-    import datetime
     today_str = datetime.date.today().isoformat()
-    where_clause = "AND coalesce(e.deadline, '9999-12-31') >= $today"
-    params = {"threshold": threshold, "today": today_str}
+    params: dict = {"threshold": threshold, "today": today_str}
+    uid_filter = "AND a.uid = $entity_uid" if entity_uid else ""
     if entity_uid:
-        where_clause += " AND a.uid = $entity_uid"
         params["entity_uid"] = entity_uid
     query = f"""
         MATCH (a)-[r:ELIGIBLE_FOR]->(e:Edital)
-        WHERE r.score >= $threshold {where_clause}
-        RETURN a.uid, a.name, labels(a)[0],
-               e.uid, e.title, r.score,
-               r.matched_skills, r.matched_areas, r.justification
+        WHERE r.score >= $threshold
+          AND coalesce(e.deadline, '9999-12-31') >= $today
+          {uid_filter}
+        RETURN a.uid AS entity_uid, a.name AS entity_name, labels(a)[0] AS entity_type,
+               e.uid AS edital_uid, e.title AS edital_title, r.score AS score,
+               r.matched_skills AS matched_skills, r.matched_areas AS matched_areas,
+               r.justification AS justification
         ORDER BY r.score DESC
     """
-    results_raw, _ = db.cypher_query(query, params)
+    rows = run_cypher(query, params)
     return [
         MatchResponse(
-            entity_uid=row[0], entity_name=row[1], entity_type=row[2],
-            edital_uid=row[3], edital_title=row[4], score=row[5],
-            matched_skills=row[6] or [], matched_areas=row[7] or [],
-            justification=row[8] or "",
+            entity_uid=r["entity_uid"], entity_name=r["entity_name"], entity_type=r["entity_type"],
+            edital_uid=r["edital_uid"], edital_title=r["edital_title"], score=r["score"],
+            matched_skills=r["matched_skills"] or [], matched_areas=r["matched_areas"] or [],
+            justification=r["justification"] or "",
         )
-        for row in results_raw
+        for r in rows
     ]
 
 
 # ═══════════════════════════════════════════
-# GRAPH DATA (for D3.js visualization)
+# GRAPH DATA (for D3.js / Force Graph visualization)
 # ═══════════════════════════════════════════
 
 def get_graph_data(enriched: bool = True) -> GraphData:
-    """Get full graph data for visualization."""
-    if is_memory_mode():
-        store = get_memory_store()
-        if store.count_nodes() == 0:
-            from app.services.seed_native import seed_native
-            seed_native()
-        data = _get_graph_data_memory()
-    else:
-        data = _get_graph_data_neo4j()
-    
-    if enriched:
-        try:
-            from app.services.graph_analysis import GraphAnalysisService
-            import asyncio
-            # Como get_graph_data não é async, mas run_query é, usamos um workaround ou 
-            # chamamos a versão sync se disponível. Para simplificar, faremos a lógica aqui.
-            # No contexto do ARIANO, vamos permitir que o frontend peça o /enriched separadamente 
-            # ou injetar os IDs aqui se possível.
-            pass 
-        except:
-            pass
-            
-    return data
+    """Get full graph data for visualization from Neo4j Aura."""
+    return _get_graph_data_neo4j()
 
 
-def _get_graph_data_memory() -> GraphData:
-    store = get_memory_store()
+def _get_graph_data_neo4j() -> GraphData:
     nodes: list[GraphNode] = []
     edges: list[GraphEdge] = []
 
-    for uid, node in store.nodes.items():
-        label = node["labels"][0].lower() if node.get("labels") else "unknown"
-        display_name = node["props"].get("name") or node["props"].get("title", uid)
+    # Fetch all nodes
+    node_rows = run_cypher("""
+        MATCH (n)
+        WHERE n:Student OR n:Docente OR n:Edital OR n:Skill OR n:Area
+        RETURN n.uid AS uid,
+               COALESCE(n.name, n.title, n.uid) AS label,
+               labels(n)[0] AS type,
+               properties(n) AS props
+    """)
+    for r in node_rows:
+        node_type = (r.get("type") or "unknown").lower()
         nodes.append(GraphNode(
-            id=uid, label=display_name, type=label,
-            size=NODE_SIZES.get(label, 6), color=NODE_COLORS.get(label, "#888"),
-            metadata={k: v for k, v in node["props"].items()
-                      if k not in ("uid", "name", "title")},
+            id=r["uid"], label=r["label"], type=node_type,
+            size=NODE_SIZES.get(node_type, 6),
+            color=NODE_COLORS.get(node_type, "#888"),
+            metadata={k: v for k, v in (r.get("props") or {}).items()
+                      if k not in ("uid", "name", "title", "password_hash")},
         ))
 
+    # Fetch all edges
+    edge_rows = run_cypher("""
+        MATCH (a)-[r]->(b)
+        WHERE (a:Student OR a:Docente OR a:Edital OR a:Skill OR a:Area)
+          AND (b:Student OR b:Docente OR b:Edital OR b:Skill OR b:Area)
+        RETURN a.uid AS source, b.uid AS target,
+               type(r) AS label,
+               COALESCE(r.score, r.confidence, 1.0) AS weight
+    """)
     edge_colors = {
         "HAS_SKILL": "#06b6d4", "RESEARCHES_AREA": "#6366f1",
         "REQUIRES_SKILL": "#8b5cf6", "TARGETS_AREA": "#6366f1",
         "ELIGIBLE_FOR": "#0ea5e9", "ADVISES": "#f59e0b",
-        "COLLABORATES": "#f59e0b",
     }
-
-    for i, edge in enumerate(store.edges):
+    for i, r in enumerate(edge_rows):
         edges.append(GraphEdge(
-            id=f"e{i+1}", source=edge["source"], target=edge["target"],
-            label=edge["type"],
-            weight=edge["props"].get("score") or edge["props"].get("confidence") or 1.0,
-            color=edge_colors.get(edge["type"], "#555"),
+            id=f"e{i+1}", source=r["source"], target=r["target"],
+            label=r["label"], weight=r.get("weight") or 1.0,
+            color=edge_colors.get(r["label"], "#555"),
         ))
-
-    return GraphData(nodes=nodes, edges=edges)
-
-
-def _get_graph_data_neo4j() -> GraphData:
-    from neomodel import db
-    Student, Researcher, Professor, Edital, Skill, Area = _neomodel()
-
-    nodes: list[GraphNode] = []
-    edges: list[GraphEdge] = []
-    edge_id = 0
-
-    for s in Student.nodes.all():
-        nodes.append(GraphNode(id=s.uid, label=s.name, type="student",
-                               size=NODE_SIZES["student"], color=NODE_COLORS["student"],
-                               metadata={"institution": s.institution, "maturidade": s.maturidade}))
-    for r in Researcher.nodes.all():
-        nodes.append(GraphNode(id=r.uid, label=r.name, type="researcher",
-                               size=NODE_SIZES["researcher"], color=NODE_COLORS["researcher"],
-                               metadata={"institution": r.institution, "maturidade": r.maturidade}))
-    for p in Professor.nodes.all():
-        nodes.append(GraphNode(id=p.uid, label=p.name, type="professor",
-                               size=NODE_SIZES["professor"], color=NODE_COLORS["professor"],
-                               metadata={"institution": p.institution, "department": p.department}))
-    for e in Edital.nodes.all():
-        nodes.append(GraphNode(id=e.uid, label=e.title, type="edital",
-                               size=NODE_SIZES["edital"], color=NODE_COLORS["edital"],
-                               metadata={"instituicao": e.instituicao, "funding": e.funding}))
-    for sk in Skill.nodes.all():
-        nodes.append(GraphNode(id=sk.uid, label=sk.name, type="skill",
-                               size=NODE_SIZES["skill"], color=NODE_COLORS["skill"]))
-    for a in Area.nodes.all():
-        nodes.append(GraphNode(id=a.uid, label=a.name, type="area",
-                               size=NODE_SIZES["area"], color=NODE_COLORS["area"]))
-
-    edge_queries = [
-        ("MATCH (a)-[r:HAS_SKILL]->(b) RETURN a.uid, b.uid, 'HAS_SKILL', r.confidence", "#06b6d4"),
-        ("MATCH (a)-[r:RESEARCHES_AREA]->(b) RETURN a.uid, b.uid, 'RESEARCHES_AREA', 1.0", "#6366f1"),
-        ("MATCH (a)-[r:REQUIRES_SKILL]->(b) RETURN a.uid, b.uid, 'REQUIRES_SKILL', 1.0", "#8b5cf6"),
-        ("MATCH (a)-[r:TARGETS_AREA]->(b) RETURN a.uid, b.uid, 'TARGETS_AREA', 1.0", "#6366f1"),
-        ("MATCH (a)-[r:ELIGIBLE_FOR]->(b) RETURN a.uid, b.uid, 'ELIGIBLE_FOR', r.score", "#0ea5e9"),
-    ]
-    for query, color in edge_queries:
-        results, _ = db.cypher_query(query)
-        for row in results:
-            edge_id += 1
-            edges.append(GraphEdge(
-                id=f"e{edge_id}", source=row[0], target=row[1],
-                label=row[2], weight=row[3] or 1.0, color=color,
-            ))
 
     return GraphData(nodes=nodes, edges=edges)
 
@@ -780,50 +491,30 @@ def _get_graph_data_neo4j() -> GraphData:
 # ═══════════════════════════════════════════
 
 def get_dashboard_stats() -> DashboardStats:
-    if is_memory_mode():
-        store = get_memory_store()
-        if store.count_nodes() == 0:
-            from app.services.seed_native import seed_native
-            seed_native()
-        
-        edges = store.get_edges(edge_type="ELIGIBLE_FOR")
-        scores = [e["props"].get("score", 0) for e in edges]
-        return DashboardStats(
-            total_students=store.count_nodes("Student"),
-            total_researchers=store.count_nodes("Researcher"),
-            total_professors=store.count_nodes("Professor"),
-            total_editais=store.count_nodes("Edital"),
-            total_skills=store.count_nodes("Skill"),
-            total_areas=store.count_nodes("Area"),
-            total_matches=len(edges),
-            avg_match_score=round(sum(scores) / len(scores), 2) if scores else 0.0,
-            graph_mode="Memory Fallback (Vercel Ready)",
-            is_connected=True
-        )
-
-    from neomodel import db
     query = """
         OPTIONAL MATCH (s:Student) WITH count(s) AS students
-        OPTIONAL MATCH (r:Researcher) WITH students, count(r) AS researchers
-        OPTIONAL MATCH (p:Professor) WITH students, researchers, count(p) AS professors
-        OPTIONAL MATCH (e:Edital) WITH students, researchers, professors, count(e) AS editais
-        OPTIONAL MATCH (sk:Skill) WITH students, researchers, professors, editais, count(sk) AS skills
-        OPTIONAL MATCH (a:Area) WITH students, researchers, professors, editais, skills, count(a) AS areas
+        OPTIONAL MATCH (d:Docente) WITH students, count(d) AS docentes
+        OPTIONAL MATCH (e:Edital) WITH students, docentes, count(e) AS editais
+        OPTIONAL MATCH (sk:Skill) WITH students, docentes, editais, count(sk) AS skills
+        OPTIONAL MATCH (a:Area) WITH students, docentes, editais, skills, count(a) AS areas
         OPTIONAL MATCH ()-[m:ELIGIBLE_FOR]->()
-        WITH students, researchers, professors, editais, skills, areas,
+        WITH students, docentes, editais, skills, areas,
              count(m) AS matches, avg(m.score) AS avg_score
-        RETURN students, researchers, professors, editais, skills, areas, matches,
+        RETURN students, docentes, editais, skills, areas, matches,
                COALESCE(avg_score, 0.0) AS avg_score
     """
-    results, _ = db.cypher_query(query)
+    results = run_cypher(query)
     if results:
         row = results[0]
         return DashboardStats(
-            total_students=row[0], total_researchers=row[1],
-            total_professors=row[2], total_editais=row[3],
-            total_skills=row[4], total_areas=row[5],
-            total_matches=row[6], avg_match_score=round(row[7], 2),
+            total_students=row.get("students") or 0,
+            total_docentes=row.get("docentes") or 0,
+            total_editais=row.get("editais") or 0,
+            total_skills=row.get("skills") or 0,
+            total_areas=row.get("areas") or 0,
+            total_matches=row.get("matches") or 0,
+            avg_match_score=round(row.get("avg_score") or 0.0, 2),
             graph_mode="Neo4j AuraDB (Nativo)",
-            is_connected=True
+            is_connected=True,
         )
     return DashboardStats()
