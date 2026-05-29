@@ -64,7 +64,7 @@ const fadeUp = {
   initial: { opacity: 0, y: 40 },
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true, margin: "-100px" },
-  transition: { duration: 0.8, ease: "easeOut" }
+  transition: { duration: 0.8, ease: "easeOut" } as any
 };
 
 const radarData = [
@@ -219,7 +219,7 @@ const Landing = () => {
           <div className="relative" style={{ overflow: "visible" }}>
             <motion.div 
               {...fadeUp}
-              transition={{ ...fadeUp.transition, delay: 0.2 }}
+              transition={{ ...fadeUp.transition, delay: 0.2 } as any}
               className="relative z-10 rounded-t-xl border border-b-0 border-border bg-card overflow-hidden shadow-2xl"
             >
               {/* MacOS Window Controls */}
