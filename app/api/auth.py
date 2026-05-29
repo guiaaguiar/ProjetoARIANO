@@ -4,7 +4,7 @@ from typing import Optional
 import logging
 
 from app.core.security import verify_password, create_access_token, decode_access_token
-from app.core.neo4j_driver import is_memory_mode, get_memory_store, run_cypher
+from app.core.neo4j_driver import run_cypher
 
 logger = logging.getLogger(__name__)
 
@@ -22,18 +22,9 @@ class AuthResponse(BaseModel):
     name: Optional[str] = None
 
 def get_user_by_email(email: str):
-    if is_memory_mode():
-        store = get_memory_store()
-        for label in ["Student", "Researcher", "Professor"]:
-            for node in store.get_nodes_by_label(label):
-                if node.get("email") == email:
-                    n = store.nodes.get(node["uid"], {})
-                    return {"uid": node["uid"], "type": label.lower(), "password_hash": n["props"].get("password_hash"), "name": node.get("name")}
-        return None
-        
     query = """
     MATCH (u)
-    WHERE (u:Student OR u:Researcher OR u:Professor) AND u.email = $email
+    WHERE (u:Student OR u:Docente) AND u.email = $email
     RETURN u.uid AS uid, labels(u)[0] AS type, u.password_hash AS password_hash, u.name AS name
     """
     results = run_cypher(query, {"email": email})

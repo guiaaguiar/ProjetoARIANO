@@ -310,7 +310,7 @@ Responda APENAS em JSON válido com a estrutura exata:
                 },
             )
 
-            if entity_type in ["Researcher", "Professor"]:
+            if entity_type in ["Docente", "Researcher", "Professor"]:  # Researcher/Professor kept for legacy compat
                 run_cypher(
                     f"""
                     MATCH (ent:{entity_type} {{uid: $uid}})

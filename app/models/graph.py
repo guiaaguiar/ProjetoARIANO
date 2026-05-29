@@ -1,12 +1,10 @@
-"""Neo4j Graph Models — ARIANO v0.
+"""Neo4j Graph Models — ARIANO Sprint Definitiva.
 
 Graph schema for matchmaking between Academia and Government:
-  - Nodes: Student, Researcher, Professor, Edital, Skill, Area
+  - Nodes: Student, Docente (unified Researcher+Professor), Edital, Skill, Area
   - Edges: HAS_SKILL, RESEARCHES_AREA, REQUIRES_SKILL, TARGETS_AREA,
            ELIGIBLE_FOR, ADVISES, COLLABORATES
 """
-
-from datetime import datetime
 
 from neomodel import (
     FloatProperty,
@@ -81,8 +79,7 @@ class Skill(StructuredNode):
 
     # Incoming relationships
     possessed_by_students = RelationshipFrom("Student", "HAS_SKILL", model=HasSkillRel)
-    possessed_by_researchers = RelationshipFrom("Researcher", "HAS_SKILL", model=HasSkillRel)
-    possessed_by_professors = RelationshipFrom("Professor", "HAS_SKILL", model=HasSkillRel)
+    possessed_by_docentes = RelationshipFrom("Docente", "HAS_SKILL", model=HasSkillRel)
     required_by_editals = RelationshipFrom("Edital", "REQUIRES_SKILL", model=RequiresSkillRel)
 
 
@@ -95,7 +92,7 @@ class Area(StructuredNode):
     created_at = DateTimeProperty(default_now=True)
 
     # Incoming relationships
-    researched_by = RelationshipFrom("Researcher", "RESEARCHES_AREA", model=ResearchesAreaRel)
+    researched_by = RelationshipFrom("Docente", "RESEARCHES_AREA", model=ResearchesAreaRel)
     targeted_by = RelationshipFrom("Edital", "TARGETS_AREA", model=TargetsAreaRel)
 
 
@@ -125,29 +122,12 @@ class Student(StructuredNode):
     eligible_for = RelationshipTo("Edital", "ELIGIBLE_FOR", model=EligibleForRel)
 
 
-class Researcher(StructuredNode):
-    """Node: Researcher — active researcher."""
+class Docente(StructuredNode):
+    """Node: Docente — unified label for Researcher and Professor.
 
-    uid = UniqueIdProperty()
-    name = StringProperty(required=True)
-    email = StringProperty(default="")
-    password_hash = StringProperty(default="")
-    institution = StringProperty(default="")
-    bio = StringProperty(default="")
-    curriculo_texto = StringProperty(default="")
-    maturidade = FloatProperty(default=0.0)
-    o_que_busco = StringProperty(default="")
-    created_at = DateTimeProperty(default_now=True)
-    updated_at = DateTimeProperty(default_now=True)
-
-    # Outgoing relationships
-    skills = RelationshipTo("Skill", "HAS_SKILL", model=HasSkillRel)
-    areas = RelationshipTo("Area", "RESEARCHES_AREA", model=ResearchesAreaRel)
-    eligible_for = RelationshipTo("Edital", "ELIGIBLE_FOR", model=EligibleForRel)
-
-
-class Professor(StructuredNode):
-    """Node: Professor — academic professor."""
+    Replaces the former split between Researcher and Professor nodes.
+    Use the `cargo` field to distinguish: 'pesquisador', 'professor', 'professor-pesquisador'.
+    """
 
     uid = UniqueIdProperty()
     name = StringProperty(required=True)
@@ -156,6 +136,7 @@ class Professor(StructuredNode):
     institution = StringProperty(default="")
     department = StringProperty(default="")
     research_group = StringProperty(default="")
+    cargo = StringProperty(default="pesquisador")  # pesquisador | professor | professor-pesquisador
     bio = StringProperty(default="")
     curriculo_texto = StringProperty(default="")
     maturidade = FloatProperty(default=0.0)
@@ -168,7 +149,6 @@ class Professor(StructuredNode):
     areas = RelationshipTo("Area", "RESEARCHES_AREA", model=ResearchesAreaRel)
     eligible_for = RelationshipTo("Edital", "ELIGIBLE_FOR", model=EligibleForRel)
     advises = RelationshipTo("Student", "ADVISES")
-    collaborates = RelationshipTo("Researcher", "COLLABORATES")
 
 
 # ═══════════════════════════════════════════
@@ -196,5 +176,4 @@ class Edital(StructuredNode):
 
     # Incoming relationships (matches)
     eligible_students = RelationshipFrom("Student", "ELIGIBLE_FOR", model=EligibleForRel)
-    eligible_researchers = RelationshipFrom("Researcher", "ELIGIBLE_FOR", model=EligibleForRel)
-    eligible_professors = RelationshipFrom("Professor", "ELIGIBLE_FOR", model=EligibleForRel)
+    eligible_docentes = RelationshipFrom("Docente", "ELIGIBLE_FOR", model=EligibleForRel)

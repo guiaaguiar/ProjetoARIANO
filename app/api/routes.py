@@ -9,8 +9,7 @@ from app.models.schemas import (
     SkillCreate, SkillResponse,
     AreaCreate, AreaResponse,
     StudentCreate, StudentResponse,
-    ResearcherCreate, ResearcherResponse,
-    ProfessorCreate, ProfessorResponse,
+    DocenteCreate, DocenteResponse,
     EditalCreate, EditalResponse,
     MatchResponse, GraphData, DashboardStats,
 )
@@ -100,69 +99,42 @@ def remove_student(uid: str):
 
 
 # ═══════════════════════════════════════════
-# RESEARCHERS
+# DOCENTES  (unified Researcher + Professor)
 # ═══════════════════════════════════════════
 
-@router.get("/researchers", response_model=list[ResearcherResponse], tags=["Researchers"])
-def get_researchers():
-    return crud.list_researchers()
+@router.get("/docentes", response_model=list[DocenteResponse], tags=["Docentes"])
+def get_docentes():
+    return crud.list_docentes()
 
-@router.get("/researchers/{uid}", response_model=ResearcherResponse, tags=["Researchers"])
-def get_researcher(uid: str):
-    result = crud.get_researcher(uid)
+@router.get("/docentes/{uid}", response_model=DocenteResponse, tags=["Docentes"])
+def get_docente(uid: str):
+    result = crud.get_docente(uid)
     if not result:
-        raise HTTPException(404, "Researcher not found")
+        raise HTTPException(404, "Docente not found")
     return result
 
-@router.post("/researchers", response_model=ResearcherResponse, status_code=201, tags=["Researchers"])
-def post_researcher(data: ResearcherCreate):
-    return crud.create_researcher(data)
+@router.post("/docentes", response_model=DocenteResponse, status_code=201, tags=["Docentes"])
+def post_docente(data: DocenteCreate):
+    return crud.create_docente(data)
 
-@router.put("/researchers/{uid}", response_model=ResearcherResponse, tags=["Researchers"])
-def put_researcher(uid: str, data: ResearcherCreate):
-    result = crud.update_researcher(uid, data)
+@router.put("/docentes/{uid}", response_model=DocenteResponse, tags=["Docentes"])
+def put_docente(uid: str, data: DocenteCreate):
+    result = crud.update_docente(uid, data)
     if not result:
-        raise HTTPException(404, "Researcher not found")
+        raise HTTPException(404, "Docente not found")
     return result
 
-@router.delete("/researchers/{uid}", tags=["Researchers"])
-def remove_researcher(uid: str):
-    if not crud.delete_researcher(uid):
-        raise HTTPException(404, "Researcher not found")
+@router.delete("/docentes/{uid}", tags=["Docentes"])
+def remove_docente(uid: str):
+    crud.delete_docente(uid)
     return {"ok": True}
 
+# Backward-compat aliases (keep old URLs working)
+@router.get("/researchers", response_model=list[DocenteResponse], tags=["Docentes"])
+def get_researchers(): return crud.list_docentes()
 
-# ═══════════════════════════════════════════
-# PROFESSORS
-# ═══════════════════════════════════════════
-
-@router.get("/professors", response_model=list[ProfessorResponse], tags=["Professors"])
-def get_professors():
-    return crud.list_professors()
-
-@router.get("/professors/{uid}", response_model=ProfessorResponse, tags=["Professors"])
-def get_professor(uid: str):
-    result = crud.get_professor(uid)
-    if not result:
-        raise HTTPException(404, "Professor not found")
-    return result
-
-@router.post("/professors", response_model=ProfessorResponse, status_code=201, tags=["Professors"])
-def post_professor(data: ProfessorCreate):
-    return crud.create_professor(data)
-
-@router.put("/professors/{uid}", response_model=ProfessorResponse, tags=["Professors"])
-def put_professor(uid: str, data: ProfessorCreate):
-    result = crud.update_professor(uid, data)
-    if not result:
-        raise HTTPException(404, "Professor not found")
-    return result
-
-@router.delete("/professors/{uid}", tags=["Professors"])
-def remove_professor(uid: str):
-    if not crud.delete_professor(uid):
-        raise HTTPException(404, "Professor not found")
-    return {"ok": True}
+@router.get("/professors", response_model=list[DocenteResponse], tags=["Docentes"])
+def get_professors(): return crud.list_docentes()
 
 
 # ═══════════════════════════════════════════
@@ -240,20 +212,14 @@ async def get_graph_insight(user_uid: str):
 
 @router.post("/seed", tags=["Admin"])
 def seed_database():
-    """Força a sementeira do banco de dados (útil para recuperação em memória)."""
+    """Semeia o banco Neo4j Aura com dados base."""
     from app.services.seed_native import seed_native
-    from app.agents.eligibility_calculator import EligibilityCalculator
-    from app.core.neo4j_driver import is_memory_mode
-    
     try:
         seed_native()
-        if is_memory_mode():
-            calc = EligibilityCalculator()
-            calc.llm = None
-            calc.calculate_all_matches()
         return {"status": "Database seeded successfully"}
     except Exception as e:
         raise HTTPException(500, f"Seed failed: {str(e)}")
+
 
 
 @router.post("/pipeline", tags=["Admin"])

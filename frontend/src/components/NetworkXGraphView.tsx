@@ -154,23 +154,30 @@ export const NetworkXGraphView: React.FC<Props> = ({
     if (!rawData) return null;
     const hidden = hiddenTypes && hiddenTypes.size > 0;
     const filtered = activeCoT !== null;
-    if (!hidden && !filtered) return rawData;
-    const visibleIds = new Set(rawData.nodes.filter(n => {
-      if (hidden && hiddenTypes!.has(n.type)) return false;
-      if (filtered && n.cluster_id !== activeCoT) return false;
-      return true;
-    }).map(n => n.id));
-    return {
-      nodes: rawData.nodes.filter(n => visibleIds.has(n.id)),
-      links: rawData.links.filter(l => {
-        const s = typeof l.source === 'string' ? l.source : (l.source as GraphNode).id;
-        const t = typeof l.target === 'string' ? l.target : (l.target as GraphNode).id;
-        return visibleIds.has(s) && visibleIds.has(t);
-      }),
-    };
+    
+    // Tag each node's active/visible status based on filters instead of removing from graph
+    const nodes = rawData.nodes.map(n => {
+      let isDimmed = false;
+      if (hidden && hiddenTypes!.has(n.type)) isDimmed = true;
+      if (filtered && n.cluster_id !== activeCoT) isDimmed = true;
+      return { ...n, isDimmed };
+    });
+
+    const links = rawData.links.map(l => {
+      const s = typeof l.source === 'string' ? l.source : (l.source as GraphNode).id;
+      const t = typeof l.target === 'string' ? l.target : (l.target as GraphNode).id;
+      
+      const srcNode = nodes.find(n => n.id === s);
+      const tgtNode = nodes.find(n => n.id === t);
+      const isDimmed = (srcNode?.isDimmed || tgtNode?.isDimmed || false);
+      
+      return { ...l, isDimmed };
+    });
+
+    return { nodes, links };
   }, [rawData, hiddenTypes, activeCoT]);
 
-  useEffect(() => { if (graphData) dataRef.current = graphData; }, [graphData]);
+  useEffect(() => { if (graphData) dataRef.current = graphData as any; }, [graphData]);
 
   // Centraliza o nó no CENTRO VISUAL da área entre os painéis
   const centerOnNode = useCallback((node: GraphNode) => {
@@ -279,6 +286,13 @@ export const NetworkXGraphView: React.FC<Props> = ({
     const nodeColor = NODE_COLORS[node.type as EntityType] || '#888';
     const isSelected = node.id === selectedNodeId;
 
+    ctx.save();
+    // Reduce opacity of dimmed nodes
+    const isDimmed = (node as any).isDimmed;
+    if (isDimmed) {
+      ctx.globalAlpha = 0.15;
+    }
+
     // CoT aura ring — maior e sempre visível
     const auraSize = isSelected ? size + 14 : size + 5;
     ctx.beginPath();
@@ -370,6 +384,7 @@ export const NetworkXGraphView: React.FC<Props> = ({
       }
       ctx.restore();
     }
+    ctx.restore();
   }, [selectedNodeId]);
 
   // ─── Drag individual ─────────────────────────────────────────────────────
@@ -411,9 +426,18 @@ export const NetworkXGraphView: React.FC<Props> = ({
             ctx.arc(node.x, node.y, s, 0, Math.PI * 2);
             ctx.fill();
           }}
-          linkColor={(link: any) => LINK_COLORS[link.label] || 'rgba(255,255,255,0.18)'}
-          linkWidth={(link: any) => LINK_WIDTHS[link.label] || 1.5}
-          linkDirectionalParticles={(link: any) => (link.label === 'ELIGIBLE_FOR' || link.label === 'SIMILAR_TO') ? 3 : 0}
+          linkColor={(link: any) => {
+            const baseCol = LINK_COLORS[link.label] || 'rgba(255,255,255,0.18)';
+            return link.isDimmed ? 'rgba(255,255,255,0.03)' : baseCol;
+          }}
+          linkWidth={(link: any) => {
+            const baseWidth = LINK_WIDTHS[link.label] || 1.5;
+            return link.isDimmed ? 0.3 : baseWidth;
+          }}
+          linkDirectionalParticles={(link: any) => {
+            if (link.isDimmed) return 0;
+            return (link.label === 'ELIGIBLE_FOR' || link.label === 'SIMILAR_TO') ? 3 : 0;
+          }}
           linkDirectionalParticleWidth={2.5}
           linkDirectionalParticleColor={(link: any) => LINK_COLORS[link.label] || '#fff'}
           linkDirectionalParticleSpeed={0.004}

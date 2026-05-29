@@ -5,6 +5,8 @@ import GuiAguiarImg from "@/assets/gui-aguiar.jpeg";
 
 import { useTheme } from "next-themes";
 import { useEffect, useState, useRef } from "react";
+import { motion } from "framer-motion";
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip } from "recharts";
 
 import { StackedLogo } from "@/components/StackedLogo";
 import { ThemeToggleButton } from "@/components/ThemeToggleButton";
@@ -56,6 +58,21 @@ const TESTIMONIALS = [
     role: "Scrum Master",
     avatar: ""
   }
+];
+
+const fadeUp = {
+  initial: { opacity: 0, y: 40 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, margin: "-100px" },
+  transition: { duration: 0.8, ease: "easeOut" }
+};
+
+const radarData = [
+  { subject: 'Skills (IA/Data)', score: 95, fullMark: 100 },
+  { subject: 'Maturidade TRL', score: 85, fullMark: 100 },
+  { subject: 'Aderência a Editais', score: 98, fullMark: 100 },
+  { subject: 'Colaboração', score: 80, fullMark: 100 },
+  { subject: 'Impacto Social', score: 88, fullMark: 100 },
 ];
 
 const Landing = () => {
@@ -200,7 +217,17 @@ const Landing = () => {
           </div>
 
           <div className="relative" style={{ overflow: "visible" }}>
-            <div className="relative z-10 rounded-t-xl border border-b-0 border-border bg-card overflow-hidden">
+            <motion.div 
+              {...fadeUp}
+              transition={{ ...fadeUp.transition, delay: 0.2 }}
+              className="relative z-10 rounded-t-xl border border-b-0 border-border bg-card overflow-hidden shadow-2xl"
+            >
+              {/* MacOS Window Controls */}
+              <div className="h-10 bg-background/40 border-b border-border flex items-center px-4 gap-2">
+                <div className="w-3 h-3 rounded-full bg-[#ff5f56] shadow-sm"></div>
+                <div className="w-3 h-3 rounded-full bg-[#ffbd2e] shadow-sm"></div>
+                <div className="w-3 h-3 rounded-full bg-[#27c93f] shadow-sm"></div>
+              </div>
               <div className="flex min-h-[420px]">
                 {/* Sidebar mock */}
                 <div className="w-[200px] border-r border-border p-3 flex flex-col gap-1 shrink-0 bg-card">
@@ -335,7 +362,7 @@ const Landing = () => {
                 </div>
               </div>
               <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none" />
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -345,7 +372,7 @@ const Landing = () => {
 
       {/* Features */}
       <section className="relative z-10 pt-24 pb-24 px-6 overflow-hidden">
-        <div className="mx-auto max-w-[1200px] relative">
+        <motion.div {...fadeUp} className="mx-auto max-w-[1200px] relative">
           <p className="text-[13px] uppercase tracking-[0.15em] text-muted-foreground mb-4">
             Construído para o Futuro
           </p>
@@ -424,6 +451,84 @@ const Landing = () => {
         </div>
       </section>
 
+      </section>
+
+      {/* Radar Chart / Technology Section */}
+      <section className="relative z-10 pt-24 pb-24 px-6 overflow-hidden bg-muted/10 border-y border-border">
+        <motion.div {...fadeUp} className="mx-auto max-w-[1200px] relative">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div>
+              <p className="text-[13px] uppercase tracking-[0.15em] text-teal-500 font-bold mb-4">
+                O Cérebro da Plataforma
+              </p>
+              <h2 className="text-[clamp(1.8rem,3vw,2.5rem)] font-[500] tracking-[-0.03em] text-foreground leading-[1.15] mb-6">
+                Como a IA entende seu talento.
+              </h2>
+              <p className="text-[15px] leading-relaxed text-muted-foreground mb-8">
+                O ARIANO utiliza modelos de linguagem avançados e bancos de grafos para analisar múltiplas dimensões do seu perfil. Não se trata apenas de palavras-chave, mas de entender profundamente suas skills, a maturidade de sua pesquisa (TRL) e sua aderência às demandas de editais e parceiros.
+              </p>
+              <div className="space-y-4">
+                {[
+                  { title: "Mapeamento Multidimensional", desc: "Análise contextual de competências e histórico." },
+                  { title: "Predição de Sinergia", desc: "A IA calcula a probabilidade de sucesso em colaborações." },
+                  { title: "Recomendações Dinâmicas", desc: "Seu perfil evolui, o grafo de oportunidades se adapta." }
+                ].map((item, i) => (
+                  <div key={i} className="flex gap-4">
+                    <div className="mt-1 h-6 w-6 rounded-full bg-teal-500/10 text-teal-500 flex items-center justify-center shrink-0">
+                      <Zap className="h-3 w-3" />
+                    </div>
+                    <div>
+                      <h4 className="text-[14px] font-bold text-foreground">{item.title}</h4>
+                      <p className="text-[13px] text-muted-foreground">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div className="relative h-[400px] md:h-[500px] w-full bg-card rounded-2xl border border-border shadow-2xl flex items-center justify-center p-6">
+              {/* MacOS Window Controls for Chart */}
+              <div className="absolute top-0 left-0 right-0 h-10 bg-background/40 border-b border-border flex items-center px-4 gap-2 z-20 rounded-t-2xl">
+                <div className="w-3 h-3 rounded-full bg-[#ff5f56] shadow-sm"></div>
+                <div className="w-3 h-3 rounded-full bg-[#ffbd2e] shadow-sm"></div>
+                <div className="w-3 h-3 rounded-full bg-[#27c93f] shadow-sm"></div>
+                <div className="mx-auto text-[11px] font-mono text-muted-foreground">profile_analysis.json</div>
+              </div>
+              <ResponsiveContainer width="100%" height="100%" className="mt-8">
+                <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
+                  <PolarGrid stroke="hsl(var(--border))" />
+                  <PolarAngleAxis 
+                    dataKey="subject" 
+                    tick={{ fill: "hsl(var(--foreground))", fontSize: 12, fontWeight: 500 }} 
+                  />
+                  <PolarRadiusAxis 
+                    angle={30} 
+                    domain={[0, 100]} 
+                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} 
+                  />
+                  <Radar
+                    name="Seu Perfil"
+                    dataKey="score"
+                    stroke={isDark ? "#3fd4ec" : "#0d7a8c"}
+                    fill={isDark ? "#3fd4ec" : "#0d7a8c"}
+                    fillOpacity={0.4}
+                  />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: "hsl(var(--card))", 
+                      borderColor: "hsl(var(--border))",
+                      color: "hsl(var(--foreground))",
+                      borderRadius: "8px"
+                    }}
+                    itemStyle={{ color: isDark ? "#3fd4ec" : "#0d7a8c", fontWeight: 'bold' }}
+                  />
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </motion.div>
+      </section>
+
       {/* Social proof */}
       <section className="relative z-10 py-10 px-6 overflow-hidden my-10 border-y border-border">
         {/* Angular line shading background */}
@@ -440,7 +545,7 @@ const Landing = () => {
             backgroundSize: "100% 100%",
           }}
         />
-        <div className="w-full relative py-8" onWheel={handleWheel}>
+        <motion.div {...fadeUp} className="w-full relative py-8" onWheel={handleWheel}>
           <div className="relative w-full max-w-[1400px] mx-auto h-[280px] overflow-hidden flex items-center justify-center">
             {TESTIMONIALS.map((t, i) => {
               const isCenter = i === activeTestimonial;
@@ -500,12 +605,12 @@ const Landing = () => {
               <ChevronRight size={20} />
             </button>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* CTA */}
       <section className="relative z-10 pt-32 pb-40 px-6 overflow-hidden">
-        <div className="mx-auto max-w-[1200px] text-center relative">
+        <motion.div {...fadeUp} className="mx-auto max-w-[1200px] text-center relative">
           <h2 className="text-[clamp(2rem,4vw,3.2rem)] font-[500] tracking-[-0.035em] text-foreground leading-[1.1] mx-auto max-w-[560px]">
             Faça parte da revolução tecnológica.
           </h2>
@@ -522,16 +627,30 @@ const Landing = () => {
               </button>
             </Link>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* Footer */}
       <div className="relative z-10 border-t border-border bg-background/70 backdrop-blur-md">
-        <div className="mx-auto max-w-[1200px] px-6 py-6 flex items-center justify-between">
-          <div className="flex items-center gap-2 -ml-0.5">
+        <div className="mx-auto max-w-[1200px] px-6 py-10 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-2">
             <StackedLogo size={16} />
             <span className="text-[12px] font-bold text-foreground uppercase tracking-[0.08em]">ARIANO</span>
           </div>
+          
+          <div className="flex flex-col items-center md:items-end gap-2">
+            <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Realização / Apoio Institucional</span>
+            <div className="flex items-center gap-4">
+              <img src="/Coreto_LOGO.png" alt="Coreto Logo" className="h-6 object-contain opacity-80 hover:opacity-100 transition-opacity" />
+              <div className="h-4 w-px bg-border"></div>
+              {/* Using Coreto Logo as placeholder for SECTI if secti logo is not present, with text description */}
+              <div className="flex items-center gap-2 opacity-80 hover:opacity-100 transition-opacity">
+                <img src="/logo-coreto.png" alt="SECTI Logo" className="h-6 object-contain" />
+                <span className="text-[14px] font-bold tracking-tight text-foreground">SECTI</span>
+              </div>
+            </div>
+          </div>
+
           <span className="text-[12px] text-muted-foreground">© {new Date().getFullYear()} CORETO</span>
         </div>
       </div>

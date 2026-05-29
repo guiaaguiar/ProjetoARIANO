@@ -11,6 +11,7 @@ import { CadastroPage } from './pages/CadastroPage';
 import UserDashboard from './pages/UserDashboard';
 import UserLayout from './components/layout/UserLayout';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import AdminCommunitiesPage from './pages/AdminCommunitiesPage';
 import UserMatchesPage from './pages/UserMatchesPage';
 import UserEcosystemPage from './pages/UserEcosystemPage';
 import UserCommunitiesPage from './pages/UserCommunitiesPage';
@@ -49,7 +50,7 @@ export default function App() {
               <Route path="editais" element={<EditaisPage />} />
               <Route path="matches" element={<MatchesPage />} />
               <Route path="grafo" element={<GrafoPage />} />
-              <Route path="comunidades" element={<div className="p-8 text-white">Comunidades (Detecção de Clusters NetworkX) - Fase 2</div>} />
+              <Route path="comunidades" element={<AdminCommunitiesPage />} />
             </Route>
           </Route>
 

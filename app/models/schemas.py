@@ -1,6 +1,5 @@
 """Pydantic schemas for API requests and responses."""
 
-from datetime import datetime
 from pydantic import BaseModel, Field
 
 
@@ -65,46 +64,17 @@ class StudentResponse(BaseModel):
 
 
 # ═══════════════════════════════════════════
-# RESEARCHER
+# DOCENTE  (unified Researcher + Professor)
 # ═══════════════════════════════════════════
 
-class ResearcherCreate(BaseModel):
-    name: str
-    email: str = ""
-    password: str = ""
-    institution: str = ""
-    bio: str = ""
-    curriculo_texto: str = ""
-    maturidade: float = 0.0
-    o_que_busco: str = ""
-    skills: list[str] = Field(default_factory=list)
-    areas: list[str] = Field(default_factory=list)
-
-class ResearcherResponse(BaseModel):
-    uid: str
-    name: str
-    email: str
-    institution: str
-    bio: str
-    curriculo_texto: str
-    maturidade: float
-    o_que_busco: str
-    skills: list[SkillResponse] = Field(default_factory=list)
-    areas: list[AreaResponse] = Field(default_factory=list)
-    node_type: str = "researcher"
-
-
-# ═══════════════════════════════════════════
-# PROFESSOR
-# ═══════════════════════════════════════════
-
-class ProfessorCreate(BaseModel):
+class DocenteCreate(BaseModel):
     name: str
     email: str = ""
     password: str = ""
     institution: str = ""
     department: str = ""
     research_group: str = ""
+    cargo: str = "pesquisador"  # pesquisador | professor | professor-pesquisador
     bio: str = ""
     curriculo_texto: str = ""
     maturidade: float = 0.0
@@ -112,20 +82,27 @@ class ProfessorCreate(BaseModel):
     skills: list[str] = Field(default_factory=list)
     areas: list[str] = Field(default_factory=list)
 
-class ProfessorResponse(BaseModel):
+class DocenteResponse(BaseModel):
     uid: str
     name: str
     email: str
     institution: str
     department: str
     research_group: str
+    cargo: str
     bio: str
     curriculo_texto: str
     maturidade: float
     o_que_busco: str
     skills: list[SkillResponse] = Field(default_factory=list)
     areas: list[AreaResponse] = Field(default_factory=list)
-    node_type: str = "professor"
+    node_type: str = "docente"
+
+# Backward-compat aliases (used by legacy routes not yet migrated)
+ResearcherCreate = DocenteCreate
+ResearcherResponse = DocenteResponse
+ProfessorCreate = DocenteCreate
+ProfessorResponse = DocenteResponse
 
 
 # ═══════════════════════════════════════════
@@ -201,12 +178,11 @@ class GraphData(BaseModel):
 
 class DashboardStats(BaseModel):
     total_students: int = 0
-    total_researchers: int = 0
-    total_professors: int = 0
+    total_docentes: int = 0
     total_editais: int = 0
     total_skills: int = 0
     total_areas: int = 0
     total_matches: int = 0
     avg_match_score: float = 0.0
-    graph_mode: str = "in-memory"
+    graph_mode: str = "Neo4j AuraDB"
     is_connected: bool = True

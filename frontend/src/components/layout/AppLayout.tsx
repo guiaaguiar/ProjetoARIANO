@@ -16,6 +16,7 @@ const navItems = [
   { icon: FileText, label: "Editais", path: "/admin/editais" },
   { icon: CheckCircle, label: "Matches (IA)", path: "/admin/matches" },
   { icon: Share2, label: "Ver Grafo", path: "/admin/grafo" },
+  { icon: Share2, label: "Comunidades", path: "/admin/comunidades" },
 ];
 
 export function SidebarContent({ collapsed = false, onNavigate }: { collapsed?: boolean; onNavigate?: () => void }) {

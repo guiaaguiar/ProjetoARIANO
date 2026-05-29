@@ -12,6 +12,7 @@ const navItems = [
   { label: 'Editais', path: '/admin/editais', icon: FileText },
   { label: 'Matches', path: '/admin/matches', icon: Zap },
   { label: 'Grafo', path: '/admin/grafo', icon: Network },
+  { label: 'Comunidades', path: '/admin/comunidades', icon: Users },
 ];
 
 export default function Sidebar() {
