@@ -411,235 +411,246 @@ const Landing = () => {
       {/* Full-width divider */}
       <div className="relative z-10 w-full border-t border-border" />
 
-      {/* Features */}
-      <section className="relative z-10 pt-24 pb-24 px-6 overflow-hidden">
+      {/* Features — Pillars redesigned */}
+      <section className="relative z-10 py-32 px-6 overflow-hidden">
+        {/* Ambient glow */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-teal-500/5 blur-3xl rounded-full" />
+        </div>
         <motion.div {...fadeUp} className="mx-auto max-w-[1200px] relative">
-          <p className="text-[13px] uppercase tracking-[0.15em] text-muted-foreground mb-4">
-            Construído para o Futuro
-          </p>
-          <h2 className="text-[clamp(1.8rem,3vw,2.5rem)] font-[500] tracking-[-0.03em] text-foreground max-w-[500px] leading-[1.15]">
-            Mais conexões.<br />Menos fricção.
-          </h2>
+          <div className="text-center mb-20">
+            <p className="text-[12px] uppercase tracking-[0.2em] text-teal-500 font-bold mb-3">
+              Construído para o Futuro
+            </p>
+            <h2 className="text-[clamp(2rem,3.5vw,3rem)] font-[500] tracking-[-0.04em] text-foreground leading-[1.1]">
+              Mais conexões.<br />
+              <span className="text-muted-foreground/60">Menos fricção.</span>
+            </h2>
+          </div>
 
-          <div className="mt-16 border border-border">
-            <div className="grid grid-cols-1 md:grid-cols-3">
-              {[
-                {
-                  title: "Matchmaking de IA",
-                  desc: "Identifique sinergias. Matches inteligentes para impulsionar a inovação tecnológica no estado.",
-                  graphic: "bars",
-                },
-                {
-                  title: "Grafo de Comunidades",
-                  desc: "Visualize conexões complexas. O motor de grafos exibe as Communities of Trust de forma intuitiva.",
-                  graphic: "flow",
-                },
-                {
-                  title: "Gestão Descentralizada",
-                  desc: "Dashboards inteligentes para pesquisadores, governo e setor privado.",
-                  graphic: "chart",
-                },
-              ].map((feature, i) => (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-border rounded-2xl overflow-hidden">
+            {[
+              {
+                icon: Zap,
+                accent: "#2dd4bf",
+                title: "Matchmaking de IA",
+                desc: "Matches cirúrgicos entre pesquisadores, editais e parceiros, gerados por modelos de linguagem avançados.",
+                stat: "98%",
+                statLabel: "taxa de acerto",
+              },
+              {
+                icon: Network,
+                accent: "#60a5fa",
+                title: "Grafo de Comunidades",
+                desc: "Visualize as Communities of Trust em tempo real. Explore hubs, conexões e oportunidades com um clique.",
+                stat: "3.2k+",
+                statLabel: "nós no ecossistema",
+              },
+              {
+                icon: Layers,
+                accent: "#a78bfa",
+                title: "Gestão Descentralizada",
+                desc: "Dashboards adaptados para pesquisadores, governo e setor privado. Cada perfil, sua visão.",
+                stat: "360°",
+                statLabel: "visibilidade do perfil",
+              },
+            ].map((f, i) => (
+              <div
+                key={i}
+                className="group relative bg-background p-10 flex flex-col gap-6 cursor-default hover:bg-card transition-colors duration-300"
+              >
+                {/* Neon glow on hover */}
                 <div
-                  key={feature.title}
-                  className={`p-8 bg-background/70 backdrop-blur-md ${i < 2 ? "md:border-r border-border" : ""} ${i > 0 ? "border-t md:border-t-0 border-border" : ""}`}
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-none"
+                  style={{ background: `radial-gradient(ellipse at top left, ${f.accent}08 0%, transparent 60%)` }}
+                />
+                <div
+                  className="w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110"
+                  style={{ backgroundColor: `${f.accent}15`, boxShadow: `0 0 0 1px ${f.accent}30` }}
                 >
-                  <div className="mb-6 h-32 rounded-lg border border-border bg-card/30 flex items-center justify-center">
-                    <div className="space-y-2 w-full px-6">
-                      {feature.graphic === "bars" && (
-                        <>
-                          {[
-                            { w: "w-full", color: "bg-destructive" },
-                            { w: "w-3/4", color: "bg-warning" },
-                            { w: "w-1/2", color: "bg-primary" },
-                            { w: "w-1/4", color: "bg-success" },
-                          ].map((bar, j) => (
-                            <div key={j} className="flex items-center gap-2">
-                              <div className={`h-2 ${bar.w} rounded-full ${bar.color}`} />
-                            </div>
-                          ))}
-                        </>
-                      )}
-                      {feature.graphic === "flow" && (
-                        <div className="flex items-center justify-between px-2">
-                          {["bg-info", "bg-warning", "bg-success"].map((c, j) => (
-                            <div key={j} className="flex flex-col items-center gap-2">
-                              <div className={`h-8 w-8 rounded-full ${c}`} />
-                              <div className="h-1 w-8 rounded-full bg-muted-foreground/10" />
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      {feature.graphic === "chart" && (
-                        <div className="flex items-end gap-1.5 h-16 px-2">
-                          {[40, 65, 45, 80, 55, 70, 90].map((h, j) => (
-                            <div key={j} className="relative flex-1 rounded-t border border-border overflow-hidden" style={{ height: `${h}%` }}>
-                              <div className="absolute inset-0" style={{
-                                backgroundImage: `repeating-linear-gradient(-45deg, ${diagonalLineColor} / 0.5) 0px, ${diagonalLineColor} / 0.5) 1px, transparent 1px, transparent 5px)`,
-                              }} />
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <h3 className="text-[15px] font-medium text-foreground mb-2">{feature.title}</h3>
-                  <p className="text-[13px] leading-[1.6] text-muted-foreground">{feature.desc}</p>
+                  <f.icon className="w-5 h-5" style={{ color: f.accent }} />
                 </div>
-              ))}
-            </div>
+                <div>
+                  <h3 className="text-[16px] font-semibold text-foreground mb-2">{f.title}</h3>
+                  <p className="text-[13px] leading-[1.7] text-muted-foreground">{f.desc}</p>
+                </div>
+                <div className="mt-auto pt-4 border-t border-border/50">
+                  <span className="text-[28px] font-bold tracking-tight" style={{ color: f.accent }}>{f.stat}</span>
+                  <span className="text-[12px] text-muted-foreground ml-2">{f.statLabel}</span>
+                </div>
+              </div>
+            ))}
           </div>
         </motion.div>
       </section>
 
-      {/* Ecossistema Inteligente — Estilo aca.so */}
-      <section className="relative z-10 pt-24 pb-24 px-6 overflow-hidden">
-        <motion.div {...fadeUp} className="mx-auto max-w-[1200px]">
-          <p className="text-[13px] uppercase tracking-[0.15em] text-teal-500 font-bold mb-4">
-            Plataforma
-          </p>
-          <h2 className="text-[clamp(1.8rem,3vw,2.5rem)] font-[500] tracking-[-0.03em] text-foreground leading-[1.15] mb-16 max-w-[480px]">
-            Um ecossistema inteligente para cada perfil.
-          </h2>
+      {/* Ecossistema Inteligente — Estilo aca.so, grid correto */}
+      <section className="relative z-10 py-32 px-6 overflow-hidden border-t border-border">
+        {/* Ambient glow */}
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] pointer-events-none">
+          <div
+            className="w-full h-full rounded-full blur-3xl opacity-30"
+            style={{ background: `radial-gradient(circle, ${ECOSYSTEM_ITEMS[hoveredEcosystem].accent}20 0%, transparent 70%)`, transition: "background 0.6s" }}
+          />
+        </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-            {/* Coluna Esquerda — Triggers */}
+        <motion.div {...fadeUp} className="mx-auto max-w-[1200px] relative">
+          {/* Header */}
+          <div className="mb-16">
+            <p className="text-[12px] uppercase tracking-[0.2em] text-teal-500 font-bold mb-3">Plataforma</p>
+            <h2 className="text-[clamp(2rem,3.5vw,3rem)] font-[500] tracking-[-0.04em] text-foreground leading-[1.1] max-w-[540px]">
+              Um ecossistema inteligente
+              <br />
+              <span className="text-muted-foreground/60">para cada perfil.</span>
+            </h2>
+          </div>
+
+          {/* Two-column layout: triggers left, dynamic card right */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+
+            {/* ── COLUNA ESQUERDA: nós de grafo ── */}
             <div className="flex flex-col gap-3">
               {ECOSYSTEM_ITEMS.map((item, i) => {
                 const Icon = item.icon;
                 const isActive = hoveredEcosystem === i;
                 return (
-                  <div
+                  <motion.div
                     key={i}
                     onMouseEnter={() => setHoveredEcosystem(i)}
-                    className={`group flex items-center gap-4 p-5 rounded-xl border cursor-pointer transition-all duration-300 ${
-                      isActive
-                        ? "border-teal-500/40 bg-teal-500/5"
-                        : "border-border bg-background/40 opacity-50 hover:opacity-75"
-                    }`}
+                    animate={{
+                      scale: isActive ? 1.02 : 1,
+                    } as any}
+                    transition={{ duration: 0.2 } as any}
+                    className="flex items-center gap-5 p-5 rounded-2xl border cursor-pointer relative overflow-hidden"
+                    style={{
+                      borderColor: isActive ? `${item.accent}50` : "hsl(var(--border))",
+                      background: isActive
+                        ? `linear-gradient(135deg, ${item.accent}08 0%, transparent 60%)`
+                        : "hsl(var(--background) / 0.4)",
+                      boxShadow: isActive ? `0 0 0 1px ${item.accent}30, 0 8px 32px ${item.accent}15` : "none",
+                      opacity: isActive ? 1 : 0.45,
+                      transition: "all 0.3s ease",
+                    }}
                   >
+                    {/* Neon dot indicator */}
+                    {isActive && (
+                      <div
+                        className="absolute right-5 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full"
+                        style={{ backgroundColor: item.accent, boxShadow: `0 0 10px ${item.accent}, 0 0 20px ${item.accent}80` }}
+                      />
+                    )}
+
+                    {/* Icon node */}
                     <div
-                      className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300"
+                      className="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center"
                       style={{
-                        backgroundColor: isActive ? `${item.accent}18` : "hsl(var(--card))",
-                        boxShadow: isActive ? `0 0 16px ${item.accent}30` : "none",
+                        backgroundColor: isActive ? `${item.accent}20` : "hsl(var(--card))",
+                        border: `1px solid ${isActive ? item.accent + "40" : "hsl(var(--border))"}`,
+                        boxShadow: isActive ? `0 0 20px ${item.accent}35, inset 0 0 10px ${item.accent}10` : "none",
+                        transition: "all 0.3s ease",
                       }}
                     >
                       <Icon
-                        className="w-5 h-5 transition-colors duration-300"
-                        style={{ color: isActive ? item.accent : "hsl(var(--muted-foreground))" }}
+                        className="w-5 h-5"
+                        style={{ color: isActive ? item.accent : "hsl(var(--muted-foreground))", transition: "color 0.3s" }}
                       />
                     </div>
-                    <div className="flex flex-col">
+
+                    {/* Text */}
+                    <div>
                       <span
-                        className="text-[14px] font-semibold transition-colors duration-300"
-                        style={{ color: isActive ? item.accent : "hsl(var(--foreground))" }}
+                        className="text-[15px] font-semibold block leading-tight"
+                        style={{ color: isActive ? item.accent : "hsl(var(--foreground))", transition: "color 0.3s" }}
                       >
                         {item.label}
                       </span>
-                      {isActive && (
-                        <span className="text-[12px] text-muted-foreground mt-0.5">
-                          Clique para saber mais
-                        </span>
-                      )}
+                      <span className="text-[12px] text-muted-foreground mt-0.5 block">
+                        {isActive ? "Passe o mouse para explorar" : "clique para ver mais"}
+                      </span>
                     </div>
-                    {isActive && (
-                      <div className="ml-auto">
-                        <div
-                          className="w-1.5 h-1.5 rounded-full"
-                          style={{ backgroundColor: item.accent, boxShadow: `0 0 8px ${item.accent}` }}
-                        />
-                      </div>
-                    )}
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>
 
-            {/* Coluna Direita — Card Dinâmico com AnimatePresence */}
-            <div className="lg:sticky lg:top-24">
+            {/* ── COLUNA DIREITA: card dinâmico ── */}
+            <div className="lg:sticky lg:top-28 self-start">
               <div
-                className="relative rounded-2xl border overflow-hidden"
+                className="relative rounded-2xl overflow-hidden"
                 style={{
-                  background: "rgba(255,255,255,0.03)",
-                  backdropFilter: "blur(16px)",
-                  borderColor: `${ECOSYSTEM_ITEMS[hoveredEcosystem].accent}30`,
-                  boxShadow: `0 0 60px ${ECOSYSTEM_ITEMS[hoveredEcosystem].accent}10`,
-                  transition: "border-color 0.4s, box-shadow 0.4s",
+                  background: "rgba(8, 16, 28, 0.7)",
+                  backdropFilter: "blur(24px)",
+                  border: `1px solid ${ECOSYSTEM_ITEMS[hoveredEcosystem].accent}35`,
+                  boxShadow: `0 0 80px ${ECOSYSTEM_ITEMS[hoveredEcosystem].accent}15, inset 0 0 40px ${ECOSYSTEM_ITEMS[hoveredEcosystem].accent}05`,
+                  transition: "border-color 0.5s, box-shadow 0.5s",
+                  minHeight: "380px",
                 }}
               >
-                {/* Glow decoration */}
+                {/* Corner glow */}
                 <div
-                  className="absolute top-0 left-0 w-48 h-48 rounded-full pointer-events-none"
+                  className="absolute -top-16 -left-16 w-56 h-56 rounded-full pointer-events-none"
                   style={{
-                    background: `radial-gradient(circle, ${ECOSYSTEM_ITEMS[hoveredEcosystem].accent}18 0%, transparent 70%)`,
-                    transition: "background 0.4s",
+                    background: `radial-gradient(circle, ${ECOSYSTEM_ITEMS[hoveredEcosystem].accent}20 0%, transparent 65%)`,
+                    transition: "background 0.5s",
                   }}
                 />
 
-                <div className="relative p-8">
-                  {/* Icon grande */}
-                  <div
-                    className="w-14 h-14 rounded-2xl flex items-center justify-center mb-6"
-                    style={{
-                      backgroundColor: `${ECOSYSTEM_ITEMS[hoveredEcosystem].accent}15`,
-                      boxShadow: `0 0 24px ${ECOSYSTEM_ITEMS[hoveredEcosystem].accent}25`,
-                      transition: "background-color 0.4s, box-shadow 0.4s",
-                    }}
-                  >
-                    <AnimatePresence mode="wait">
-                      <motion.div
-                        key={`icon-${hoveredEcosystem}`}
-                        initial={{ opacity: 0, scale: 0.7 } as any}
-                        animate={{ opacity: 1, scale: 1 } as any}
-                        exit={{ opacity: 0, scale: 0.7 } as any}
-                        transition={{ duration: 0.25 } as any}
-                      >
-                        {(() => {
-                          const Icon = ECOSYSTEM_ITEMS[hoveredEcosystem].icon;
-                          return (
-                            <Icon
-                              className="w-7 h-7"
-                              style={{ color: ECOSYSTEM_ITEMS[hoveredEcosystem].accent }}
-                            />
-                          );
-                        })()}
-                      </motion.div>
-                    </AnimatePresence>
-                  </div>
+                <div className="relative p-10">
+                  {/* Animated icon */}
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={`icon-${hoveredEcosystem}`}
+                      initial={{ opacity: 0, scale: 0.6, rotate: -10 } as any}
+                      animate={{ opacity: 1, scale: 1, rotate: 0 } as any}
+                      exit={{ opacity: 0, scale: 0.6, rotate: 10 } as any}
+                      transition={{ duration: 0.3, ease: "easeOut" } as any}
+                      className="w-16 h-16 rounded-2xl flex items-center justify-center mb-8"
+                      style={{
+                        backgroundColor: `${ECOSYSTEM_ITEMS[hoveredEcosystem].accent}18`,
+                        border: `1px solid ${ECOSYSTEM_ITEMS[hoveredEcosystem].accent}40`,
+                        boxShadow: `0 0 30px ${ECOSYSTEM_ITEMS[hoveredEcosystem].accent}30`,
+                      }}
+                    >
+                      {(() => {
+                        const Icon = ECOSYSTEM_ITEMS[hoveredEcosystem].icon;
+                        return <Icon className="w-8 h-8" style={{ color: ECOSYSTEM_ITEMS[hoveredEcosystem].accent }} />;
+                      })()}
+                    </motion.div>
+                  </AnimatePresence>
 
-                  {/* Conteúdo animado */}
+                  {/* Animated text content */}
                   <AnimatePresence mode="wait">
                     <motion.div
                       key={`content-${hoveredEcosystem}`}
-                      initial={{ opacity: 0, y: 16 } as any}
+                      initial={{ opacity: 0, y: 20 } as any}
                       animate={{ opacity: 1, y: 0 } as any}
-                      exit={{ opacity: 0, y: -16 } as any}
-                      transition={{ duration: 0.3 } as any}
+                      exit={{ opacity: 0, y: -20 } as any}
+                      transition={{ duration: 0.35, ease: "easeOut" } as any}
                     >
-                      <div
-                        className="text-[11px] uppercase tracking-[0.15em] font-bold mb-3"
+                      <p
+                        className="text-[11px] uppercase tracking-[0.2em] font-bold mb-3"
                         style={{ color: ECOSYSTEM_ITEMS[hoveredEcosystem].accent }}
                       >
                         {ECOSYSTEM_ITEMS[hoveredEcosystem].label}
-                      </div>
-                      <h3 className="text-[clamp(1.3rem,2.2vw,1.7rem)] font-[500] tracking-[-0.02em] text-foreground leading-[1.2] mb-4">
+                      </p>
+                      <h3 className="text-[clamp(1.4rem,2.5vw,1.9rem)] font-[500] tracking-[-0.03em] text-foreground leading-[1.2] mb-5">
                         {ECOSYSTEM_ITEMS[hoveredEcosystem].title}
                       </h3>
-                      <p className="text-[14px] leading-[1.75] text-muted-foreground mb-8">
+                      <p className="text-[14px] leading-[1.8] text-muted-foreground mb-8">
                         {ECOSYSTEM_ITEMS[hoveredEcosystem].description}
                       </p>
                       <Link to={ECOSYSTEM_ITEMS[hoveredEcosystem].link}>
                         <button
-                          className="inline-flex items-center gap-2 px-5 py-2.5 text-[13px] font-semibold rounded-lg transition-all duration-200 hover:opacity-85"
+                          className="inline-flex items-center gap-2.5 px-6 py-3 text-[13px] font-semibold rounded-xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
                           style={{
-                            backgroundColor: `${ECOSYSTEM_ITEMS[hoveredEcosystem].accent}20`,
+                            backgroundColor: `${ECOSYSTEM_ITEMS[hoveredEcosystem].accent}22`,
                             color: ECOSYSTEM_ITEMS[hoveredEcosystem].accent,
-                            border: `1px solid ${ECOSYSTEM_ITEMS[hoveredEcosystem].accent}40`,
+                            border: `1px solid ${ECOSYSTEM_ITEMS[hoveredEcosystem].accent}50`,
+                            boxShadow: `0 4px 20px ${ECOSYSTEM_ITEMS[hoveredEcosystem].accent}20`,
                           }}
                         >
                           {ECOSYSTEM_ITEMS[hoveredEcosystem].cta}
-                          <ArrowRight className="h-3.5 w-3.5" />
+                          <ArrowRight className="h-4 w-4" />
                         </button>
                       </Link>
                     </motion.div>
@@ -651,83 +662,149 @@ const Landing = () => {
         </motion.div>
       </section>
 
-      {/* Radar Chart / Technology Section */}
-      <section className="relative z-10 pt-24 pb-24 px-6 overflow-hidden bg-muted/10 border-y border-border">
+      {/* Radar Chart — Neon Aesthetic, full redesign */}
+      <section className="relative z-10 py-32 px-6 overflow-hidden border-t border-border">
+        {/* Background glow */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-teal-500/5 blur-3xl rounded-full" />
+          <div className="absolute top-1/3 right-1/4 w-[300px] h-[300px] bg-cyan-500/5 blur-3xl rounded-full" />
+        </div>
+
         <motion.div {...fadeUp} className="mx-auto max-w-[1200px] relative">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+
+            {/* Left — copy assertivo */}
             <div>
-              <p className="text-[13px] uppercase tracking-[0.15em] text-teal-500 font-bold mb-4">
-                O Cérebro da Plataforma
+              <p className="text-[12px] uppercase tracking-[0.2em] text-teal-500 font-bold mb-3">
+                Inteligência de Perfil
               </p>
-              <h2 className="text-[clamp(1.8rem,3vw,2.5rem)] font-[500] tracking-[-0.03em] text-foreground leading-[1.15] mb-6">
-                Como a IA entende seu talento.
+              <h2 className="text-[clamp(2rem,3.5vw,3rem)] font-[500] tracking-[-0.04em] text-foreground leading-[1.1] mb-8">
+                A IA lê o que
+                <br />
+                <span className="text-teal-400">você não consegue ver.</span>
               </h2>
-              <p className="text-[15px] leading-relaxed text-muted-foreground mb-8">
-                O ARIANO utiliza modelos de linguagem avançados e bancos de grafos para analisar múltiplas dimensões do seu perfil. Não se trata apenas de palavras-chave, mas de entender profundamente suas skills, a maturidade de sua pesquisa (TRL) e sua aderência às demandas de editais e parceiros.
-              </p>
-              <div className="space-y-4">
+
+              <div className="space-y-6">
                 {[
-                  { title: "Mapeamento Multidimensional", desc: "Análise contextual de competências e histórico." },
-                  { title: "Predição de Sinergia", desc: "A IA calcula a probabilidade de sucesso em colaborações." },
-                  { title: "Recomendações Dinâmicas", desc: "Seu perfil evolui, o grafo de oportunidades se adapta." }
+                  {
+                    accent: "#2dd4bf",
+                    title: "Análise Multidimensional",
+                    desc: "Skills, TRL, histórico e aderência a editais num único score.",
+                  },
+                  {
+                    accent: "#60a5fa",
+                    title: "Predição de Sinergia",
+                    desc: "Probabilidade de sucesso calculada antes da colaboração começar.",
+                  },
+                  {
+                    accent: "#a78bfa",
+                    title: "Perfil Evolutivo",
+                    desc: "Conforme você cresce, o grafo de oportunidades se adapta.",
+                  },
                 ].map((item, i) => (
-                  <div key={i} className="flex gap-4">
-                    <div className="mt-1 h-6 w-6 rounded-full bg-teal-500/10 text-teal-500 flex items-center justify-center shrink-0">
-                      <Zap className="h-3 w-3" />
+                  <div key={i} className="flex gap-4 items-start">
+                    <div
+                      className="mt-1 w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                      style={{ backgroundColor: `${item.accent}15`, border: `1px solid ${item.accent}30` }}
+                    >
+                      <Zap className="h-3.5 w-3.5" style={{ color: item.accent }} />
                     </div>
                     <div>
-                      <h4 className="text-[14px] font-bold text-foreground">{item.title}</h4>
-                      <p className="text-[13px] text-muted-foreground">{item.desc}</p>
+                      <h4 className="text-[15px] font-semibold text-foreground mb-0.5">{item.title}</h4>
+                      <p className="text-[13px] text-muted-foreground leading-relaxed">{item.desc}</p>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
-            
-            {/* MacOS Window Mockup for Chart */}
-            <div
-              className="w-full rounded-2xl shadow-2xl overflow-hidden"
-              style={{ background: "hsl(var(--card))", border: "1px solid rgba(255,255,255,0.08)" }}
-            >
-              {/* Window title bar */}
-              <div className="h-10 flex items-center px-4 gap-2 border-b border-border" style={{ background: "hsl(var(--background) / 0.5)" }}>
-                <div className="w-3 h-3 rounded-full bg-[#ff5f56] shadow-sm" />
-                <div className="w-3 h-3 rounded-full bg-[#ffbd2e] shadow-sm" />
-                <div className="w-3 h-3 rounded-full bg-[#27c93f] shadow-sm" />
-                <div className="mx-auto text-[11px] font-mono text-muted-foreground">profile_analysis.json</div>
-              </div>
-              {/* Chart body — CRITICAL: fixed height wrapper */}
-              <div className="w-full h-[400px] p-4">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
-                    <PolarGrid stroke="hsl(var(--border))" />
-                    <PolarAngleAxis
-                      dataKey="subject"
-                      tick={{ fill: "hsl(var(--foreground))", fontSize: 12, fontWeight: 500 }}
-                    />
-                    <PolarRadiusAxis
-                      angle={30}
-                      domain={[0, 100]}
-                      tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
-                    />
-                    <Radar
-                      name="Seu Perfil"
-                      dataKey="score"
-                      stroke={isDark ? "#3fd4ec" : "#0d7a8c"}
-                      fill={isDark ? "#3fd4ec" : "#0d7a8c"}
-                      fillOpacity={0.4}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "hsl(var(--card))",
-                        borderColor: "hsl(var(--border))",
-                        color: "hsl(var(--foreground))",
-                        borderRadius: "8px",
-                      }}
-                      itemStyle={{ color: isDark ? "#3fd4ec" : "#0d7a8c", fontWeight: "bold" }}
-                    />
-                  </RadarChart>
-                </ResponsiveContainer>
+
+            {/* Right — MacOS window + Radar neon */}
+            <div>
+              {/* MacOS frame */}
+              <div
+                className="rounded-2xl overflow-hidden shadow-2xl"
+                style={{
+                  background: "#0a0f18",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  boxShadow: "0 0 80px rgba(45,212,191,0.08), 0 32px 80px rgba(0,0,0,0.6)",
+                }}
+              >
+                {/* Title bar */}
+                <div
+                  className="h-10 flex items-center px-4 gap-2"
+                  style={{ background: "#060c14", borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+                >
+                  <div className="w-3 h-3 rounded-full bg-[#ff5f56]" style={{ boxShadow: "0 0 6px #ff5f5660" }} />
+                  <div className="w-3 h-3 rounded-full bg-[#ffbd2e]" style={{ boxShadow: "0 0 6px #ffbd2e60" }} />
+                  <div className="w-3 h-3 rounded-full bg-[#27c93f]" style={{ boxShadow: "0 0 6px #27c93f60" }} />
+                  <div className="mx-auto flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-teal-500" style={{ boxShadow: "0 0 6px #2dd4bf" }} />
+                    <span className="text-[11px] font-mono" style={{ color: "rgba(255,255,255,0.35)" }}>profile_analysis.ariano</span>
+                  </div>
+                </div>
+
+                {/* Chart body — CRITICAL: div pai com altura fixa rigorosa */}
+                <div className="w-full h-[400px] relative">
+                  {/* Neon center glow behind chart */}
+                  <div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      background: "radial-gradient(ellipse at center, rgba(45,212,191,0.06) 0%, transparent 65%)",
+                    }}
+                  />
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RadarChart cx="50%" cy="50%" outerRadius="65%" data={radarData}>
+                      <PolarGrid stroke="#1f2937" strokeDasharray="3 3" />
+                      <PolarAngleAxis
+                        dataKey="subject"
+                        tick={{ fill: "rgba(255,255,255,0.55)", fontSize: 11, fontWeight: 500 }}
+                      />
+                      <PolarRadiusAxis
+                        angle={30}
+                        domain={[0, 100]}
+                        tick={{ fill: "rgba(255,255,255,0.25)", fontSize: 9 }}
+                        axisLine={false}
+                      />
+                      <Radar
+                        name="Seu Perfil"
+                        dataKey="score"
+                        stroke="#2dd4bf"
+                        strokeWidth={2}
+                        fill="#2dd4bf"
+                        fillOpacity={0.18}
+                        style={{ filter: "drop-shadow(0 0 8px #2dd4bf80)" }}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "#0d1520",
+                          borderColor: "#2dd4bf40",
+                          color: "#e2f8ff",
+                          borderRadius: "10px",
+                          fontSize: "12px",
+                          boxShadow: "0 0 20px rgba(45,212,191,0.2)",
+                        }}
+                        itemStyle={{ color: "#2dd4bf", fontWeight: "bold" }}
+                      />
+                    </RadarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Footer bar with stats */}
+                <div
+                  className="flex items-center justify-around px-6 py-4"
+                  style={{ borderTop: "1px solid rgba(255,255,255,0.06)", background: "#060c14" }}
+                >
+                  {[
+                    { label: "Skills", value: "95%" },
+                    { label: "TRL", value: "85%" },
+                    { label: "Editais", value: "98%" },
+                  ].map((s, i) => (
+                    <div key={i} className="text-center">
+                      <div className="text-[16px] font-bold" style={{ color: "#2dd4bf", textShadow: "0 0 10px #2dd4bf80" }}>{s.value}</div>
+                      <div className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.3)" }}>{s.label}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
