@@ -493,12 +493,13 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({
     setMatches([]);
     setScreenPhase('cognition');
 
-    // ── T=0: Fire API + show user node ──
+    // ── T=0: Dispara API + mostra nó do usuário ──
     addLogs(0);
 
     const cognitionPromise = fetch('/api/agents/v2/cognition-full', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({
         uid: userId || 'anon',
         name: formData?.name || userName,
@@ -510,31 +511,49 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({
         curriculo_texto: formData?.curriculo_texto || '',
         user_type: formData?.user_type || 'student',
       }),
-    }).then(r => r.json()).catch(() => null);
+    })
+      .then(r => {
+        if (!r.ok) throw new Error(`API error ${r.status}`);
+        return r.json();
+      })
+      .catch(err => {
+        // Log but don't throw — the animation continues with empty data
+        console.error('[CognitionExperience] cognition-full failed:', err);
+        return null;
+      });
 
-    // ── T=5s: Skills appear ──
+    // ── T=5s: Skills aparecem ──
     await delay(PHASE_DELAYS[1]);
     if (!isMounted.current) return;
     addLogs(1);
 
-    // Use tags from formData (set by TASK 02) as skill nodes
+    // Skills: pega as tags reais submetidas no formulário (dados reais do usuário)
     const formSkills: string[] = (() => {
       try {
-        const raw = formData?.skills || formData?.curriculo_texto || '';
-        if (typeof raw === 'string' && raw.startsWith('[')) return JSON.parse(raw).slice(0, 5);
+        const raw = formData?.skills || '';
+        if (typeof raw === 'string' && raw.startsWith('[')) return (JSON.parse(raw) as string[]).slice(0, 6);
+        if (Array.isArray(raw)) return (raw as string[]).slice(0, 6);
         return [];
       } catch { return []; }
     })();
-    const defaultSkills = ['Python', 'Pesquisa', 'Machine Learning', 'Neo4j', 'Inovação'];
-    setSkills(formSkills.length > 0 ? formSkills : defaultSkills);
+    // Se não há tags do formulário, tenta extrair do curriculo_texto (primeiras palavras chave)
+    const textSkills: string[] = formSkills.length === 0 && formData?.curriculo_texto
+      ? (formData.curriculo_texto as string)
+          .split(/[,;\n]+/)
+          .map((s: string) => s.trim())
+          .filter((s: string) => s.length > 3 && s.length < 30)
+          .slice(0, 5)
+      : [];
+    const resolvedSkills = formSkills.length > 0 ? formSkills : textSkills;
+    setSkills(resolvedSkills);
     setGraphPhase(1);
 
-    // ── T=10s: Editais appear ──
+    // ── T=10s: Editais aparecem ──
     await delay(PHASE_DELAYS[2] - PHASE_DELAYS[1]);
     if (!isMounted.current) return;
     addLogs(2);
 
-    // Try to get real data from API by now
+    // Aguarda a resposta real da API (com timeout de 2s a partir deste ponto)
     let apiData: any = null;
     try {
       apiData = await Promise.race([
@@ -543,76 +562,51 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({
       ]);
     } catch { /* noop */ }
 
-    const realEditais = apiData?.data?.edital_nodes || [];
-    setEditalNodes(realEditais.length > 0 ? realEditais : [
-      { name: 'FACEPE — IC 2026', uid: 'fb-1' },
-      { name: 'CNPq — Pesquisa Universal', uid: 'fb-2' },
-      { name: 'MCTI — Inovação Tech', uid: 'fb-3' },
-    ]);
+    // Editais: apenas dados reais. Array vazio é honesto.
+    const realEditais: { name: string; uid: string }[] = apiData?.data?.edital_nodes || [];
+    setEditalNodes(realEditais);
     setGraphPhase(2);
 
-    // ── T=15s: Docentes appear ──
+    // ── T=15s: Docentes aparecem ──
     await delay(PHASE_DELAYS[3] - PHASE_DELAYS[2]);
     if (!isMounted.current) return;
     addLogs(3);
 
-    const realNetwork = apiData?.data?.network_nodes || [];
-    setNetworkNodes(realNetwork.length > 0 ? realNetwork : [
-      { name: 'Prof. Dr. Guimarães', type: 'professor' },
-      { name: 'Dra. Rita Barros', type: 'professor' },
-      { name: 'Carlos Lima', type: 'student' },
-    ]);
+    // Rede: apenas dados reais.
+    const realNetwork: { name: string; type: string }[] = apiData?.data?.network_nodes || [];
+    setNetworkNodes(realNetwork);
     setGraphPhase(3);
 
-    // ── T=19s: Wrap up ──
+    // ── T=19s: Finaliza pipeline ──
     await delay(PHASE_DELAYS[4] - PHASE_DELAYS[3]);
     if (!isMounted.current) return;
     addLogs(4);
     setGraphPhase(4);
 
-    // Resolve matches
+    // Matches: apenas dados reais da API.
     const llmMatches: Match[] = apiData?.data?.matches || [];
-    const finalMatches = llmMatches.length > 0 ? llmMatches.slice(0, 3) : [
-      {
-        edital_name: 'FACEPE — Iniciação Científica 2026',
-        edital_uid: 'fb-1',
-        institution: 'FACEPE',
-        justification: 'Perfil compatível com os requisitos identificados pelo motor ARIANO.',
-        score: 0.84,
-      },
-      {
-        edital_name: 'CNPq — Pesquisa Universal',
-        edital_uid: 'fb-2',
-        institution: 'CNPq',
-        justification: 'Alinhamento acadêmico detectado com as áreas de pesquisa do edital.',
-        score: 0.76,
-      },
-      {
-        edital_name: 'MCTI — Inovação Tecnológica',
-        edital_uid: 'fb-3',
-        institution: 'MCTI',
-        justification: 'Competências técnicas identificadas são compatíveis com o escopo do edital.',
-        score: 0.71,
-      },
-    ];
-
+    const finalMatches = llmMatches.slice(0, 5);
     setMatches(finalMatches);
     setCachedMatches(finalMatches);
 
-    // Persist to backend (non-blocking)
-    fetch('/api/users/finalize', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        uid: userId,
-        profile_data: { ...formData, user_type: formData?.user_type || 'student' },
-        matches: finalMatches,
-      }),
-    }).catch(() => {});
+    // Persiste no backend de forma não-bloqueante
+    if (userId) {
+      fetch('/api/users/finalize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          uid: userId,
+          profile_data: { ...formData, user_type: formData?.user_type || 'student' },
+          matches: finalMatches,
+        }),
+      }).catch(err => console.warn('[CognitionExperience] finalize failed:', err));
+    }
 
     await delay(600);
     if (isMounted.current) setScreenPhase('matches');
   }, [formData, userId, userName, addLogs, setCachedMatches]);
+
 
   useEffect(() => {
     if (formData) runCognition();
@@ -760,7 +754,21 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({
             <div className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6 px-6 lg:px-10 pb-8 min-h-0 overflow-y-auto">
               {/* Cards */}
               <div className="space-y-3">
-                {matches.map((match, i) => (
+                {matches.length === 0 ? (
+                  <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="rounded-2xl p-8 text-center"
+                    style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}
+                  >
+                    <p className="text-[14px] font-semibold text-white/60 mb-2">Nenhum edital disponível no momento</p>
+                    <p className="text-[12px] text-white/30 leading-relaxed">
+                      O ecossistema ainda não possui editais cadastrados com status "aberto".
+                      Acesse o painel para explorar seu perfil e acompanhe quando novos editais forem publicados.
+                    </p>
+                  </motion.div>
+                ) : matches.map((match, i) => (
                   <MatchCard
                     key={match.edital_uid || i}
                     match={match}

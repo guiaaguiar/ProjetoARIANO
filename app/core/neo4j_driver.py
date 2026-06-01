@@ -48,24 +48,43 @@ def get_driver() -> Any:
     """Return the Neo4j driver singleton.
 
     Raises:
-        HTTPException 500 — if the Neo4j Aura connection cannot be established.
+        HTTPException 503 — if NEO4J_URI is not configured (missing env var).
+        HTTPException 503 — if the Neo4j Aura connection cannot be established.
     """
     global _driver
     if _driver is not None:
         return _driver
+
+    from app.core.config import settings
+
+    if not settings.neo4j_configured:
+        logger.error(
+            "[MISSING_ENV_VARS] get_driver() chamado mas NEO4J_URI não está configurado. "
+            "Defina NEO4J_URI, NEO4J_USER e NEO4J_PASSWORD nas variáveis de ambiente da Vercel."
+        )
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "[MISSING_ENV_VARS] Conexão com Neo4j Aura não configurada. "
+                "As variáveis NEO4J_URI, NEO4J_USER e NEO4J_PASSWORD devem ser definidas "
+                "nas variáveis de ambiente da Vercel (Settings → Environment Variables)."
+            ),
+        )
+
     try:
         _driver = _connect()
         return _driver
     except Exception as exc:
         logger.error(f"❌ Neo4j Aura unreachable after retries: {exc}")
         raise HTTPException(
-            status_code=500,
+            status_code=503,
             detail=(
                 "Neo4j Aura está inacessível. "
                 "Verifique as variáveis NEO4J_URI / NEO4J_USER / NEO4J_PASSWORD "
                 f"e a conectividade de rede. Detalhe: {exc}"
             ),
         )
+
 
 
 def close_driver() -> None:

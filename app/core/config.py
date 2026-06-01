@@ -1,5 +1,6 @@
 """ARIANO Backend — Core Configuration."""
 
+import logging
 import os
 from typing import List
 
@@ -12,12 +13,17 @@ load_dotenv(env_path)
 # Also try loading from current dir
 load_dotenv()
 
+_cfg_logger = logging.getLogger("app.core.config")
+
+# ─── Sentinel for detecting unconfigured env-vars ─────────────────────────
+_LOCALHOST_SENTINEL = "bolt://localhost:7687"
+
 
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
-    # Neo4j
-    neo4j_uri: str = "bolt://localhost:7687"
+    # Neo4j Aura — MUST be set via environment variables in production
+    neo4j_uri: str = _LOCALHOST_SENTINEL
     neo4j_user: str = "neo4j"
     neo4j_password: str = "ariano2026"
 
@@ -33,6 +39,15 @@ class Settings(BaseSettings):
     def cors_origins(self) -> list[str]:
         return [o.strip() for o in self.cors_origins_str.split(",") if o.strip()]
 
+    @property
+    def neo4j_configured(self) -> bool:
+        """True only when NEO4J_URI is set to a real Aura URI (not the localhost default)."""
+        return (
+            self.neo4j_uri != _LOCALHOST_SENTINEL
+            and "localhost" not in self.neo4j_uri
+            and "127.0.0.1" not in self.neo4j_uri
+        )
+
     # App
     app_name: str = "ARIANO API"
     app_version: str = "1.0.1"
@@ -46,3 +61,23 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+# ─── Startup env-var audit ──────────────────────────────────────────────────
+_missing: list[str] = []
+if not settings.neo4j_configured:
+    _missing.append("NEO4J_URI")
+if settings.neo4j_user == "neo4j" and not settings.neo4j_configured:
+    _missing.append("NEO4J_USER")
+if settings.neo4j_password == "ariano2026" and not settings.neo4j_configured:
+    _missing.append("NEO4J_PASSWORD")
+
+if _missing:
+    _cfg_logger.warning(
+        "[MISSING_ENV_VARS] As seguintes variáveis NÃO estão configuradas no ambiente: %s. "
+        "O driver Neo4j NÃO será inicializado automaticamente. "
+        "Configure-as na Vercel → Settings → Environment Variables.",
+        ", ".join(_missing),
+    )
+else:
+    _cfg_logger.info("[CONFIG] Variáveis de ambiente Neo4j detectadas com sucesso. URI: %s", settings.neo4j_uri[:30])
+
