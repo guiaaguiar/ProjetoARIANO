@@ -630,9 +630,9 @@ const Landing = () => {
             {/* ── COLUNA ESQUERDA: Grafo SVG interativo em X ── */}
             <div className="relative w-full aspect-square perspective-[1500px]">
               <div className="absolute inset-0 transform rotate-x-[60deg] rotate-z-[45deg] preserve-3d">
-                {/* SVG Lines connecting the nodes */}
+                {/* SVG Lines connecting the nodes no chão */}
                 <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ overflow: "visible", transform: "translateZ(-1px)" }}>
-                  {ECOSYSTEM_ITEMS.map((item, i) => {
+                  {ECOSYSTEM_ITEMS.map((item) => {
                     if (item.id === "ariano") return null;
                     const isActive = activeNode === item.id;
                     const endX = parseInt(item.nodePos.left);
@@ -661,41 +661,58 @@ const Landing = () => {
                   const isCenter = item.id === "ariano";
 
                   return (
-                    <button
+                    <div
                       key={item.id}
-                      className="absolute z-20 group"
-                      style={{ ...item.nodePos, transformStyle: "preserve-3d" } as any}
-                      onClick={() => setActiveNode(item.id)}
+                      className="absolute z-20"
+                      style={{ 
+                        top: item.nodePos.top, 
+                        left: item.nodePos.left, 
+                        transform: "translate(-50%, -50%)", 
+                        transformStyle: "preserve-3d" 
+                      }}
                     >
-                      {/* Base no chão */}
-                      <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border transition-all duration-300 ${isCenter ? 'w-20 h-20' : 'w-16 h-16'} ${isActive ? 'bg-white/20 dark:bg-black/40 scale-110' : 'bg-white/10 dark:bg-black/20 group-hover:scale-105'} ${isDark ? 'border-white/20' : 'border-slate-300'}`}
-                           style={{ boxShadow: isActive ? `0 0 30px ${item.accent}60` : undefined }} />
+                      {/* Base fixa no chão para ancorar a ilusão */}
+                      <div 
+                        className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border transition-all duration-300 ${isCenter ? 'w-24 h-24' : 'w-20 h-20'} ${isActive ? 'bg-white/20 dark:bg-black/40 scale-110' : 'bg-white/5 dark:bg-black/20'} ${isDark ? 'border-white/10' : 'border-slate-200'}`}
+                        style={{ boxShadow: isActive ? `0 0 30px ${item.accent}40` : undefined }} 
+                      />
 
-                      {/* Elemento flutuante contra-rotacionado */}
-                      <div className="absolute top-1/2 left-1/2 flex flex-col items-center gap-2 transition-all duration-500"
-                           style={{
-                             transform: `translate(-50%, -50%) rotateZ(-45deg) rotateX(-60deg) translateY(${isActive ? '-60px' : '-40px'}) scale(${isActive ? 1.15 : 1})`,
-                             transformStyle: "preserve-3d"
-                           }}>
-                        <div className={`relative flex items-center justify-center transition-all duration-300 ${isCenter ? 'w-16 h-16 rounded-2xl' : 'w-14 h-14 rounded-2xl'} bg-gradient-to-br from-white to-slate-100 dark:from-slate-700 dark:to-slate-900`}
-                             style={{
-                               border: `2px solid ${isActive ? item.accent : (isDark ? "rgba(255,255,255,0.09)" : "rgba(0,0,0,0.1)")}`,
-                               boxShadow: isActive ? `0 15px 30px ${item.accent}40, inset 0 0 20px ${item.accent}20` : (isDark ? "0 10px 20px rgba(0,0,0,0.3)" : "0 10px 20px rgba(0,0,0,0.1)")
-                             }}>
-                          <Icon className={`${isCenter ? 'w-7 h-7' : 'w-6 h-6'}`} style={{ color: isActive ? item.accent : (isDark ? "#ffffff" : "#1e293b"), filter: isActive ? `drop-shadow(0 0 8px ${item.accent})` : "none" }} />
+                      {/* Botão Flutuante que se levanta do chão */}
+                      <button
+                        onClick={() => setActiveNode(item.id)}
+                        className={`group absolute top-1/2 left-1/2 flex flex-col items-center gap-3 transition-all duration-500 hover:-translate-y-4 outline-none ${isActive ? '-translate-y-6' : ''}`}
+                        style={{
+                          transform: "translate(-50%, -50%) rotateZ(-45deg) rotateX(-60deg)",
+                          transformStyle: "preserve-3d"
+                        }}
+                      >
+                        <div 
+                          className={`flex items-center justify-center transition-all duration-300 ${isCenter ? 'w-20 h-20' : 'w-16 h-16'} rounded-2xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-md shadow-[0_10px_20px_rgba(0,0,0,0.1),_inset_0_-4px_6px_rgba(0,0,0,0.05)] dark:shadow-[0_10px_20px_rgba(0,0,0,0.5),_inset_0_-4px_6px_rgba(255,255,255,0.1)]`}
+                          style={{
+                            border: `2px solid ${isActive ? item.accent : 'transparent'}`,
+                          }}
+                        >
+                          <Icon className={`${isCenter ? 'w-8 h-8' : 'w-6 h-6'} text-slate-800 dark:text-white transition-colors duration-300`} style={{ color: isActive ? item.accent : undefined }} />
                         </div>
-                        
+
                         {!isCenter && (
-                          <span className={`text-[11px] font-medium tracking-wide text-center leading-tight max-w-[80px] transition-all duration-300 text-slate-800 dark:text-slate-300 ${isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100"}`}
-                                style={isActive ? { color: item.accent, textShadow: `0 0 12px ${item.accent}90` } : undefined}>
+                          <span 
+                            className={`text-[12px] font-medium tracking-wide text-center leading-tight max-w-[120px] transition-all duration-300 text-slate-800 dark:text-white ${isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100"}`}
+                            style={isActive ? { color: item.accent, textShadow: `0 0 12px ${item.accent}90` } : undefined}
+                          >
                             {item.label}
                           </span>
                         )}
                         {isCenter && (
-                          <p className={`text-[10px] text-center mt-1 font-mono uppercase tracking-wider font-bold transition-all duration-300 ${isActive ? 'opacity-100' : 'opacity-80'} text-slate-800 dark:text-white`} style={isActive ? { color: item.accent } : undefined}>ARIANO</p>
+                          <span 
+                            className={`text-[13px] text-center mt-1 font-mono uppercase tracking-wider font-bold transition-all duration-300 ${isActive ? 'opacity-100' : 'opacity-80'} text-slate-800 dark:text-white`} 
+                            style={isActive ? { color: item.accent } : undefined}
+                          >
+                            ARIANO
+                          </span>
                         )}
-                      </div>
-                    </button>
+                      </button>
+                    </div>
                   );
                 })}
               </div>
