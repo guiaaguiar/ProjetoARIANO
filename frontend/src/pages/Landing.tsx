@@ -83,7 +83,7 @@ const ECOSYSTEM_ITEMS = [
     cta: "Conhecer a origem",
     link: "/cadastro",
     accent: "#22d3ee",
-    nodePos: { top: "15%", left: "15%" },
+    positionClass: "absolute top-[15%] left-[15%] -translate-x-1/2 -translate-y-1/2",
   },
   {
     id: "quadrupla",
@@ -94,7 +94,7 @@ const ECOSYSTEM_ITEMS = [
     cta: "Ver o ecossistema",
     link: "/cadastro",
     accent: "#60a5fa",
-    nodePos: { top: "15%", left: "85%" },
+    positionClass: "absolute top-[15%] right-[15%] translate-x-1/2 -translate-y-1/2",
   },
   {
     id: "grafo",
@@ -105,7 +105,7 @@ const ECOSYSTEM_ITEMS = [
     cta: "Explorar o grafo",
     link: "/cadastro",
     accent: "#a78bfa",
-    nodePos: { top: "85%", left: "15%" },
+    positionClass: "absolute bottom-[15%] left-[15%] -translate-x-1/2 translate-y-1/2",
   },
   {
     id: "ia",
@@ -116,7 +116,7 @@ const ECOSYSTEM_ITEMS = [
     cta: "Entender a IA",
     link: "/cadastro",
     accent: "#34d399",
-    nodePos: { top: "85%", left: "85%" },
+    positionClass: "absolute bottom-[15%] right-[15%] translate-x-1/2 translate-y-1/2",
   },
   {
     id: "ariano",
@@ -127,7 +127,7 @@ const ECOSYSTEM_ITEMS = [
     cta: "Ver a plataforma",
     link: "/cadastro",
     accent: "#f43f5e",
-    nodePos: { top: "50%", left: "50%" },
+    positionClass: "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
   },
 ];
 
@@ -631,24 +631,29 @@ const Landing = () => {
             <div className="relative w-full aspect-square flex items-center justify-center" style={{ perspective: '1500px' }}>
               <div className="relative w-[80%] h-[80%]" style={{ transform: 'rotateX(60deg) rotateZ(45deg)', transformStyle: 'preserve-3d' }}>
                 {/* SVG Lines connecting the nodes no chão */}
-                <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ overflow: "visible" }}>
+                <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ overflow: "visible" }}>
                   {ECOSYSTEM_ITEMS.map((item) => {
                     if (item.id === "ariano") return null;
                     const isActive = activeNode === item.id;
-                    const endX = parseInt(item.nodePos.left);
-                    const endY = parseInt(item.nodePos.top);
+                    
+                    let x2 = "15%";
+                    let y2 = "15%";
+                    if (item.id === "origem") { x2 = "15%"; y2 = "15%"; }
+                    if (item.id === "quadrupla") { x2 = "85%"; y2 = "15%"; }
+                    if (item.id === "grafo") { x2 = "15%"; y2 = "85%"; }
+                    if (item.id === "ia") { x2 = "85%"; y2 = "85%"; }
+
                     return (
                       <line
                         key={item.id}
-                        x1="50" y1="50"
-                        x2={endX} y2={endY}
+                        x1="50%" y1="50%"
+                        x2={x2} y2={y2}
                         stroke={isActive ? item.accent : (isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.12)")}
-                        strokeWidth={isActive ? 0.6 : 0.35}
-                        strokeDasharray={isActive ? "0" : "2 2"}
+                        strokeWidth={isActive ? 2 : 1}
+                        strokeDasharray={isActive ? "0" : "4 4"}
                         style={{
                           filter: isActive ? `drop-shadow(0 0 3px ${item.accent})` : "none",
                           transition: "stroke 0.3s, stroke-width 0.3s, filter 0.3s",
-                          vectorEffect: "non-scaling-stroke",
                         }}
                       />
                     );
@@ -663,11 +668,8 @@ const Landing = () => {
                   return (
                     <div
                       key={item.id}
-                      className="absolute z-20"
+                      className={`absolute z-20 ${item.positionClass}`}
                       style={{ 
-                        top: item.nodePos.top, 
-                        left: item.nodePos.left, 
-                        transform: "translate(-50%, -50%)", 
                         transformStyle: "preserve-3d" 
                       }}
                     >
@@ -693,12 +695,12 @@ const Landing = () => {
                             borderColor: isActive ? item.accent : undefined,
                           }}
                         >
-                          <Icon className="w-8 h-8 text-slate-900 dark:text-cyan-400 transition-colors duration-300" style={{ color: isActive ? item.accent : undefined }} />
+                          <Icon className="w-8 h-8 !text-slate-900 dark:!text-cyan-400 transition-colors duration-300" style={{ color: isActive ? item.accent : undefined }} />
                         </div>
 
                         {!isCenter && (
                           <span 
-                            className={`text-slate-900 dark:text-slate-300 mt-4 text-center font-semibold tracking-wide drop-shadow-sm transition-all duration-300 max-w-[120px] ${isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100"}`}
+                            className={`!text-slate-900 dark:!text-slate-300 mt-4 text-center font-semibold drop-shadow-sm transition-all duration-300 max-w-[120px] ${isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100"}`}
                             style={isActive ? { color: item.accent, textShadow: `0 0 12px ${item.accent}90` } : undefined}
                           >
                             {item.label}
@@ -706,7 +708,7 @@ const Landing = () => {
                         )}
                         {isCenter && (
                           <span 
-                            className={`text-slate-900 dark:text-slate-300 mt-4 text-center font-semibold tracking-wide drop-shadow-sm uppercase transition-all duration-300 ${isActive ? 'opacity-100' : 'opacity-80'}`} 
+                            className={`!text-slate-900 dark:!text-slate-300 mt-4 text-center font-semibold drop-shadow-sm uppercase transition-all duration-300 ${isActive ? 'opacity-100' : 'opacity-80'}`} 
                             style={isActive ? { color: item.accent } : undefined}
                           >
                             ARIANO
