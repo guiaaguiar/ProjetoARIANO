@@ -244,6 +244,8 @@ const Landing = () => {
       className="relative min-h-screen w-full text-foreground overflow-x-hidden bg-cover bg-center bg-no-repeat bg-fixed"
       style={{ backgroundImage: `url(${isDark ? bgDark : bgLight})` }}
     >
+      {/* Top Background Gradient */}
+      <div className="absolute top-0 left-0 right-0 h-40 pointer-events-none bg-gradient-to-b from-white/90 to-transparent dark:from-[#020810]/90 dark:to-transparent z-0" />
 
       {/* Nav */}
       <nav className="fixed top-0 z-50 w-full backdrop-blur-md border-b px-6 bg-white/70 border-slate-200/80 dark:bg-[#0a0a0a]/80 dark:border-white/[0.06]">
@@ -466,7 +468,7 @@ const Landing = () => {
       <section className="relative z-10 py-32 px-6 overflow-hidden bg-transparent">
         {/* Ambient glow */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-cyan-500/[0.02] blur-[120px] rounded-full" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-cyan-500/15 blur-[120px] rounded-full" />
         </div>
 
         <motion.div {...fadeUp} className="mx-auto max-w-[1200px] relative">
@@ -628,7 +630,7 @@ const Landing = () => {
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 60% 50%, rgba(34,211,238,0.02) 0%, transparent 60%)" }} />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, rgba(34,211,238,0.03) 0%, transparent 65%)", filter: "blur(40px)" }} />
-          <div className="absolute bottom-0 right-1/4 w-[350px] h-[350px] bg-blue-500/[0.02] blur-[100px] rounded-full" />
+          <div className="absolute bottom-0 right-1/4 w-[350px] h-[350px] bg-blue-500/15 blur-[100px] rounded-full" />
         </div>
 
         <motion.div {...fadeUp} className="mx-auto max-w-[1200px] relative">
@@ -853,8 +855,8 @@ const Landing = () => {
       <section className="relative z-10 py-32 px-6 overflow-hidden border-t border-slate-200 dark:border-white/[0.06] bg-transparent">
         {/* Background glows */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-cyan-500/[0.02] blur-[100px] rounded-full" />
-          <div className="absolute top-1/3 right-1/4 w-[300px] h-[300px] bg-blue-500/[0.02] blur-[100px] rounded-full" />
+          <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-cyan-500/15 blur-[100px] rounded-full" />
+          <div className="absolute top-1/3 right-1/4 w-[300px] h-[300px] bg-blue-500/15 blur-[100px] rounded-full" />
         </div>
 
         <motion.div {...fadeUp} className="mx-auto max-w-[1200px] relative">
@@ -1167,7 +1169,7 @@ const Landing = () => {
       <section className="relative z-10 pt-32 pb-40 px-6 overflow-hidden bg-transparent">
         {/* Glow */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-cyan-500/[0.02] blur-[120px] rounded-full" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-cyan-500/15 blur-[120px] rounded-full" />
         </div>
         <motion.div {...fadeUp} className="mx-auto max-w-[1200px] text-center relative">
           <h2 className="text-[clamp(2rem,4vw,3.2rem)] font-[500] tracking-[-0.035em] leading-[1.1] mx-auto max-w-[560px] text-slate-900 dark:text-white">
