@@ -2,9 +2,9 @@
 
 > **Versão:** 12.0.0  
 > **Data:** 02/05/2026  
-> **Status:** MVP 1.0.0 Online — Sprint 14 (UX Premium, Cadência Cognitiva & Justificativas Reais)
+> **Status:** MVP 1.0.0 Online — Sprint Definitiva (UX Premium, Deploy Fullstack, Resiliência Serverless)
 > **Metodologia:** SCRUM (adaptado para contexto acadêmico)  
-> **Última atualização:** 02/05/2026 — Sprint 14 (Cadência Cognitiva, Justificativas Profundas, Fix de Sessão)
+> **Última atualização:** 02/06/2026 — Sprint Definitiva (Conclusão do MVP, Vercel Deploy)
 
 ---
 
@@ -551,7 +551,8 @@ Os agentes do ARIANO são configurados com prompts especializados que implementa
 │  🎨 FRONTEND                                              │
 │  ├─ Vite 5 + React 18 + TypeScript                       │
 │  ├─ Tailwind CSS v4 (Design System: Teal Neon/Glassmorphism)│
-│  ├─ react-force-graph (motor interativo Canvas/WebGL)      │
+│  ├─ react-force-graph & SVG Force Graphs (motor interativo)│
+│  ├─ Recharts (gráficos de maturidade e perfil)            │
 │  └─ Framer Motion (animações e transições fluídas)        │
 │                                                           │
 │  ⚙️ BACKEND                                               │
@@ -563,8 +564,8 @@ Os agentes do ARIANO são configurados com prompts especializados que implementa
 │  └─ Neomodel (OGM) + Neo4j Driver (Cypher nativo)         │
 │                                                           │
 │  🗄️ DADOS                                                 │
-│  ├─ Neo4j Local (Python Interpreter)                       │
-│  └─ Vercel KV / Redis (Camada de Persistência)             │
+│  ├─ Neo4j Local Concept (Processamento O(1) in-memory)     │
+│  └─ Vercel KV / Redis (Persistência Híbrida p/ Stateless)  │
 │                                                           │
 │  🔧 DEVOPS & DEPLOY                                       │
 │  ├─ **Vercel Fullstack Deployment** (Monorepo)            │
