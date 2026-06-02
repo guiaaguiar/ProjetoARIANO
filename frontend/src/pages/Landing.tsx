@@ -247,8 +247,7 @@ const Landing = () => {
       {/* Top Background Gradient */}
       <div className="absolute top-0 left-0 right-0 h-40 pointer-events-none bg-gradient-to-b from-white/90 to-transparent dark:from-[#020810]/90 dark:to-transparent z-0" />
 
-      {/* Nav */}
-      <nav className="fixed top-0 z-50 w-full backdrop-blur-md border-b px-6 bg-white/70 border-slate-200/80 dark:bg-[#0a0a0a]/80 dark:border-white/[0.06]">
+      <nav className="fixed top-0 z-50 w-full backdrop-blur-md border-b px-6 bg-white/90 border-slate-200/80 dark:bg-[#020810]/90 dark:border-white/10">
         <div className="mx-auto flex h-[56px] max-w-[1200px] items-center justify-between">
           <Link to="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="flex items-center gap-2 -ml-0.5">
             <StackedLogo size={16} />
@@ -313,7 +312,7 @@ const Landing = () => {
             <motion.div
               {...fadeUp}
               transition={{ ...fadeUp.transition, delay: 0.2 } as any}
-              className="relative z-10 rounded-t-xl overflow-hidden shadow-2xl border border-b-0 border-slate-200 bg-white/80 backdrop-blur-sm dark:border-white/[0.06] dark:bg-[#0d1520] dark:backdrop-blur-none"
+              className="relative z-10 rounded-t-xl overflow-hidden shadow-2xl border border-b-0 border-slate-200 bg-white/90 backdrop-blur-lg dark:border-white/[0.06] dark:bg-[#0d1520] dark:backdrop-blur-none"
             >
               {/* MacOS Window Controls */}
               <div className="h-10 border-b flex items-center px-4 gap-2 bg-slate-100/80 border-slate-200 dark:bg-[#060c14]/40 dark:border-white/[0.06]">
@@ -468,7 +467,7 @@ const Landing = () => {
       <section className="relative z-10 py-32 px-6 overflow-hidden bg-transparent">
         {/* Ambient glow */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-cyan-500/15 blur-[120px] rounded-full" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-cyan-100/40 dark:bg-cyan-500/15 blur-[120px] rounded-full" />
         </div>
 
         <motion.div {...fadeUp} className="mx-auto max-w-[1200px] relative">
@@ -630,7 +629,7 @@ const Landing = () => {
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 60% 50%, rgba(34,211,238,0.02) 0%, transparent 60%)" }} />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, rgba(34,211,238,0.03) 0%, transparent 65%)", filter: "blur(40px)" }} />
-          <div className="absolute bottom-0 right-1/4 w-[350px] h-[350px] bg-blue-500/15 blur-[100px] rounded-full" />
+          <div className="absolute bottom-0 right-1/4 w-[350px] h-[350px] bg-blue-100/40 dark:bg-blue-500/15 blur-[100px] rounded-full" />
         </div>
 
         <motion.div {...fadeUp} className="mx-auto max-w-[1200px] relative">
@@ -855,8 +854,8 @@ const Landing = () => {
       <section className="relative z-10 py-32 px-6 overflow-hidden border-t border-slate-200 dark:border-white/[0.06] bg-transparent">
         {/* Background glows */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-cyan-500/15 blur-[100px] rounded-full" />
-          <div className="absolute top-1/3 right-1/4 w-[300px] h-[300px] bg-blue-500/15 blur-[100px] rounded-full" />
+          <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-cyan-100/40 dark:bg-cyan-500/15 blur-[100px] rounded-full" />
+          <div className="absolute top-1/3 right-1/4 w-[300px] h-[300px] bg-blue-100/40 dark:bg-blue-500/15 blur-[100px] rounded-full" />
         </div>
 
         <motion.div {...fadeUp} className="mx-auto max-w-[1200px] relative">
@@ -1104,8 +1103,8 @@ const Landing = () => {
                       (i < activeTestimonial ? "left-0 -translate-x-[150%] opacity-0 pointer-events-none" : "right-0 translate-x-[150%] opacity-0 pointer-events-none");
 
               const glowClass = isCenter
-                ? "shadow-[0_0_40px_rgba(34,211,238,0.05)] backdrop-blur-md bg-white/80 dark:bg-[#0d1520]/70"
-                : "backdrop-blur-sm pointer-events-none bg-white/30 dark:bg-[#0a0a0a]/20";
+                ? "shadow-[0_0_40px_rgba(34,211,238,0.05)] backdrop-blur-lg bg-white/90 dark:bg-[#0d1520]/70"
+                : "backdrop-blur-md pointer-events-none bg-white/60 dark:bg-[#0a0a0a]/20";
 
               return (
                 <div
@@ -1169,7 +1168,7 @@ const Landing = () => {
       <section className="relative z-10 pt-32 pb-40 px-6 overflow-hidden bg-transparent">
         {/* Glow */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-cyan-500/15 blur-[120px] rounded-full" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-cyan-100/40 dark:bg-cyan-500/15 blur-[120px] rounded-full" />
         </div>
         <motion.div {...fadeUp} className="mx-auto max-w-[1200px] text-center relative">
           <h2 className="text-[clamp(2rem,4vw,3.2rem)] font-[500] tracking-[-0.035em] leading-[1.1] mx-auto max-w-[560px] text-slate-900 dark:text-white">
@@ -1194,7 +1193,7 @@ const Landing = () => {
       {/* ════════════════════════════════════════════════════════════
           FOOTER
       ════════════════════════════════════════════════════════════ */}
-      <div className="relative z-10 border-t backdrop-blur-md border-slate-200 bg-white/70 dark:border-white/[0.06] dark:bg-[#0a0a0a]/80">
+      <div className="relative z-10 border-t backdrop-blur-md border-slate-200 bg-white/90 dark:border-white/10 dark:bg-[#020810]/90">
         <div className="mx-auto max-w-[1200px] px-6 py-10 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2">
             <StackedLogo size={16} />
