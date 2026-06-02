@@ -22,8 +22,8 @@ _driver = None
 # ═══════════════════════════════════════════
 
 @retry(
-    stop=stop_after_attempt(3),
-    wait=wait_exponential(multiplier=1, min=1, max=5),
+    stop=stop_after_attempt(2),
+    wait=wait_exponential(multiplier=0.5, min=0.5, max=2),
     retry=retry_if_exception_type(Exception),
     reraise=True,
 )
@@ -75,6 +75,19 @@ def get_driver() -> Any:
         _driver = _connect()
         return _driver
     except Exception as exc:
+        try:
+            from neo4j.exceptions import AuthError
+            is_auth_error = isinstance(exc, AuthError) or "authentication failure" in str(exc).lower()
+        except ImportError:
+            is_auth_error = "authentication failure" in str(exc).lower()
+
+        if is_auth_error:
+            logger.error(f"❌ Falha de credenciais no Neo4j: {exc}")
+            raise HTTPException(
+                status_code=503,
+                detail="Banco de dados temporariamente inacessível por falha de credenciais. Contate o suporte."
+            )
+
         logger.error(f"❌ Neo4j Aura unreachable after retries: {exc}")
         raise HTTPException(
             status_code=503,
@@ -114,6 +127,19 @@ def run_cypher(query: str, params: dict | None = None) -> list[dict]:
     except HTTPException:
         raise
     except Exception as exc:
+        try:
+            from neo4j.exceptions import AuthError
+            is_auth_error = isinstance(exc, AuthError) or "authentication failure" in str(exc).lower()
+        except ImportError:
+            is_auth_error = "authentication failure" in str(exc).lower()
+            
+        if is_auth_error:
+            logger.error(f"❌ Falha de credenciais no Neo4j durante query: {exc}")
+            raise HTTPException(
+                status_code=503,
+                detail="Banco de dados temporariamente inacessível por falha de credenciais. Contate o suporte."
+            )
+
         logger.error(f"Cypher query failed: {exc}\nQuery: {query[:200]}")
         raise HTTPException(status_code=500, detail=f"Cypher query failed: {exc}")
 

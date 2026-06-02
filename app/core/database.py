@@ -25,8 +25,18 @@ def init_db() -> None:
     from app.core.neo4j_driver import get_driver
 
     try:
+        from neo4j.exceptions import AuthError, ServiceUnavailable
+    except ImportError:
+        AuthError = Exception
+        ServiceUnavailable = Exception
+
+    try:
         get_driver()
         logger.info("✅ Neo4j Aura connection verified on startup.")
+    except AuthError as exc:
+        logger.error("Falha de credenciais no Neo4j: %s. API iniciada sem banco.", exc)
+    except ServiceUnavailable as exc:
+        logger.error("Neo4j temporariamente indisponível: %s. API iniciada sem banco.", exc)
     except Exception as exc:
         # Log the error but do NOT re-raise — let individual endpoints fail gracefully
         logger.error(
