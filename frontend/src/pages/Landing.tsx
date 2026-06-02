@@ -1,3 +1,4 @@
+import React from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, LayoutDashboard, Zap, Network, Search, Settings, ChevronLeft, ChevronRight, Layers, GitMerge, Users, BookOpen } from "lucide-react";
 import { Graph3D } from "@/components/Graph3D";
@@ -39,13 +40,13 @@ const TESTIMONIALS = [
     text: "A arquitetura e os pipelines de deploy automatizado transformaram o ciclo de vida do projeto. Temos agora estabilidade garantida em cada release.",
     name: "Pedro Miranda",
     role: "DevOps",
-    avatar: "" 
+    avatar: ""
   },
   {
     text: "A integração dos modelos de linguagem e a engenharia de prompts avançada elevaram a precisão dos matches em níveis extraordinários.",
     name: "Ricardo Cezar",
     role: "AI Agent Architect",
-    avatar: "" 
+    avatar: ""
   },
   {
     text: "O design do ARIANO foca na usabilidade e na clareza visual, garantindo que cada interação com o grafo seja intuitiva e produtiva.",
@@ -69,46 +70,51 @@ const fadeUp = {
 };
 
 // ─── ECOSYSTEM NODES DATA ─────────────────────────────────────────────────────
+// Nós posicionados nos 4 cantos para formar o layout em "X" (diagonal)
 const ECOSYSTEM_ITEMS = [
   {
-    icon: Layers,
-    label: "Matchmaking com IA",
-    title: "Matches com precisão cirúrgica",
-    description: "Nossos modelos de linguagem analisam seu perfil em múltiplas dimensões — skills, TRL e histórico de colaboração — para gerar recomendações com altíssima taxa de acerto.",
-    cta: "Ver meus matches",
+    icon: GitMerge,
+    label: "Origem e História",
+    title: "DNA Acadêmico e Governamental",
+    description: "Nascido na UNINASSAU (Tópicos Integradores), o ARIANO é o motor de matchmaking oficial da plataforma CORETO, da Secretaria de Ciência, Tecnologia e Inovação do Recife (SECTI).",
+    cta: "Conhecer a origem",
     link: "/cadastro",
     accent: "#22d3ee",
-    nodePos: { top: "8%", left: "50%", transform: "translateX(-50%)" },
-  },
-  {
-    icon: Network,
-    label: "Grafo de Comunidades",
-    title: "Visualize o ecossistema em tempo real",
-    description: "O motor de grafos exibe as Communities of Trust de forma interativa. Explore conexões, identifique hubs de inovação e descubra onde você se encaixa no ecossistema.",
-    cta: "Explorar o grafo",
-    link: "/cadastro",
-    accent: "#60a5fa",
-    nodePos: { top: "50%", left: "10%", transform: "translateY(-50%)" },
+    // Canto superior-esquerdo
+    nodePos: { top: "0%", left: "0%" },
   },
   {
     icon: Users,
-    label: "Comunidades de Confiança",
-    title: "Colabore com quem importa",
-    description: "Entre em comunidades temáticas gerenciadas por especialistas. Compartilhe projetos, encontre orientadores e forme equipes que aceleram resultados.",
-    cta: "Entrar em uma comunidade",
+    label: "Quádrupla Hélice",
+    title: "Conectando a Quádrupla Hélice",
+    description: "Nosso objetivo é eliminar silos de informação, conectando Donos de Problemas (Governo e Indústria) a Solucionadores (Academia e Startups) em um ecossistema vivo.",
+    cta: "Ver o ecossistema",
     link: "/cadastro",
-    accent: "#a78bfa",
-    nodePos: { top: "50%", right: "10%", transform: "translateY(-50%)" },
+    accent: "#60a5fa",
+    // Canto superior-direito
+    nodePos: { top: "0%", right: "0%" },
   },
   {
-    icon: BookOpen,
-    label: "Editais Inteligentes",
-    title: "Nunca perca um edital relevante",
-    description: "A plataforma monitora continuamente editais de fomento, bolsas e programas de inovação. Você recebe apenas os que são realmente relevantes para seu perfil.",
-    cta: "Ver editais disponíveis",
+    icon: Network,
+    label: "Grafo de Conhecimento",
+    title: "Cérebro em Grafo (Neo4j)",
+    description: "Diferente de bancos SQL rígidos, utilizamos Grafos de Conhecimento e adjacência livre de índice para cruzar múltiplas dimensões de perfil e retornar matches instantâneos em tempo O(1).",
+    cta: "Explorar o grafo",
+    link: "/cadastro",
+    accent: "#a78bfa",
+    // Canto inferior-esquerdo
+    nodePos: { bottom: "0%", left: "0%" },
+  },
+  {
+    icon: Zap,
+    label: "IA Precomputada",
+    title: "Precomputed Relational Intelligence",
+    description: "Nossa IA (NVIDIA Nemotron) não faz o match ao vivo. Ela age nos bastidores configurando o grafo via Graph-CoT, criando Comunidades de Pensamento para recomendações com precisão cirúrgica.",
+    cta: "Entender a IA",
     link: "/cadastro",
     accent: "#34d399",
-    nodePos: { bottom: "8%", left: "50%", transform: "translateX(-50%)" },
+    // Canto inferior-direito
+    nodePos: { bottom: "0%", right: "0%" },
   },
 ];
 
@@ -159,7 +165,7 @@ const Landing = () => {
     const baseSize = w < 1024 ? 300 : window.innerHeight - 32;
     return baseSize * 0.1;
   });
-  
+
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [activeNode, setActiveNode] = useState<number | null>(null);
   const scrollTimeout = useRef<any>(null);
@@ -297,7 +303,7 @@ const Landing = () => {
           </div>
 
           <div className="relative" style={{ overflow: "visible" }}>
-            <motion.div 
+            <motion.div
               {...fadeUp}
               transition={{ ...fadeUp.transition, delay: 0.2 } as any}
               className="relative z-10 rounded-t-xl border border-b-0 border-white/[0.06] bg-[#0d1520] overflow-hidden shadow-2xl"
@@ -318,11 +324,11 @@ const Landing = () => {
                     <span className="text-[12px] font-bold text-white tracking-tight">ARIANO</span>
                   </div>
                   <div className="h-px bg-white/[0.06] mb-2" />
-                  
+
                   <span className="text-[9px] text-white/30 uppercase tracking-wider font-semibold mb-1 px-2">
                     Menu
                   </span>
-                  
+
                   {[
                     { label: 'Dashboard', icon: LayoutDashboard },
                     { label: 'Meus Matches', icon: Zap, active: true },
@@ -334,7 +340,7 @@ const Landing = () => {
                       <span className="text-[12px] font-medium">{item.label}</span>
                     </div>
                   ))}
-                  
+
                   <div className="mt-auto pt-2">
                     <div className="h-px bg-white/[0.06] mb-2" />
                     <div className="flex items-center gap-2.5 px-2.5 h-8 rounded-lg cursor-pointer text-white/40 hover:text-white hover:bg-white/5 transition-colors">
@@ -370,12 +376,12 @@ const Landing = () => {
                           <div className={`h-1.5 w-1.5 rounded-sm ${row.priority}`} />
                         </div>
                         <span className="text-[10px] text-teal-400 font-mono font-bold bg-teal-400/10 px-1.5 rounded shrink-0 z-10">{row.id}</span>
-                        
+
                         <div className="flex items-center gap-3 flex-1 min-w-0 z-10">
                           <span className="text-[12px] font-medium text-white truncate">{row.name}</span>
                           <span className="text-[12px] text-white/40 truncate hidden sm:inline-block">{row.area}</span>
                         </div>
-                        
+
                         <div className="ml-auto flex items-center gap-3 z-10">
                           <span className="text-[11px] font-mono text-white/40">{row.score}</span>
                           <div className={`h-2 w-2 rounded-full ${row.status}`} />
@@ -461,6 +467,7 @@ const Landing = () => {
               Sobre a Plataforma
             </p>
             <h2 className="text-[clamp(2rem,4vw,3.2rem)] font-[500] tracking-[-0.04em] leading-[1.1] text-white">
+              Arquitetura de{" "}
               <span
                 className="text-cyan-400"
                 style={{ textShadow: "0 0 15px rgba(34,211,238,0.5)" }}
@@ -600,13 +607,14 @@ const Landing = () => {
       </section>
 
       {/* ════════════════════════════════════════════════════════════
-          SEÇÃO 3 — ECOSSISTEMA INTERATIVO (GRAFO SVG + CROSSFADE)
+          SEÇÃO 3 — ECOSSISTEMA INTERATIVO (GRAFO EM X + CROSSFADE)
       ════════════════════════════════════════════════════════════ */}
-      <section className="relative z-10 py-32 px-6 overflow-hidden border-t border-white/[0.06] bg-[#0a0a0a]">
-        {/* Ambient glow */}
+      <section className="relative z-10 py-32 px-6 overflow-hidden border-t border-white/[0.06]" style={{ background: "#020810" }}>
+        {/* Background com efeito de profundidade */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/2 right-0 w-[500px] h-[500px] bg-cyan-500/[0.08] blur-[120px] rounded-full -translate-y-1/2 translate-x-1/4" />
-          <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-blue-500/[0.05] blur-[100px] rounded-full" />
+          <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 60% 50%, rgba(34,211,238,0.06) 0%, transparent 60%)" }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, rgba(34,211,238,0.08) 0%, transparent 65%)", filter: "blur(40px)" }} />
+          <div className="absolute bottom-0 right-1/4 w-[350px] h-[350px] bg-blue-500/[0.05] blur-[100px] rounded-full" />
         </div>
 
         <motion.div {...fadeUp} className="mx-auto max-w-[1200px] relative">
@@ -622,77 +630,76 @@ const Landing = () => {
           {/* Two-column layout */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
-            {/* ── COLUNA ESQUERDA: Grafo SVG interativo ── */}
-            <div className="relative h-[420px] w-full">
-              {/* SVG connector lines */}
+            {/* ── COLUNA ESQUERDA: Grafo SVG interativo em X ── */}
+            <div className="relative w-full" style={{ aspectRatio: "1 / 1" }}>
+
+              {/* SVG: linhas diagonais do centro para os 4 cantos (layout X) */}
               <svg
                 className="absolute inset-0 w-full h-full pointer-events-none"
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
                 style={{ overflow: "visible" }}
               >
-                {/* Lines from center to each node */}
                 {ECOSYSTEM_ITEMS.map((item, i) => {
                   const isActive = activeNode === i;
-                  // Center is at 50%, 50% of the container
-                  // Node positions:  top=8% → y≈34px, left/right=10% → x≈42px, bottom=8% → y≈386px
-                  const centerX = "50%";
-                  const centerY = "50%";
-                  const nodeCoords = [
-                    { x: "50%", y: "8%" },   // top
-                    { x: "10%", y: "50%" },   // left
-                    { x: "90%", y: "50%" },   // right
-                    { x: "50%", y: "92%" },   // bottom
+                  // Coords dos cantos em viewBox 0-100
+                  const corners = [
+                    { x: 12, y: 12 }, // top-left  (nó 0)
+                    { x: 88, y: 12 }, // top-right (nó 1)
+                    { x: 12, y: 88 }, // bot-left  (nó 2)
+                    { x: 88, y: 88 }, // bot-right (nó 3)
                   ];
-                  const nc = nodeCoords[i];
+                  const c = corners[i];
                   return (
                     <line
                       key={i}
-                      x1={centerX} y1={centerY}
-                      x2={nc.x} y2={nc.y}
-                      stroke={isActive ? item.accent : "rgba(255,255,255,0.06)"}
-                      strokeWidth={isActive ? 2 : 1}
-                      strokeDasharray={isActive ? "0" : "4 4"}
+                      x1="50" y1="50"
+                      x2={c.x} y2={c.y}
+                      stroke={isActive ? item.accent : "rgba(255,255,255,0.07)"}
+                      strokeWidth={isActive ? 0.6 : 0.35}
+                      strokeDasharray={isActive ? "0" : "2 2"}
                       style={{
-                        filter: isActive ? `drop-shadow(0 0 6px ${item.accent})` : "none",
+                        filter: isActive ? `drop-shadow(0 0 3px ${item.accent})` : "none",
                         transition: "stroke 0.3s, stroke-width 0.3s, filter 0.3s",
+                        vectorEffect: "non-scaling-stroke",
                       }}
                     />
                   );
                 })}
               </svg>
 
-              {/* Central node */}
-              <div
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10"
-              >
+              {/* Nó central: ARIANO */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
                 <div
                   className="w-16 h-16 rounded-full flex items-center justify-center"
                   style={{
                     background: "rgba(34,211,238,0.12)",
-                    border: "2px solid rgba(34,211,238,0.4)",
-                    boxShadow: "0 0 30px rgba(34,211,238,0.25), 0 0 60px rgba(34,211,238,0.1)",
+                    border: "2px solid rgba(34,211,238,0.45)",
+                    boxShadow: "0 0 30px rgba(34,211,238,0.3), 0 0 70px rgba(34,211,238,0.12)",
                   }}
                 >
                   <Network className="w-6 h-6 text-cyan-400" />
                 </div>
-                <p className="text-[10px] text-cyan-400/60 text-center mt-2 font-mono uppercase tracking-wider">ARIANO</p>
+                <p className="text-[10px] text-cyan-400/70 text-center mt-2 font-mono uppercase tracking-wider">ARIANO</p>
               </div>
 
-              {/* Outer nodes */}
+              {/* Nós periféricos nos 4 cantos (layout X) */}
               {ECOSYSTEM_ITEMS.map((item, i) => {
                 const Icon = item.icon;
                 const isActive = activeNode === i;
-                const posStyles = [
-                  { top: "8%", left: "50%", transform: "translateX(-50%)" },    // top
-                  { top: "50%", left: "10%", transform: "translateY(-50%)" },   // left
-                  { top: "50%", right: "10%", transform: "translateY(-50%)" },  // right
-                  { bottom: "8%", left: "50%", transform: "translateX(-50%)" }, // bottom
-                ][i];
+                // Posições absolutas nos cantos
+                const posStyles: React.CSSProperties[] = [
+                  { top: 0,    left: 0    }, // top-left
+                  { top: 0,    right: 0   }, // top-right
+                  { bottom: 0, left: 0    }, // bottom-left
+                  { bottom: 0, right: 0   }, // bottom-right
+                ];
 
                 return (
                   <div
                     key={i}
                     className="absolute z-20 cursor-pointer"
-                    style={posStyles}
+                    style={posStyles[i]}
                     onMouseEnter={() => setActiveNode(i)}
                     onMouseLeave={() => setActiveNode(null)}
                   >
@@ -705,8 +712,10 @@ const Landing = () => {
                         className="w-14 h-14 rounded-2xl flex items-center justify-center"
                         style={{
                           backgroundColor: isActive ? `${item.accent}22` : "rgba(8,16,28,0.9)",
-                          border: `2px solid ${isActive ? item.accent : "rgba(255,255,255,0.08)"}`,
-                          boxShadow: isActive ? `0 0 20px ${item.accent}50, 0 0 40px ${item.accent}20` : "none",
+                          border: `2px solid ${isActive ? item.accent : "rgba(255,255,255,0.09)"}`,
+                          boxShadow: isActive
+                            ? `0 0 20px ${item.accent}55, 0 0 50px ${item.accent}22`
+                            : "0 0 0 1px rgba(255,255,255,0.04)",
                           transition: "all 0.3s ease",
                         }}
                       >
@@ -723,7 +732,7 @@ const Landing = () => {
                         className="text-[10px] font-semibold text-center leading-tight max-w-[80px]"
                         style={{
                           color: isActive ? item.accent : "rgba(255,255,255,0.35)",
-                          textShadow: isActive ? `0 0 10px ${item.accent}80` : "none",
+                          textShadow: isActive ? `0 0 12px ${item.accent}90` : "none",
                           transition: "color 0.3s",
                         }}
                       >
@@ -815,11 +824,6 @@ const Landing = () => {
                           <ArrowRight className="h-4 w-4" />
                         </button>
                       </Link>
-                      {activeNode === null && (
-                        <p className="text-[11px] text-white/20 mt-4 italic">
-                          Passe o mouse sobre um nó para explorar →
-                        </p>
-                      )}
                     </motion.div>
                   </AnimatePresence>
                 </div>
@@ -1054,17 +1058,17 @@ const Landing = () => {
               const isCenter = i === activeTestimonial;
               const isRight = i === (activeTestimonial + 1) % TESTIMONIALS.length;
               const isLeft = i === (activeTestimonial - 1 + TESTIMONIALS.length) % TESTIMONIALS.length;
-              
-              const posClass = 
+
+              const posClass =
                 isCenter ? "left-1/2 -translate-x-1/2 z-20 scale-100 opacity-100" :
-                isLeft ? "left-0 -translate-x-[85%] md:-translate-x-[80%] lg:-translate-x-[75%] z-10 scale-[0.8] opacity-10" :
-                isRight ? "right-0 translate-x-[85%] md:translate-x-[80%] lg:translate-x-[75%] z-10 scale-[0.8] opacity-10" :
-                (i < activeTestimonial ? "left-0 -translate-x-[150%] opacity-0 pointer-events-none" : "right-0 translate-x-[150%] opacity-0 pointer-events-none");
+                  isLeft ? "left-0 -translate-x-[85%] md:-translate-x-[80%] lg:-translate-x-[75%] z-10 scale-[0.8] opacity-10" :
+                    isRight ? "right-0 translate-x-[85%] md:translate-x-[80%] lg:translate-x-[75%] z-10 scale-[0.8] opacity-10" :
+                      (i < activeTestimonial ? "left-0 -translate-x-[150%] opacity-0 pointer-events-none" : "right-0 translate-x-[150%] opacity-0 pointer-events-none");
 
               const glowClass = isCenter ? "shadow-[0_0_40px_rgba(34,211,238,0.05)] bg-[#0d1520]/70 backdrop-blur-md" : "bg-[#0a0a0a]/20 backdrop-blur-sm pointer-events-none";
-              
+
               return (
-                <div 
+                <div
                   key={i}
                   className={`absolute top-1/2 -translate-y-1/2 w-[85vw] max-w-[720px] transition-all duration-700 ease-in-out border border-white/[0.08] rounded-2xl p-10 cursor-pointer ${posClass} ${glowClass}`}
                   onClick={() => { if (!isCenter) { if (isLeft) handlePrevTestimonial(); else handleNextTestimonial(); } }}
@@ -1097,8 +1101,8 @@ const Landing = () => {
             </button>
             <div className="flex gap-2.5">
               {TESTIMONIALS.map((_, i) => (
-                <button 
-                  key={i} 
+                <button
+                  key={i}
                   onClick={() => setActiveTestimonial(i)}
                   className={`w-2.5 h-2.5 rounded-full transition-all duration-500 ${i === activeTestimonial ? 'bg-cyan-400 shadow-[0_0_10px_#22d3ee] scale-125' : 'bg-white/20 hover:bg-white/40'}`}
                 />
@@ -1148,7 +1152,7 @@ const Landing = () => {
             <StackedLogo size={16} />
             <span className="text-[12px] font-bold text-white uppercase tracking-[0.08em]">ARIANO</span>
           </div>
-          
+
           <div className="flex flex-col items-center md:items-end gap-2">
             <span className="text-[10px] text-white/30 uppercase tracking-widest font-semibold">Realização / Apoio Institucional</span>
             <div className="flex items-center gap-4">
