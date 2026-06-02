@@ -35,8 +35,10 @@ def _connect() -> Any:
     driver = GraphDatabase.driver(
         settings.neo4j_uri,
         auth=(settings.neo4j_user, settings.neo4j_password),
-        connection_timeout=10.0,
-        max_connection_lifetime=300,
+        keep_alive=True,
+        max_connection_lifetime=200,
+        max_connection_pool_size=50,
+        connection_acquisition_timeout=10.0,
     )
     with driver.session() as session:
         session.run("RETURN 1").single()
@@ -53,7 +55,16 @@ def get_driver() -> Any:
     """
     global _driver
     if _driver is not None:
-        return _driver
+        try:
+            _driver.verify_connectivity()
+            return _driver
+        except Exception as e:
+            logger.warning(f"Neo4j connection lost in warm start ({e}). Reconnecting silenciosamente...")
+            try:
+                _driver.close()
+            except Exception:
+                pass
+            _driver = None
 
     from app.core.config import settings
 
