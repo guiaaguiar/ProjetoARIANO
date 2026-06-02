@@ -688,7 +688,7 @@ const Landing = () => {
                         }}
                       >
                         <div 
-                          className="w-20 h-20 rounded-2xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl shadow-[0_20px_25px_-5px_rgba(0,0,0,0.2),_inset_0_-4px_6px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_25px_-5px_rgba(0,0,0,0.5),_inset_0_-4px_6px_rgba(255,255,255,0.1)] flex items-center justify-center border border-slate-200 dark:border-slate-600 transition-all duration-300"
+                          className="w-20 h-20 rounded-2xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl shadow-[0_20px_25px_-5px_rgba(0,0,0,0.2),_inset_0_-4px_6px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_25px_-5px_rgba(0,0,0,0.5),_inset_0_-4px_6px_rgba(255,255,255,0.1)] flex items-center justify-center border border-slate-200 dark:border-slate-600 transition-all duration-300"
                           style={{
                             borderColor: isActive ? item.accent : undefined,
                           }}
@@ -698,7 +698,7 @@ const Landing = () => {
 
                         {!isCenter && (
                           <span 
-                            className={`text-[12px] font-medium tracking-wide text-center leading-tight max-w-[120px] transition-all duration-300 text-slate-800 dark:text-white ${isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100"}`}
+                            className={`text-slate-900 dark:text-slate-300 mt-4 text-center font-semibold tracking-wide drop-shadow-sm transition-all duration-300 max-w-[120px] ${isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100"}`}
                             style={isActive ? { color: item.accent, textShadow: `0 0 12px ${item.accent}90` } : undefined}
                           >
                             {item.label}
@@ -706,7 +706,7 @@ const Landing = () => {
                         )}
                         {isCenter && (
                           <span 
-                            className={`text-[13px] text-center mt-1 font-mono uppercase tracking-wider font-bold transition-all duration-300 ${isActive ? 'opacity-100' : 'opacity-80'} text-slate-800 dark:text-white`} 
+                            className={`text-slate-900 dark:text-slate-300 mt-4 text-center font-semibold tracking-wide drop-shadow-sm uppercase transition-all duration-300 ${isActive ? 'opacity-100' : 'opacity-80'}`} 
                             style={isActive ? { color: item.accent } : undefined}
                           >
                             ARIANO
@@ -775,15 +775,15 @@ const Landing = () => {
                       className="!text-slate-900 dark:!text-white"
                     >
                       <p
-                        className="text-[11px] uppercase tracking-[0.2em] font-bold mb-3 !text-slate-900 dark:!text-white"
+                        className="text-[11px] uppercase tracking-[0.2em] font-bold mb-3 text-slate-900 dark:text-white"
                         style={{ color: displayedItem.accent }}
                       >
-                        <span className="!text-slate-900 dark:!text-white" style={{ color: displayedItem.accent }}>{displayedItem.label}</span>
+                        <span className="text-slate-900 dark:text-white" style={{ color: displayedItem.accent }}>{displayedItem.label}</span>
                       </p>
-                      <h3 className="text-[clamp(1.4rem,2.5vw,1.9rem)] font-[500] tracking-[-0.03em] leading-[1.2] mb-5 !text-slate-900 dark:!text-white">
+                      <h3 className="text-[clamp(1.4rem,2.5vw,1.9rem)] font-[500] tracking-[-0.03em] leading-[1.2] mb-5 text-slate-900 dark:text-white">
                         {displayedItem.title}
                       </h3>
-                      <p className="text-[14px] leading-[1.8] mb-8 !text-slate-700 dark:!text-slate-300">
+                      <p className="text-[14px] leading-[1.8] mb-8 text-slate-700 dark:text-slate-300">
                         {displayedItem.description}
                       </p>
                       <Link to={displayedItem.link}>
