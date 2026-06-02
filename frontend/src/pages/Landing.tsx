@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, LayoutDashboard, Zap, Network, Search, Settings, ChevronLeft, ChevronRight, Layers, GitMerge, Users, BookOpen } from "lucide-react";
+import { ArrowRight, LayoutDashboard, Zap, Network, Search, Settings, ChevronLeft, ChevronRight, Layers, GitMerge, Users, BookOpen, Brain } from "lucide-react";
 import { Graph3D } from "@/components/Graph3D";
 import GuiAguiarImg from "@/assets/gui-aguiar.jpeg";
 import logoSecti from "@/assets/logo_secti.png";
@@ -118,6 +118,17 @@ const ECOSYSTEM_ITEMS = [
     // Canto inferior-direito
     nodePos: { bottom: "0%", right: "0%" },
   },
+  {
+    icon: Brain,
+    label: "Cérebro do CORETO",
+    title: "O Cérebro do CORETO",
+    description: "O ARIANO é o núcleo de inteligência artificial que centraliza as conexões, processa as variáveis da quádrupla hélice e distribui insights estratégicos em tempo real para todo o ecossistema.",
+    cta: "Ver a plataforma",
+    link: "/cadastro",
+    accent: "#f43f5e",
+    // Centro
+    nodePos: { top: "50%", left: "50%", transform: "translate(-50%, -50%)" },
+  },
 ];
 
 // ─── BENTO BOX DATA ───────────────────────────────────────────────────────────
@@ -169,7 +180,7 @@ const Landing = () => {
   });
 
   const [activeTestimonial, setActiveTestimonial] = useState(0);
-  const [activeNode, setActiveNode] = useState<number | null>(null);
+  const [activeNode, setActiveNode] = useState<number>(4);
   const scrollTimeout = useRef<any>(null);
 
   const handlePrevTestimonial = () => setActiveTestimonial(prev => (prev === 0 ? TESTIMONIALS.length - 1 : prev - 1));
@@ -244,10 +255,7 @@ const Landing = () => {
       className="relative min-h-screen w-full text-foreground overflow-x-hidden bg-cover bg-center bg-no-repeat bg-fixed"
       style={{ backgroundImage: `url(${isDark ? bgDark : bgLight})` }}
     >
-      {/* Top Background Gradient */}
-      <div className="absolute top-0 left-0 right-0 h-40 pointer-events-none bg-gradient-to-b from-white/90 to-transparent dark:from-[#020810]/90 dark:to-transparent z-0" />
-
-      <nav className="fixed top-0 z-50 w-full backdrop-blur-md border-b px-6 bg-white/90 border-slate-200/80 dark:bg-[#020810]/90 dark:border-white/10">
+      <nav className="fixed top-0 z-50 w-full px-6 border-b bg-white/80 dark:bg-[#020810]/80 backdrop-blur-md border-slate-200/80 dark:border-white/10">
         <div className="mx-auto flex h-[56px] max-w-[1200px] items-center justify-between">
           <Link to="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="flex items-center gap-2 -ml-0.5">
             <StackedLogo size={16} />
@@ -312,7 +320,7 @@ const Landing = () => {
             <motion.div
               {...fadeUp}
               transition={{ ...fadeUp.transition, delay: 0.2 } as any}
-              className="relative z-10 rounded-t-xl overflow-hidden shadow-2xl border border-b-0 border-slate-200 bg-white/90 backdrop-blur-lg dark:border-white/[0.06] dark:bg-[#0d1520] dark:backdrop-blur-none"
+              className="relative z-10 rounded-t-xl overflow-hidden bg-white/70 backdrop-blur-2xl border border-white/50 shadow-xl dark:bg-[#1a1a1a]/60 dark:border-white/10 dark:shadow-2xl"
             >
               {/* MacOS Window Controls */}
               <div className="h-10 border-b flex items-center px-4 gap-2 bg-slate-100/80 border-slate-200 dark:bg-[#060c14]/40 dark:border-white/[0.06]">
@@ -452,7 +460,7 @@ const Landing = () => {
                   </div>
                 </div>
               </div>
-              <div className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none bg-gradient-to-t from-white/80 dark:from-[#0a0a0a] to-transparent" />
+              
             </motion.div>
           </div>
         </div>
@@ -495,12 +503,7 @@ const Landing = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Card 1 — large, spans 2 cols */}
             <div
-              className="md:col-span-2 group relative rounded-2xl p-8 overflow-hidden cursor-default border"
-              style={{
-                background: isDark ? "rgba(8,16,28,0.7)" : "rgba(255,255,255,0.75)",
-                borderColor: isDark ? "rgba(34,211,238,0.12)" : "rgba(34,211,238,0.25)",
-                backdropFilter: "blur(20px)",
-              }}
+              className="md:col-span-2 group relative rounded-2xl p-8 overflow-hidden cursor-default bg-white/70 backdrop-blur-2xl border border-white/50 shadow-xl dark:bg-[#1a1a1a]/60 dark:border-white/10 dark:shadow-2xl"
             >
               <div className="absolute -top-12 -left-12 w-48 h-48 rounded-full pointer-events-none"
                 style={{ background: "radial-gradient(circle, rgba(34,211,238,0.12) 0%, transparent 70%)" }} />
@@ -522,12 +525,7 @@ const Landing = () => {
 
             {/* Card 2 */}
             <div
-              className="group relative rounded-2xl p-8 overflow-hidden cursor-default border"
-              style={{
-                background: isDark ? "rgba(8,16,28,0.7)" : "rgba(255,255,255,0.75)",
-                borderColor: isDark ? "rgba(96,165,250,0.12)" : "rgba(96,165,250,0.3)",
-                backdropFilter: "blur(20px)",
-              }}
+              className="group relative rounded-2xl p-8 overflow-hidden cursor-default bg-white/70 backdrop-blur-2xl border border-white/50 shadow-xl dark:bg-[#1a1a1a]/60 dark:border-white/10 dark:shadow-2xl"
             >
               <div className="absolute -top-8 -right-8 w-36 h-36 rounded-full pointer-events-none"
                 style={{ background: "radial-gradient(circle, rgba(96,165,250,0.12) 0%, transparent 70%)" }} />
@@ -545,12 +543,7 @@ const Landing = () => {
 
             {/* Card 3 */}
             <div
-              className="group relative rounded-2xl p-8 overflow-hidden cursor-default border"
-              style={{
-                background: isDark ? "rgba(8,16,28,0.7)" : "rgba(255,255,255,0.75)",
-                borderColor: isDark ? "rgba(167,139,250,0.12)" : "rgba(167,139,250,0.3)",
-                backdropFilter: "blur(20px)",
-              }}
+              className="group relative rounded-2xl p-8 overflow-hidden cursor-default bg-white/70 backdrop-blur-2xl border border-white/50 shadow-xl dark:bg-[#1a1a1a]/60 dark:border-white/10 dark:shadow-2xl"
             >
               <div className="absolute -bottom-8 -left-8 w-36 h-36 rounded-full pointer-events-none"
                 style={{ background: "radial-gradient(circle, rgba(167,139,250,0.12) 0%, transparent 70%)" }} />
@@ -568,12 +561,7 @@ const Landing = () => {
 
             {/* Card 4 */}
             <div
-              className="group relative rounded-2xl p-8 overflow-hidden cursor-default border"
-              style={{
-                background: isDark ? "rgba(8,16,28,0.7)" : "rgba(255,255,255,0.75)",
-                borderColor: isDark ? "rgba(52,211,153,0.12)" : "rgba(52,211,153,0.3)",
-                backdropFilter: "blur(20px)",
-              }}
+              className="group relative rounded-2xl p-8 overflow-hidden cursor-default bg-white/70 backdrop-blur-2xl border border-white/50 shadow-xl dark:bg-[#1a1a1a]/60 dark:border-white/10 dark:shadow-2xl"
             >
               <div
                 className="w-12 h-12 rounded-xl flex items-center justify-center mb-6"
@@ -589,14 +577,7 @@ const Landing = () => {
 
             {/* Card 5 — stat card */}
             <div
-              className="group relative rounded-2xl p-8 overflow-hidden cursor-default flex flex-col justify-between border"
-              style={{
-                background: isDark
-                  ? "linear-gradient(135deg, rgba(34,211,238,0.08) 0%, rgba(8,16,28,0.9) 100%)"
-                  : "linear-gradient(135deg, rgba(20,184,166,0.08) 0%, rgba(255,255,255,0.85) 100%)",
-                borderColor: isDark ? "rgba(34,211,238,0.2)" : "rgba(20,184,166,0.3)",
-                backdropFilter: "blur(20px)",
-              }}
+              className="group relative rounded-2xl p-8 overflow-hidden cursor-default flex flex-col justify-between bg-white/70 backdrop-blur-2xl border border-white/50 shadow-xl dark:bg-[#1a1a1a]/60 dark:border-white/10 dark:shadow-2xl"
             >
               <div>
                 <p className="text-[12px] uppercase tracking-[0.2em] font-bold mb-4 text-teal-600 dark:text-cyan-400">Em números</p>
@@ -664,6 +645,7 @@ const Landing = () => {
                     { x: 12, y: 88 }, // bot-left  (nó 2)
                     { x: 88, y: 88 }, // bot-right (nó 3)
                   ];
+                  if (i === 4) return null;
                   const c = corners[i];
                   return (
                     <line
@@ -683,76 +665,64 @@ const Landing = () => {
                 })}
               </svg>
 
-              {/* Nó central: ARIANO */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-                <div
-                  className="w-16 h-16 rounded-full flex items-center justify-center"
-                  style={{
-                    background: "rgba(34,211,238,0.12)",
-                    border: "2px solid rgba(34,211,238,0.45)",
-                    boxShadow: "0 0 30px rgba(34,211,238,0.3), 0 0 70px rgba(34,211,238,0.12)",
-                  }}
-                >
-                  <Network className="w-6 h-6 text-cyan-400" />
-                </div>
-                <p className="text-[10px] text-cyan-400/70 text-center mt-2 font-mono uppercase tracking-wider">ARIANO</p>
-              </div>
-
-              {/* Nós periféricos nos 4 cantos (layout X) */}
+              {/* Nós centrais e periféricos */}
+              
               {ECOSYSTEM_ITEMS.map((item, i) => {
                 const Icon = item.icon;
                 const isActive = activeNode === i;
-                // Posições absolutas nos cantos
-                const posStyles: React.CSSProperties[] = [
-                  { top: 0,    left: 0    }, // top-left
-                  { top: 0,    right: 0   }, // top-right
-                  { bottom: 0, left: 0    }, // bottom-left
-                  { bottom: 0, right: 0   }, // bottom-right
-                ];
+                const isCenter = i === 4;
 
                 return (
                   <div
                     key={i}
                     className="absolute z-20 cursor-pointer"
-                    style={posStyles[i]}
-                    onMouseEnter={() => setActiveNode(i)}
-                    onMouseLeave={() => setActiveNode(null)}
+                    style={item.nodePos as any}
+                    onClick={() => setActiveNode(i)}
                   >
                     <motion.div
-                      animate={{ scale: isActive ? 1.15 : 1 } as any}
-                      transition={{ duration: 0.25 } as any}
+                      animate={{ 
+                        scale: isActive ? 1.15 : 1,
+                        y: [0, -8, 0] 
+                      } as any}
+                      transition={{ 
+                        scale: { duration: 0.25 },
+                        y: { repeat: Infinity, duration: 4, ease: "easeInOut", delay: i * 0.2 } 
+                      } as any}
                       className="flex flex-col items-center gap-2"
                     >
                       <div
-                        className="w-14 h-14 rounded-2xl flex items-center justify-center"
+                        className={`rounded-2xl flex items-center justify-center transition-all duration-300 ${
+                          isCenter ? "w-16 h-16" : "w-14 h-14"
+                        } bg-gradient-to-br from-white to-slate-200 dark:from-slate-700 dark:to-slate-900 shadow-[0_10px_20px_rgba(0,0,0,0.1),_inset_0_-3px_5px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_20px_rgba(0,0,0,0.5),_inset_0_-3px_5px_rgba(0,0,0,0.5)]`}
                         style={{
-                          backgroundColor: isActive ? `${item.accent}22` : (isDark ? "rgba(8,16,28,0.9)" : "rgba(255,255,255,0.9)"),
                           border: `2px solid ${isActive ? item.accent : (isDark ? "rgba(255,255,255,0.09)" : "rgba(0,0,0,0.1)")}`,
                           boxShadow: isActive
-                            ? `0 0 20px ${item.accent}55, 0 0 50px ${item.accent}22`
-                            : (isDark ? "0 0 0 1px rgba(255,255,255,0.04)" : "0 2px 8px rgba(0,0,0,0.08)"),
-                          transition: "all 0.3s ease",
+                            ? `0 0 20px ${item.accent}55, inset 0 -3px 5px rgba(0,0,0,0.1)`
+                            : undefined,
                         }}
                       >
                         <Icon
-                          className="w-6 h-6"
+                          className={isCenter ? "w-7 h-7" : "w-6 h-6"}
                           style={{
-                            color: isActive ? item.accent : (isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)"),
-                            transition: "color 0.3s",
+                            color: isActive ? item.accent : (isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)"),
                             filter: isActive ? `drop-shadow(0 0 8px ${item.accent})` : "none",
                           }}
                         />
                       </div>
-                      <span
-                        className="text-[10px] font-semibold text-center leading-tight max-w-[80px]"
-                        style={{
-                          color: isActive ? item.accent : (isDark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.45)"),
-                          textShadow: isActive ? `0 0 12px ${item.accent}90` : "none",
-                          transition: "color 0.3s",
-                        }}
-                      >
-                        {item.label}
-                      </span>
+                      {!isCenter && (
+                        <span
+                          className="text-[10px] font-semibold text-center leading-tight max-w-[80px]"
+                          style={{
+                            color: isActive ? item.accent : (isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)"),
+                            textShadow: isActive ? `0 0 12px ${item.accent}90` : "none",
+                          }}
+                        >
+                          {item.label}
+                        </span>
+                      )}
+                      {isCenter && (
+                        <p className="text-[10px] text-cyan-400/90 text-center mt-1 font-mono uppercase tracking-wider font-bold">ARIANO</p>
+                      )}
                     </motion.div>
                   </div>
                 );
@@ -913,17 +883,8 @@ const Landing = () => {
 
             {/* Right — MacOS window + Radar neon */}
             <div>
-              {/* MacOS frame — adaptive light/dark */}
-              <div
-                className="rounded-2xl overflow-hidden shadow-2xl"
-                style={{
-                  background: isDark ? "#0a0f18" : "rgba(255,255,255,0.85)",
-                  border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.1)",
-                  boxShadow: isDark
-                    ? "0 0 80px rgba(34,211,238,0.07), 0 32px 80px rgba(0,0,0,0.6)"
-                    : "0 4px 40px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.08)",
-                  backdropFilter: "blur(20px)",
-                }}
+              {/* MacOS frame */}
+              <div className="rounded-2xl overflow-hidden bg-white/70 backdrop-blur-2xl border border-white/50 shadow-xl dark:bg-[#1a1a1a]/60 dark:border-white/10 dark:shadow-2xl"
               >
                 {/* MacOS title bar */}
                 <div
