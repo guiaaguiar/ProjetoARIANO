@@ -628,10 +628,10 @@ const Landing = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
             {/* ── COLUNA ESQUERDA: Grafo SVG interativo em X ── */}
-            <div className="relative w-full aspect-square perspective-[1500px]">
-              <div className="absolute inset-0 transform rotate-x-[60deg] rotate-z-[45deg] preserve-3d">
+            <div className="relative w-full aspect-square flex items-center justify-center" style={{ perspective: '1500px' }}>
+              <div className="relative w-[80%] h-[80%]" style={{ transform: 'rotateX(60deg) rotateZ(45deg)', transformStyle: 'preserve-3d' }}>
                 {/* SVG Lines connecting the nodes no chão */}
-                <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ overflow: "visible", transform: "translateZ(-1px)" }}>
+                <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ overflow: "visible" }}>
                   {ECOSYSTEM_ITEMS.map((item) => {
                     if (item.id === "ariano") return null;
                     const isActive = activeNode === item.id;
@@ -680,19 +680,20 @@ const Landing = () => {
                       {/* Botão Flutuante que se levanta do chão */}
                       <button
                         onClick={() => setActiveNode(item.id)}
-                        className={`group absolute top-1/2 left-1/2 flex flex-col items-center gap-3 transition-all duration-500 hover:-translate-y-4 outline-none ${isActive ? '-translate-y-6' : ''}`}
+                        className="group absolute top-1/2 left-1/2 flex flex-col items-center gap-3 outline-none"
                         style={{
-                          transform: "translate(-50%, -50%) rotateZ(-45deg) rotateX(-60deg)",
+                          transform: isActive ? 'translate(-50%, -50%) rotateZ(-45deg) rotateX(-60deg) translateY(-60px)' : 'translate(-50%, -50%) rotateZ(-45deg) rotateX(-60deg) translateY(-20px)',
+                          transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
                           transformStyle: "preserve-3d"
                         }}
                       >
                         <div 
-                          className={`flex items-center justify-center transition-all duration-300 ${isCenter ? 'w-20 h-20' : 'w-16 h-16'} rounded-2xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-md shadow-[0_10px_20px_rgba(0,0,0,0.1),_inset_0_-4px_6px_rgba(0,0,0,0.05)] dark:shadow-[0_10px_20px_rgba(0,0,0,0.5),_inset_0_-4px_6px_rgba(255,255,255,0.1)]`}
+                          className="w-20 h-20 rounded-2xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl shadow-[0_20px_25px_-5px_rgba(0,0,0,0.2),_inset_0_-4px_6px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_25px_-5px_rgba(0,0,0,0.5),_inset_0_-4px_6px_rgba(255,255,255,0.1)] flex items-center justify-center border border-slate-200 dark:border-slate-600 transition-all duration-300"
                           style={{
-                            border: `2px solid ${isActive ? item.accent : 'transparent'}`,
+                            borderColor: isActive ? item.accent : undefined,
                           }}
                         >
-                          <Icon className={`${isCenter ? 'w-8 h-8' : 'w-6 h-6'} text-slate-800 dark:text-white transition-colors duration-300`} style={{ color: isActive ? item.accent : undefined }} />
+                          <Icon className="w-8 h-8 text-slate-900 dark:text-cyan-400 transition-colors duration-300" style={{ color: isActive ? item.accent : undefined }} />
                         </div>
 
                         {!isCenter && (
