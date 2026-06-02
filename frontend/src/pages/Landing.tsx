@@ -638,10 +638,10 @@ const Landing = () => {
                     
                     let x2 = "50%";
                     let y2 = "50%";
-                    if (item.id === "origem") { x2 = "20%"; y2 = "50%"; }
-                    if (item.id === "quadrupla") { x2 = "50%"; y2 = "20%"; }
-                    if (item.id === "grafo") { x2 = "50%"; y2 = "80%"; }
-                    if (item.id === "ia") { x2 = "80%"; y2 = "50%"; }
+                    if (item.id === "origem") { x2 = "10%"; y2 = "10%"; }
+                    if (item.id === "quadrupla") { x2 = "10%"; y2 = "90%"; }
+                    if (item.id === "grafo") { x2 = "90%"; y2 = "10%"; }
+                    if (item.id === "ia") { x2 = "90%"; y2 = "90%"; }
 
                     return (
                       <line
@@ -665,56 +665,72 @@ const Landing = () => {
                   const Icon = item.icon;
                   const isCenter = item.id === "ariano";
 
+                  let top = "50%";
+                  let left = "50%";
+                  if (item.id === "origem") { top = "10%"; left = "10%"; }
+                  if (item.id === "quadrupla") { top = "10%"; left = "90%"; }
+                  if (item.id === "grafo") { top = "90%"; left = "10%"; }
+                  if (item.id === "ia") { top = "90%"; left = "90%"; }
+
                   return (
                     <div
                       key={item.id}
-                      className={`absolute z-20 ${item.positionClass}`}
+                      className="absolute z-20"
                       style={{ 
+                        top, left, 
+                        transform: 'translate(-50%, -50%)',
                         transformStyle: "preserve-3d" 
                       }}
                     >
-                      {/* Base fixa no chão para ancorar a ilusão */}
+                      {/* 1. Base fixa no chão para ancorar a ilusão */}
                       <div 
                         className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border transition-all duration-300 ${isCenter ? 'w-24 h-24' : 'w-20 h-20'} ${isActive ? 'bg-white/20 dark:bg-black/40 scale-110' : 'bg-white/5 dark:bg-black/20'} ${isDark ? 'border-white/10' : 'border-slate-200'}`}
                         style={{ boxShadow: isActive ? `0 0 30px ${item.accent}40` : undefined }} 
                       />
 
-                      {/* Botão Flutuante que se levanta do chão */}
-                      <button
-                        onClick={() => setActiveNode(item.id)}
-                        className="group absolute top-1/2 left-1/2 flex flex-col items-center gap-3 outline-none"
-                        style={{
-                          transform: isActive ? 'translate(-50%, -50%) rotateZ(-45deg) rotateX(-60deg) translateY(-60px)' : 'translate(-50%, -50%) rotateZ(-45deg) rotateX(-60deg) translateY(-20px)',
-                          transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-                          transformStyle: "preserve-3d"
+                      {/* 2. Wrapper da Contra-rotação (Fica de pé) - CSS Inline estático */}
+                      <div 
+                        className="group absolute top-1/2 left-1/2"
+                        style={{ 
+                          transform: 'translate(-50%, -50%) rotateZ(-45deg) rotateX(-60deg)',
+                          transformStyle: "preserve-3d" 
                         }}
                       >
-                        <div 
-                          className="w-20 h-20 rounded-2xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl shadow-[0_20px_25px_-5px_rgba(0,0,0,0.2),_inset_0_-4px_6px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_25px_-5px_rgba(0,0,0,0.5),_inset_0_-4px_6px_rgba(255,255,255,0.1)] flex items-center justify-center border border-slate-300 dark:border-slate-600 transition-all duration-300"
-                          style={{
-                            borderColor: isActive ? item.accent : undefined,
-                          }}
-                        >
-                          <Icon className="w-8 h-8 text-slate-900 dark:text-cyan-400 transition-colors duration-300" style={{ color: isActive ? item.accent : undefined }} />
-                        </div>
-
-                        {!isCenter && (
-                          <span 
-                            className={`mt-4 text-center font-bold tracking-wide drop-shadow-md text-slate-900 dark:text-slate-200 transition-all duration-300 max-w-[120px] ${isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100"}`}
-                            style={isActive ? { color: item.accent, textShadow: `0 0 12px ${item.accent}90` } : undefined}
-                          >
-                            {item.label}
-                          </span>
-                        )}
-                        {isCenter && (
-                          <span 
-                            className={`mt-4 text-center font-bold tracking-wide drop-shadow-md text-slate-900 dark:text-slate-200 uppercase transition-all duration-300 ${isActive ? 'opacity-100' : 'opacity-80'}`} 
-                            style={isActive ? { color: item.accent } : undefined}
-                          >
-                            ARIANO
-                          </span>
-                        )}
-                      </button>
+                           {/* 3. O Botão (Flutua) - Usa APENAS Tailwind para o Y e Animações */}
+                           <button 
+                               onClick={() => setActiveNode(item.id)}
+                               className={`transition-all duration-500 ease-out flex items-center justify-center w-20 h-20 rounded-2xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border border-slate-300 dark:border-slate-600 shadow-2xl outline-none ${
+                                   isActive 
+                                   ? '-translate-y-16 scale-110 ring-2' 
+                                   : '-translate-y-4 group-hover:-translate-y-10'
+                               }`}
+                               style={{
+                                   borderColor: isActive ? item.accent : undefined,
+                                   boxShadow: isActive ? `0 20px 25px -5px rgba(0,0,0,0.5), 0 0 30px ${item.accent}40` : undefined,
+                                   '--tw-ring-color': isActive ? item.accent : undefined,
+                               } as React.CSSProperties}
+                           >
+                               <Icon className="text-slate-900 dark:text-cyan-400 w-8 h-8 transition-colors duration-300" style={{ color: isActive ? item.accent : undefined }} />
+                           </button>
+                           
+                           {/* Legenda do nó (Fora do botão para não flutuar junto) */}
+                           {!isCenter && (
+                               <p 
+                                 className={`mt-4 text-center font-bold tracking-wide drop-shadow-md text-slate-900 dark:text-slate-200 absolute top-full left-1/2 -translate-x-1/2 w-max transition-all duration-300 pointer-events-none ${isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100"}`}
+                                 style={isActive ? { color: item.accent, textShadow: `0 0 12px ${item.accent}90` } : undefined}
+                               >
+                                   {item.label}
+                               </p>
+                           )}
+                           {isCenter && (
+                               <p 
+                                 className={`mt-4 text-center font-bold tracking-wide drop-shadow-md text-slate-900 dark:text-slate-200 uppercase absolute top-full left-1/2 -translate-x-1/2 w-max transition-all duration-300 pointer-events-none ${isActive ? 'opacity-100' : 'opacity-80'}`} 
+                                 style={isActive ? { color: item.accent } : undefined}
+                               >
+                                   ARIANO
+                               </p>
+                           )}
+                      </div>
                     </div>
                   );
                 })}
