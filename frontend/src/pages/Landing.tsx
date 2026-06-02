@@ -264,12 +264,12 @@ const Landing = () => {
           <div className="flex items-center gap-2">
             <ThemeToggleButton />
             <Link to="/login">
-              <button className="text-[13px] h-8 px-3 transition-colors text-slate-500 hover:text-slate-900 dark:text-white/60 dark:hover:text-white">
+              <button className="text-[13px] h-8 px-3 transition-colors text-slate-600 hover:text-slate-900 dark:text-white/60 dark:hover:text-white">
                 Entrar
               </button>
             </Link>
             <Link to="/cadastro">
-              <button className="text-[13px] h-8 px-3 border transition-colors border-slate-300 text-slate-700 hover:bg-slate-900 hover:text-white dark:border-white/20 dark:text-white dark:hover:bg-white dark:hover:text-black">
+              <button className="text-[13px] h-8 px-4 rounded-lg font-medium transition-colors bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">
                 Cadastrar-se
               </button>
             </Link>
@@ -289,7 +289,7 @@ const Landing = () => {
               <h1 className="text-[clamp(1.8rem,3.5vw,2.8rem)] font-[500] leading-[1.15] tracking-[-0.04em] max-w-[720px] text-slate-900 dark:text-white">
                 Conexões estratégicas no ecossistema de inovação
               </h1>
-              <p className="mt-6 text-base leading-relaxed max-w-[420px] text-slate-500 dark:text-white/50">
+              <p className="mt-6 text-base leading-relaxed max-w-[420px] text-slate-600 dark:text-slate-300">
                 Encontre o seu lugar no ecossistema e faça os matches perfeitos para seu perfil.
               </p>
               <div className="mt-10 flex items-center gap-4">
@@ -323,19 +323,19 @@ const Landing = () => {
               className="relative z-10 rounded-t-xl overflow-hidden bg-white/70 backdrop-blur-2xl border border-white/50 shadow-xl dark:bg-[#1a1a1a]/60 dark:border-white/10 dark:shadow-2xl"
             >
               {/* MacOS Window Controls */}
-              <div className="h-10 border-b flex items-center px-4 gap-2 bg-slate-100/80 border-slate-200 dark:bg-[#060c14]/40 dark:border-white/[0.06]">
+              <div className="h-10 border-b flex items-center px-4 gap-2 bg-white/40 border-white/50 dark:bg-[#060c14]/40 dark:border-white/[0.06]">
                 <div className="w-3 h-3 rounded-full bg-[#ff5f56] shadow-sm"></div>
                 <div className="w-3 h-3 rounded-full bg-[#ffbd2e] shadow-sm"></div>
                 <div className="w-3 h-3 rounded-full bg-[#27c93f] shadow-sm"></div>
               </div>
               <div className="flex min-h-[420px]">
                 {/* Sidebar mock */}
-                <div className="w-[200px] border-r p-3 flex flex-col gap-1 shrink-0 border-slate-200 bg-slate-50/90 dark:border-white/[0.06] dark:bg-[#0a0f18]">
+                <div className="w-[200px] border-r p-3 flex flex-col gap-1 shrink-0 border-white/50 bg-white/40 dark:border-white/[0.06] dark:bg-[#0a0f18]/40">
                   <div className="flex items-center gap-2 px-2 h-8 mb-2">
                     <div className="w-5 h-5 flex items-center justify-center">
                       <img src="/Coreto_LOGO.png" alt="Logo" className="w-full h-full object-contain" />
                     </div>
-                    <span className="text-[12px] font-bold tracking-tight text-slate-800 dark:text-white">ARIANO</span>
+                    <span className="text-[12px] font-bold tracking-tight text-slate-900 dark:text-white">ARIANO</span>
                   </div>
                   <div className="h-px bg-slate-200 dark:bg-white/[0.06] mb-2" />
 
@@ -352,7 +352,7 @@ const Landing = () => {
                     <div key={i} className={`flex items-center gap-2.5 px-2.5 h-8 rounded-lg cursor-pointer transition-colors ${
                       item.active
                         ? "bg-teal-500/10 text-teal-600 border border-teal-500/20 dark:text-teal-400"
-                        : "text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:text-white/40 dark:hover:text-white dark:hover:bg-white/5"
+                        : "text-slate-500 hover:text-slate-900 hover:bg-slate-200/50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/5"
                     }`}>
                       <item.icon className="w-3.5 h-3.5" />
                       <span className="text-[12px] font-medium">{item.label}</span>
@@ -361,7 +361,7 @@ const Landing = () => {
 
                   <div className="mt-auto pt-2">
                     <div className="h-px bg-slate-200 dark:bg-white/[0.06] mb-2" />
-                    <div className="flex items-center gap-2.5 px-2.5 h-8 rounded-lg cursor-pointer transition-colors text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:text-white/40 dark:hover:text-white dark:hover:bg-white/5">
+                    <div className="flex items-center gap-2.5 px-2.5 h-8 rounded-lg cursor-pointer transition-colors text-slate-500 hover:text-slate-900 hover:bg-slate-200/50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/5">
                       <Settings className="w-3.5 h-3.5" />
                       <span className="text-[12px] font-medium">Configurações</span>
                     </div>
@@ -389,14 +389,14 @@ const Landing = () => {
                       { priority: "bg-indigo-500", id: "Data Science", name: "Dra. Ana Silva", area: "Pesquisadora Sênior (Data Science)", score: "82%", status: "bg-indigo-500" },
                       { priority: "bg-cyan-500", id: "Frontend", name: "Mariana Costa", area: "Estudante Parceira (Frontend)", score: "78%", status: "bg-cyan-500" },
                     ].map((row, i) => (
-                      <div key={i} className="relative flex items-center gap-4 px-4 h-9 border-b transition-colors cursor-pointer border-slate-100 hover:bg-slate-50 dark:border-white/[0.06] dark:hover:bg-white/[0.03]">
+                      <div key={i} className="relative flex items-center gap-4 px-4 h-9 border-b transition-colors cursor-pointer border-slate-200/50 hover:bg-slate-200/50 dark:border-white/[0.06] dark:hover:bg-white/5">
                         <div className="h-3.5 w-3.5 rounded border flex items-center justify-center shrink-0 z-10 border-slate-300 dark:border-white/10">
                           <div className={`h-1.5 w-1.5 rounded-sm ${row.priority}`} />
                         </div>
                         <span className="text-[10px] text-teal-600 font-mono font-bold bg-teal-400/10 px-1.5 rounded shrink-0 z-10 dark:text-teal-400">{row.id}</span>
 
                         <div className="flex items-center gap-3 flex-1 min-w-0 z-10">
-                          <span className="text-[12px] font-medium truncate text-slate-800 dark:text-white">{row.name}</span>
+                          <span className="text-[12px] font-medium truncate text-slate-900 dark:text-white">{row.name}</span>
                           <span className="text-[12px] truncate hidden sm:inline-block text-slate-400 dark:text-white/40">{row.area}</span>
                         </div>
 
@@ -413,18 +413,18 @@ const Landing = () => {
                 </div>
 
                 {/* Detail panel */}
-                <div className="w-[280px] border-l shrink-0 hidden lg:flex flex-col relative z-10 border-slate-200 bg-slate-50/90 dark:border-white/[0.06] dark:bg-[#0a0f18]">
+                <div className="w-[280px] border-l shrink-0 hidden lg:flex flex-col relative z-10 border-white/50 bg-white/40 dark:border-white/[0.06] dark:bg-[#0a0f18]/40">
                   <div className="flex items-center justify-between px-4 h-10 border-b border-slate-200 dark:border-white/[0.06]">
-                    <span className="text-[12px] font-medium text-slate-800 dark:text-white">Detalhes do Match</span>
+                    <span className="text-[12px] font-medium text-slate-900 dark:text-white">Detalhes do Match</span>
                     <div className="flex gap-1.5">
                       <div className="h-4 w-4 rounded bg-slate-200 dark:bg-white/5" />
                       <div className="h-4 w-4 rounded bg-slate-200 dark:bg-white/5" />
                     </div>
                   </div>
                   <div className="p-4 space-y-4">
-                    <div className="font-medium text-[14px] text-slate-800 dark:text-white">Edital FAPESP: IA na Saúde</div>
+                    <div className="font-medium text-[14px] text-slate-900 dark:text-white">Edital FAPESP: IA na Saúde</div>
                     <div className="space-y-1.5">
-                      <p className="text-[12px] leading-relaxed text-slate-500 dark:text-white/40">
+                      <p className="text-[12px] leading-relaxed text-slate-600 dark:text-white/40">
                         Oportunidade perfeita para aplicar seus conhecimentos em modelos preditivos num projeto de impacto social, com bolsa e mentoria.
                       </p>
                     </div>
@@ -436,23 +436,23 @@ const Landing = () => {
                       { label: "Data limite", value: "Amanhã", color: "bg-teal-500" },
                     ].map((prop) => (
                       <div key={prop.label} className="flex items-center justify-between">
-                        <span className="text-[11px] text-slate-500 dark:text-white/40">{prop.label}</span>
+                        <span className="text-[11px] text-slate-600 dark:text-white/40">{prop.label}</span>
                         <div className="flex items-center gap-2">
-                          <span className="text-[11px] font-medium text-slate-800 dark:text-white">{prop.value}</span>
+                          <span className="text-[11px] font-medium text-slate-900 dark:text-white">{prop.value}</span>
                           <div className={`h-2.5 w-2.5 rounded-full ${prop.color}`} />
                         </div>
                       </div>
                     ))}
                     <div className="h-px bg-slate-200 dark:bg-white/[0.06]" />
                     <div className="space-y-3 pt-1">
-                      <span className="text-[11px] text-slate-500 dark:text-white/40">Skills em Comum</span>
+                      <span className="text-[11px] text-slate-600 dark:text-white/40">Skills em Comum</span>
                       {["Python", "Machine Learning"].map((skill, n) => (
                         <div key={n} className="flex gap-2">
                           <div className="h-5 w-5 rounded-full bg-teal-400/20 text-teal-600 flex items-center justify-center shrink-0 mt-0.5 text-[9px] font-bold dark:text-teal-400">
                             {skill.charAt(0)}
                           </div>
                           <div className="flex items-center">
-                            <span className="text-[12px] text-slate-800 dark:text-white">{skill}</span>
+                            <span className="text-[12px] text-slate-900 dark:text-white">{skill}</span>
                           </div>
                         </div>
                       ))}
@@ -494,7 +494,7 @@ const Landing = () => {
               </span>{" "}
               Naturalmente Ordenada.
             </h2>
-            <p className="mt-5 text-[16px] max-w-[520px] mx-auto leading-relaxed text-slate-500 dark:text-white/50">
+            <p className="mt-5 text-[16px] max-w-[520px] mx-auto leading-relaxed text-slate-600 dark:text-slate-300">
               O ARIANO é uma plataforma de matchmaking científico e tecnológico que conecta pesquisadores, governo e setor privado usando IA e teoria de grafos.
             </p>
           </div>
@@ -514,7 +514,7 @@ const Landing = () => {
                 <GitMerge className="w-5 h-5 text-teal-500 dark:text-cyan-400" />
               </div>
               <h3 className="text-[20px] font-semibold mb-3 text-slate-900 dark:text-white">DNA Acadêmico e Governamental</h3>
-              <p className="text-[14px] leading-[1.8] text-slate-500 dark:text-white/50">
+              <p className="text-[14px] leading-[1.8] text-slate-600 dark:text-slate-300">
                 Nascido na intersecção entre a academia (<span className="text-teal-600 font-medium dark:text-cyan-400">UNINASSAU</span>) e a gestão pública, o ARIANO é o motor cognitivo do <span className="text-teal-600 font-medium dark:text-cyan-400">CORETO</span> — plataforma oficial de inovação da Prefeitura do Recife (SECTI). Nossa missão é eliminar silos e acelerar o ecossistema local.
               </p>
               <div className="mt-6 flex items-center gap-3">
@@ -536,7 +536,7 @@ const Landing = () => {
                 <Network className="w-5 h-5 text-blue-500 dark:text-blue-400" />
               </div>
               <h3 className="text-[18px] font-semibold mb-3 text-slate-900 dark:text-white">O(1) Tempo de Raciocínio</h3>
-              <p className="text-[13px] leading-[1.8] text-slate-500 dark:text-white/50">
+              <p className="text-[13px] leading-[1.8] text-slate-600 dark:text-slate-300">
                 Abandonamos as limitações de bancos relacionais. Utilizamos Grafos de Conhecimento (Neo4j) com adjacência livre de índice para cruzar múltiplas dimensões simultâneas, entregando matches em tempo real, independente da escala de dados.
               </p>
             </div>
@@ -554,7 +554,7 @@ const Landing = () => {
                 <Zap className="w-5 h-5 text-purple-500 dark:text-purple-400" />
               </div>
               <h3 className="text-[18px] font-semibold mb-3 text-slate-900 dark:text-white">Inteligência Relacional Pré-computada</h3>
-              <p className="text-[13px] leading-[1.8] text-slate-500 dark:text-white/50">
+              <p className="text-[13px] leading-[1.8] text-slate-600 dark:text-slate-300">
                 Muito além do RAG tradicional. O sistema orquestra agentes de IA (<span className="font-medium text-purple-600 dark:text-purple-400">NVIDIA Nemotron</span>) que raciocinam ativamente sobre a rede (Graph Chain-of-Thought), criando conexões latentes, scores de afinidade e justificativas cirúrgicas para cada match.
               </p>
             </div>
@@ -570,7 +570,7 @@ const Landing = () => {
                 <Layers className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
               </div>
               <h3 className="text-[18px] font-semibold mb-3 text-slate-900 dark:text-white">A Quádrupla Hélice da Inovação</h3>
-              <p className="text-[13px] leading-[1.8] text-slate-500 dark:text-white/50">
+              <p className="text-[13px] leading-[1.8] text-slate-600 dark:text-slate-300">
                 Desenhado para escalar a colaboração. Conectamos Donos de Problemas (Governo e Indústria) a Solucionadores (Academia e Sociedade Civil) em um ambiente dinâmico onde cada ator visualiza o que realmente importa para si.
               </p>
             </div>
@@ -702,9 +702,9 @@ const Landing = () => {
                         }}
                       >
                         <Icon
-                          className={isCenter ? "w-7 h-7" : "w-6 h-6"}
+                          className={`${isCenter ? "w-7 h-7" : "w-6 h-6"} text-white`}
                           style={{
-                            color: isActive ? item.accent : (isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)"),
+                            color: isActive ? item.accent : "#ffffff",
                             filter: isActive ? `drop-shadow(0 0 8px ${item.accent})` : "none",
                           }}
                         />
@@ -713,15 +713,15 @@ const Landing = () => {
                         <span
                           className="text-[10px] font-semibold text-center leading-tight max-w-[80px]"
                           style={{
-                            color: isActive ? item.accent : (isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)"),
-                            textShadow: isActive ? `0 0 12px ${item.accent}90` : "none",
+                            color: isActive ? item.accent : "#ffffff",
+                            textShadow: isActive ? `0 0 12px ${item.accent}90` : "0 1px 2px rgba(0,0,0,0.8)",
                           }}
                         >
                           {item.label}
                         </span>
                       )}
                       {isCenter && (
-                        <p className="text-[10px] text-cyan-400/90 text-center mt-1 font-mono uppercase tracking-wider font-bold">ARIANO</p>
+                        <p className="text-[10px] text-white text-center mt-1 font-mono uppercase tracking-wider font-bold">ARIANO</p>
                       )}
                     </motion.div>
                   </div>
@@ -792,7 +792,7 @@ const Landing = () => {
                       <h3 className="text-[clamp(1.4rem,2.5vw,1.9rem)] font-[500] tracking-[-0.03em] leading-[1.2] mb-5 text-slate-900 dark:text-white">
                         {displayedItem.title}
                       </h3>
-                      <p className="text-[14px] leading-[1.8] mb-8 text-slate-500 dark:text-white/50">
+                      <p className="text-[14px] leading-[1.8] mb-8 text-slate-600 dark:text-slate-300">
                         {displayedItem.description}
                       </p>
                       <Link to={displayedItem.link}>
@@ -873,8 +873,8 @@ const Landing = () => {
                       <Zap className="h-3.5 w-3.5" style={{ color: item.accent }} />
                     </div>
                     <div>
-                      <h4 className="text-[15px] font-semibold mb-0.5 text-slate-800 dark:text-white">{item.title}</h4>
-                      <p className="text-[13px] leading-relaxed text-slate-500 dark:text-white/50">{item.desc}</p>
+                      <h4 className="text-[15px] font-semibold mb-0.5 text-slate-900 dark:text-white">{item.title}</h4>
+                      <p className="text-[13px] leading-relaxed text-slate-600 dark:text-slate-300">{item.desc}</p>
                     </div>
                   </div>
                 ))}
@@ -1075,7 +1075,7 @@ const Landing = () => {
                 >
                   <blockquote className={`text-[18px] md:text-[20px] font-[400] leading-[1.5] tracking-[-0.01em] transition-colors duration-700 ${
                     isCenter
-                      ? 'text-slate-800 dark:text-white/85'
+                      ? 'text-slate-900 dark:text-white/85'
                       : 'text-slate-300 dark:text-white/30'
                   }`}>
                     "{t.text}"
@@ -1089,8 +1089,8 @@ const Landing = () => {
                       </div>
                     )}
                     <div>
-                      <span className="text-[13px] font-medium block text-slate-800 dark:text-white">{t.name}</span>
-                      <span className="text-[13px] block text-slate-500 dark:text-white/40">{t.role}</span>
+                      <span className="text-[13px] font-medium block text-slate-900 dark:text-white">{t.name}</span>
+                      <span className="text-[13px] block text-slate-600 dark:text-white/40">{t.role}</span>
                     </div>
                   </div>
                 </div>
@@ -1100,7 +1100,7 @@ const Landing = () => {
 
           {/* Controls */}
           <div className="flex items-center justify-center gap-6 mt-8 relative z-20">
-            <button onClick={handlePrevTestimonial} className="p-2.5 rounded-full border transition-colors backdrop-blur-sm border-slate-300 bg-white/60 hover:bg-white text-slate-500 hover:text-slate-900 dark:border-white/[0.08] dark:bg-[#0a0a0a]/50 dark:hover:bg-white/5 dark:text-white/40 dark:hover:text-white">
+            <button onClick={handlePrevTestimonial} className="p-2.5 rounded-full border transition-colors backdrop-blur-sm border-slate-300 bg-white/60 hover:bg-white text-slate-600 hover:text-slate-900 dark:border-white/[0.08] dark:bg-[#0a0a0a]/50 dark:hover:bg-white/5 dark:text-white/40 dark:hover:text-white">
               <ChevronLeft size={20} />
             </button>
             <div className="flex gap-2.5">
@@ -1116,7 +1116,7 @@ const Landing = () => {
                 />
               ))}
             </div>
-            <button onClick={handleNextTestimonial} className="p-2.5 rounded-full border transition-colors backdrop-blur-sm border-slate-300 bg-white/60 hover:bg-white text-slate-500 hover:text-slate-900 dark:border-white/[0.08] dark:bg-[#0a0a0a]/50 dark:hover:bg-white/5 dark:text-white/40 dark:hover:text-white">
+            <button onClick={handleNextTestimonial} className="p-2.5 rounded-full border transition-colors backdrop-blur-sm border-slate-300 bg-white/60 hover:bg-white text-slate-600 hover:text-slate-900 dark:border-white/[0.08] dark:bg-[#0a0a0a]/50 dark:hover:bg-white/5 dark:text-white/40 dark:hover:text-white">
               <ChevronRight size={20} />
             </button>
           </div>
@@ -1135,7 +1135,7 @@ const Landing = () => {
           <h2 className="text-[clamp(2rem,4vw,3.2rem)] font-[500] tracking-[-0.035em] leading-[1.1] mx-auto max-w-[560px] text-slate-900 dark:text-white">
             Faça parte da revolução tecnológica.
           </h2>
-          <p className="mt-5 text-[15px] max-w-[400px] mx-auto text-slate-500 dark:text-white/50">
+          <p className="mt-5 text-[15px] max-w-[400px] mx-auto text-slate-600 dark:text-slate-300">
             Integre-se ao projeto ARIANO e encontre oportunidades que moldam o futuro.
           </p>
           <div className="mt-10 flex justify-center">
@@ -1158,7 +1158,7 @@ const Landing = () => {
         <div className="mx-auto max-w-[1200px] px-6 py-10 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2">
             <StackedLogo size={16} />
-            <span className="text-[12px] font-bold uppercase tracking-[0.08em] text-slate-800 dark:text-white">ARIANO</span>
+            <span className="text-[12px] font-bold uppercase tracking-[0.08em] text-slate-900 dark:text-white">ARIANO</span>
           </div>
 
           <div className="flex flex-col items-center md:items-end gap-2">
