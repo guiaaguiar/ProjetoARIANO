@@ -4,6 +4,8 @@ import { ArrowRight, LayoutDashboard, Zap, Network, Search, Settings, ChevronLef
 import { Graph3D } from "@/components/Graph3D";
 import GuiAguiarImg from "@/assets/gui-aguiar.jpeg";
 import logoSecti from "@/assets/logo_secti.png";
+import bgDark from "../assets/wallpaper.png";
+import bgLight from "../assets/wallpaper-light.png";
 
 import { useTheme } from "next-themes";
 import { useEffect, useState, useRef } from "react";
@@ -238,24 +240,27 @@ const Landing = () => {
   const displayedItem = activeNode !== null ? ECOSYSTEM_ITEMS[activeNode] : ECOSYSTEM_ITEMS[0];
 
   return (
-    <div className="relative min-h-screen bg-[#0a0a0a] text-foreground overflow-x-hidden">
+    <div
+      className="relative min-h-screen text-foreground overflow-x-hidden bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: `url(${isDark ? bgDark : bgLight})` }}
+    >
 
       {/* Nav */}
-      <nav className="fixed top-0 z-50 w-full bg-[#0a0a0a]/80 backdrop-blur-md border-b border-white/[0.06] px-6">
+      <nav className="fixed top-0 z-50 w-full backdrop-blur-md border-b px-6 bg-white/70 border-slate-200/80 dark:bg-[#0a0a0a]/80 dark:border-white/[0.06]">
         <div className="mx-auto flex h-[56px] max-w-[1200px] items-center justify-between">
           <Link to="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="flex items-center gap-2 -ml-0.5">
             <StackedLogo size={16} />
-            <span className="text-[14px] font-bold text-white tracking-[0.08em] uppercase">ARIANO</span>
+            <span className="text-[14px] font-bold tracking-[0.08em] uppercase text-slate-900 dark:text-white">ARIANO</span>
           </Link>
           <div className="flex items-center gap-2">
             <ThemeToggleButton />
             <Link to="/login">
-              <button className="text-[13px] text-white/60 hover:text-white transition-colors h-8 px-3">
+              <button className="text-[13px] h-8 px-3 transition-colors text-slate-500 hover:text-slate-900 dark:text-white/60 dark:hover:text-white">
                 Entrar
               </button>
             </Link>
             <Link to="/cadastro">
-              <button className="text-[13px] h-8 px-3 border border-white/20 text-white hover:bg-white hover:text-black transition-colors">
+              <button className="text-[13px] h-8 px-3 border transition-colors border-slate-300 text-slate-700 hover:bg-slate-900 hover:text-white dark:border-white/20 dark:text-white dark:hover:bg-white dark:hover:text-black">
                 Cadastrar-se
               </button>
             </Link>
@@ -272,15 +277,15 @@ const Landing = () => {
           <div className="pt-[52px] pb-16 relative flex">
             {/* Left column — text */}
             <div className="relative z-[3] flex-1 min-w-0 max-w-[540px]">
-              <h1 className="text-[clamp(1.8rem,3.5vw,2.8rem)] font-[500] leading-[1.15] tracking-[-0.04em] text-white max-w-[720px]">
+              <h1 className="text-[clamp(1.8rem,3.5vw,2.8rem)] font-[500] leading-[1.15] tracking-[-0.04em] max-w-[720px] text-slate-900 dark:text-white">
                 Conexões estratégicas no ecossistema de inovação
               </h1>
-              <p className="mt-6 text-base leading-relaxed text-white/50 max-w-[420px]">
+              <p className="mt-6 text-base leading-relaxed max-w-[420px] text-slate-500 dark:text-white/50">
                 Encontre o seu lugar no ecossistema e faça os matches perfeitos para seu perfil.
               </p>
               <div className="mt-10 flex items-center gap-4">
                 <Link to="/cadastro">
-                  <button className="group relative inline-flex items-center gap-2 px-6 py-3 text-[14px] font-medium bg-white text-black transition-all duration-200 hover:bg-white/90">
+                  <button className="group relative inline-flex items-center gap-2 px-6 py-3 text-[14px] font-medium transition-all duration-200 bg-slate-900 text-white hover:bg-slate-700 dark:bg-white dark:text-black dark:hover:bg-white/90">
                     Crie sua conta
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                   </button>
@@ -306,26 +311,26 @@ const Landing = () => {
             <motion.div
               {...fadeUp}
               transition={{ ...fadeUp.transition, delay: 0.2 } as any}
-              className="relative z-10 rounded-t-xl border border-b-0 border-white/[0.06] bg-[#0d1520] overflow-hidden shadow-2xl"
+              className="relative z-10 rounded-t-xl overflow-hidden shadow-2xl border border-b-0 border-slate-200 bg-white/80 backdrop-blur-sm dark:border-white/[0.06] dark:bg-[#0d1520] dark:backdrop-blur-none"
             >
               {/* MacOS Window Controls */}
-              <div className="h-10 bg-[#060c14]/40 border-b border-white/[0.06] flex items-center px-4 gap-2">
+              <div className="h-10 border-b flex items-center px-4 gap-2 bg-slate-100/80 border-slate-200 dark:bg-[#060c14]/40 dark:border-white/[0.06]">
                 <div className="w-3 h-3 rounded-full bg-[#ff5f56] shadow-sm"></div>
                 <div className="w-3 h-3 rounded-full bg-[#ffbd2e] shadow-sm"></div>
                 <div className="w-3 h-3 rounded-full bg-[#27c93f] shadow-sm"></div>
               </div>
               <div className="flex min-h-[420px]">
                 {/* Sidebar mock */}
-                <div className="w-[200px] border-r border-white/[0.06] p-3 flex flex-col gap-1 shrink-0 bg-[#0a0f18]">
+                <div className="w-[200px] border-r p-3 flex flex-col gap-1 shrink-0 border-slate-200 bg-slate-50/90 dark:border-white/[0.06] dark:bg-[#0a0f18]">
                   <div className="flex items-center gap-2 px-2 h-8 mb-2">
                     <div className="w-5 h-5 flex items-center justify-center">
                       <img src="/Coreto_LOGO.png" alt="Logo" className="w-full h-full object-contain" />
                     </div>
-                    <span className="text-[12px] font-bold text-white tracking-tight">ARIANO</span>
+                    <span className="text-[12px] font-bold tracking-tight text-slate-800 dark:text-white">ARIANO</span>
                   </div>
-                  <div className="h-px bg-white/[0.06] mb-2" />
+                  <div className="h-px bg-slate-200 dark:bg-white/[0.06] mb-2" />
 
-                  <span className="text-[9px] text-white/30 uppercase tracking-wider font-semibold mb-1 px-2">
+                  <span className="text-[9px] uppercase tracking-wider font-semibold mb-1 px-2 text-slate-400 dark:text-white/30">
                     Menu
                   </span>
 
@@ -335,15 +340,19 @@ const Landing = () => {
                     { label: 'Ecossistema', icon: Network },
                     { label: 'Explorar', icon: Search },
                   ].map((item, i) => (
-                    <div key={i} className={`flex items-center gap-2.5 px-2.5 h-8 rounded-lg cursor-pointer transition-colors ${item.active ? "bg-teal-500/10 text-teal-400 border border-teal-500/20" : "text-white/40 hover:text-white hover:bg-white/5"}`}>
+                    <div key={i} className={`flex items-center gap-2.5 px-2.5 h-8 rounded-lg cursor-pointer transition-colors ${
+                      item.active
+                        ? "bg-teal-500/10 text-teal-600 border border-teal-500/20 dark:text-teal-400"
+                        : "text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:text-white/40 dark:hover:text-white dark:hover:bg-white/5"
+                    }`}>
                       <item.icon className="w-3.5 h-3.5" />
                       <span className="text-[12px] font-medium">{item.label}</span>
                     </div>
                   ))}
 
                   <div className="mt-auto pt-2">
-                    <div className="h-px bg-white/[0.06] mb-2" />
-                    <div className="flex items-center gap-2.5 px-2.5 h-8 rounded-lg cursor-pointer text-white/40 hover:text-white hover:bg-white/5 transition-colors">
+                    <div className="h-px bg-slate-200 dark:bg-white/[0.06] mb-2" />
+                    <div className="flex items-center gap-2.5 px-2.5 h-8 rounded-lg cursor-pointer transition-colors text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:text-white/40 dark:hover:text-white dark:hover:bg-white/5">
                       <Settings className="w-3.5 h-3.5" />
                       <span className="text-[12px] font-medium">Configurações</span>
                     </div>
@@ -352,13 +361,13 @@ const Landing = () => {
 
                 {/* Main content — issue list */}
                 <div className="flex-1 flex flex-col min-w-0">
-                  <div className="flex items-center gap-3 px-4 h-10 border-b border-white/[0.06]">
-                    <div className="h-2 w-10 rounded-full bg-white/10" />
-                    <div className="h-2 w-8 rounded-full bg-white/[0.07]" />
-                    <div className="h-2 w-12 rounded-full bg-white/[0.07]" />
+                  <div className="flex items-center gap-3 px-4 h-10 border-b border-slate-200 dark:border-white/[0.06]">
+                    <div className="h-2 w-10 rounded-full bg-slate-200 dark:bg-white/10" />
+                    <div className="h-2 w-8 rounded-full bg-slate-200 dark:bg-white/[0.07]" />
+                    <div className="h-2 w-12 rounded-full bg-slate-200 dark:bg-white/[0.07]" />
                     <div className="ml-auto flex gap-2">
-                      <div className="h-5 w-5 rounded bg-white/5" />
-                      <div className="h-5 w-5 rounded bg-white/5" />
+                      <div className="h-5 w-5 rounded bg-slate-100 dark:bg-white/5" />
+                      <div className="h-5 w-5 rounded bg-slate-100 dark:bg-white/5" />
                     </div>
                   </div>
                   <div className="flex-1">
@@ -371,22 +380,22 @@ const Landing = () => {
                       { priority: "bg-indigo-500", id: "Data Science", name: "Dra. Ana Silva", area: "Pesquisadora Sênior (Data Science)", score: "82%", status: "bg-indigo-500" },
                       { priority: "bg-cyan-500", id: "Frontend", name: "Mariana Costa", area: "Estudante Parceira (Frontend)", score: "78%", status: "bg-cyan-500" },
                     ].map((row, i) => (
-                      <div key={i} className={`relative flex items-center gap-4 px-4 h-9 border-b border-white/[0.06] transition-colors hover:bg-white/[0.03] cursor-pointer`}>
-                        <div className="h-3.5 w-3.5 rounded border border-white/10 flex items-center justify-center shrink-0 z-10">
+                      <div key={i} className="relative flex items-center gap-4 px-4 h-9 border-b transition-colors cursor-pointer border-slate-100 hover:bg-slate-50 dark:border-white/[0.06] dark:hover:bg-white/[0.03]">
+                        <div className="h-3.5 w-3.5 rounded border flex items-center justify-center shrink-0 z-10 border-slate-300 dark:border-white/10">
                           <div className={`h-1.5 w-1.5 rounded-sm ${row.priority}`} />
                         </div>
-                        <span className="text-[10px] text-teal-400 font-mono font-bold bg-teal-400/10 px-1.5 rounded shrink-0 z-10">{row.id}</span>
+                        <span className="text-[10px] text-teal-600 font-mono font-bold bg-teal-400/10 px-1.5 rounded shrink-0 z-10 dark:text-teal-400">{row.id}</span>
 
                         <div className="flex items-center gap-3 flex-1 min-w-0 z-10">
-                          <span className="text-[12px] font-medium text-white truncate">{row.name}</span>
-                          <span className="text-[12px] text-white/40 truncate hidden sm:inline-block">{row.area}</span>
+                          <span className="text-[12px] font-medium truncate text-slate-800 dark:text-white">{row.name}</span>
+                          <span className="text-[12px] truncate hidden sm:inline-block text-slate-400 dark:text-white/40">{row.area}</span>
                         </div>
 
                         <div className="ml-auto flex items-center gap-3 z-10">
-                          <span className="text-[11px] font-mono text-white/40">{row.score}</span>
+                          <span className="text-[11px] font-mono text-slate-400 dark:text-white/40">{row.score}</span>
                           <div className={`h-2 w-2 rounded-full ${row.status}`} />
-                          <div className="h-5 w-5 rounded-full bg-white/5 flex items-center justify-center">
-                            <ArrowRight className="h-3 w-3 text-white/30" />
+                          <div className="h-5 w-5 rounded-full flex items-center justify-center bg-slate-100 dark:bg-white/5">
+                            <ArrowRight className="h-3 w-3 text-slate-400 dark:text-white/30" />
                           </div>
                         </div>
                       </div>
@@ -395,22 +404,22 @@ const Landing = () => {
                 </div>
 
                 {/* Detail panel */}
-                <div className="w-[280px] border-l border-white/[0.06] shrink-0 hidden lg:flex flex-col relative z-10 bg-[#0a0f18]">
-                  <div className="flex items-center justify-between px-4 h-10 border-b border-white/[0.06]">
-                    <span className="text-[12px] font-medium text-white">Detalhes do Match</span>
+                <div className="w-[280px] border-l shrink-0 hidden lg:flex flex-col relative z-10 border-slate-200 bg-slate-50/90 dark:border-white/[0.06] dark:bg-[#0a0f18]">
+                  <div className="flex items-center justify-between px-4 h-10 border-b border-slate-200 dark:border-white/[0.06]">
+                    <span className="text-[12px] font-medium text-slate-800 dark:text-white">Detalhes do Match</span>
                     <div className="flex gap-1.5">
-                      <div className="h-4 w-4 rounded bg-white/5" />
-                      <div className="h-4 w-4 rounded bg-white/5" />
+                      <div className="h-4 w-4 rounded bg-slate-200 dark:bg-white/5" />
+                      <div className="h-4 w-4 rounded bg-slate-200 dark:bg-white/5" />
                     </div>
                   </div>
                   <div className="p-4 space-y-4">
-                    <div className="font-medium text-[14px] text-white">Edital FAPESP: IA na Saúde</div>
+                    <div className="font-medium text-[14px] text-slate-800 dark:text-white">Edital FAPESP: IA na Saúde</div>
                     <div className="space-y-1.5">
-                      <p className="text-[12px] text-white/40 leading-relaxed">
+                      <p className="text-[12px] leading-relaxed text-slate-500 dark:text-white/40">
                         Oportunidade perfeita para aplicar seus conhecimentos em modelos preditivos num projeto de impacto social, com bolsa e mentoria.
                       </p>
                     </div>
-                    <div className="h-px bg-white/[0.06]" />
+                    <div className="h-px bg-slate-200 dark:bg-white/[0.06]" />
                     {[
                       { label: "Comunidade", value: "Healthtech", color: "bg-teal-500" },
                       { label: "Match (%)", value: "98%", color: "bg-teal-500" },
@@ -418,23 +427,23 @@ const Landing = () => {
                       { label: "Data limite", value: "Amanhã", color: "bg-teal-500" },
                     ].map((prop) => (
                       <div key={prop.label} className="flex items-center justify-between">
-                        <span className="text-[11px] text-white/40">{prop.label}</span>
+                        <span className="text-[11px] text-slate-500 dark:text-white/40">{prop.label}</span>
                         <div className="flex items-center gap-2">
-                          <span className="text-[11px] font-medium text-white">{prop.value}</span>
+                          <span className="text-[11px] font-medium text-slate-800 dark:text-white">{prop.value}</span>
                           <div className={`h-2.5 w-2.5 rounded-full ${prop.color}`} />
                         </div>
                       </div>
                     ))}
-                    <div className="h-px bg-white/[0.06]" />
+                    <div className="h-px bg-slate-200 dark:bg-white/[0.06]" />
                     <div className="space-y-3 pt-1">
-                      <span className="text-[11px] text-white/40">Skills em Comum</span>
+                      <span className="text-[11px] text-slate-500 dark:text-white/40">Skills em Comum</span>
                       {["Python", "Machine Learning"].map((skill, n) => (
                         <div key={n} className="flex gap-2">
-                          <div className="h-5 w-5 rounded-full bg-teal-400/20 text-teal-400 flex items-center justify-center shrink-0 mt-0.5 text-[9px] font-bold">
+                          <div className="h-5 w-5 rounded-full bg-teal-400/20 text-teal-600 flex items-center justify-center shrink-0 mt-0.5 text-[9px] font-bold dark:text-teal-400">
                             {skill.charAt(0)}
                           </div>
                           <div className="flex items-center">
-                            <span className="text-[12px] text-white">{skill}</span>
+                            <span className="text-[12px] text-slate-800 dark:text-white">{skill}</span>
                           </div>
                         </div>
                       ))}
@@ -442,19 +451,19 @@ const Landing = () => {
                   </div>
                 </div>
               </div>
-              <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0a0a0a] to-transparent pointer-events-none" />
+              <div className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none bg-gradient-to-t from-white/80 dark:from-[#0a0a0a] to-transparent" />
             </motion.div>
           </div>
         </div>
       </section>
 
       {/* Full-width divider */}
-      <div className="relative z-10 w-full border-t border-white/[0.06]" />
+      <div className="relative z-10 w-full border-t border-slate-200 dark:border-white/[0.06]" />
 
       {/* ════════════════════════════════════════════════════════════
           SEÇÃO 2 — O QUE É O ARIANO (NOVA)
       ════════════════════════════════════════════════════════════ */}
-      <section className="relative z-10 py-32 px-6 overflow-hidden bg-[#0a0a0a]">
+      <section className="relative z-10 py-32 px-6 overflow-hidden bg-white/60 dark:bg-[#0a0a0a]/80 backdrop-blur-sm">
         {/* Ambient glow */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-cyan-500/[0.07] blur-[120px] rounded-full" />
@@ -463,20 +472,20 @@ const Landing = () => {
         <motion.div {...fadeUp} className="mx-auto max-w-[1200px] relative">
           {/* Section header */}
           <div className="text-center mb-20">
-            <p className="text-[12px] uppercase tracking-[0.2em] text-cyan-400 font-bold mb-4">
+            <p className="text-[12px] uppercase tracking-[0.2em] font-bold mb-4 text-teal-600 dark:text-cyan-400">
               Sobre a Plataforma
             </p>
-            <h2 className="text-[clamp(2rem,4vw,3.2rem)] font-[500] tracking-[-0.04em] leading-[1.1] text-white">
+            <h2 className="text-[clamp(2rem,4vw,3.2rem)] font-[500] tracking-[-0.04em] leading-[1.1] text-slate-900 dark:text-white">
               Arquitetura de{" "}
               <span
-                className="text-cyan-400"
-                style={{ textShadow: "0 0 15px rgba(34,211,238,0.5)" }}
+                className="text-teal-600 dark:text-cyan-400"
+                style={isDark ? { textShadow: "0 0 15px rgba(34,211,238,0.5)" } : undefined}
               >
                 Inteligência Artificial
               </span>{" "}
               Naturalmente Ordenada.
             </h2>
-            <p className="mt-5 text-[16px] text-white/50 max-w-[520px] mx-auto leading-relaxed">
+            <p className="mt-5 text-[16px] max-w-[520px] mx-auto leading-relaxed text-slate-500 dark:text-white/50">
               O ARIANO é uma plataforma de matchmaking científico e tecnológico que conecta pesquisadores, governo e setor privado usando IA e teoria de grafos.
             </p>
           </div>
@@ -485,10 +494,10 @@ const Landing = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Card 1 — large, spans 2 cols */}
             <div
-              className="md:col-span-2 group relative rounded-2xl p-8 overflow-hidden cursor-default"
+              className="md:col-span-2 group relative rounded-2xl p-8 overflow-hidden cursor-default border"
               style={{
-                background: "rgba(8,16,28,0.7)",
-                border: "1px solid rgba(34,211,238,0.12)",
+                background: isDark ? "rgba(8,16,28,0.7)" : "rgba(255,255,255,0.75)",
+                borderColor: isDark ? "rgba(34,211,238,0.12)" : "rgba(34,211,238,0.25)",
                 backdropFilter: "blur(20px)",
               }}
             >
@@ -498,24 +507,24 @@ const Landing = () => {
                 className="w-12 h-12 rounded-xl flex items-center justify-center mb-6"
                 style={{ backgroundColor: "rgba(34,211,238,0.1)", border: "1px solid rgba(34,211,238,0.25)" }}
               >
-                <GitMerge className="w-5 h-5 text-cyan-400" />
+                <GitMerge className="w-5 h-5 text-teal-500 dark:text-cyan-400" />
               </div>
-              <h3 className="text-[20px] font-semibold text-white mb-3">Origem do Projeto</h3>
-              <p className="text-[14px] leading-[1.8] text-white/50">
-                Nascido dentro da <span className="text-cyan-400 font-medium">SECTI-PE</span>, o ARIANO surgiu da necessidade de conectar pesquisadores, empresas e governo de forma estruturada e inteligente, eliminando silos de informação e acelerando a inovação no ecossistema de Pernambuco.
+              <h3 className="text-[20px] font-semibold mb-3 text-slate-900 dark:text-white">Origem do Projeto</h3>
+              <p className="text-[14px] leading-[1.8] text-slate-500 dark:text-white/50">
+                Nascido dentro da <span className="text-teal-600 font-medium dark:text-cyan-400">SECTI-PE</span>, o ARIANO surgiu da necessidade de conectar pesquisadores, empresas e governo de forma estruturada e inteligente, eliminando silos de informação e acelerando a inovação no ecossistema de Pernambuco.
               </p>
               <div className="mt-6 flex items-center gap-3">
-                <div className="h-1 w-8 rounded-full bg-cyan-400/60" />
-                <span className="text-[12px] text-cyan-400/80 font-mono">gov_tech · pernambuco</span>
+                <div className="h-1 w-8 rounded-full bg-teal-500/60 dark:bg-cyan-400/60" />
+                <span className="text-[12px] font-mono text-teal-600/80 dark:text-cyan-400/80">gov_tech · pernambuco</span>
               </div>
             </div>
 
             {/* Card 2 */}
             <div
-              className="group relative rounded-2xl p-8 overflow-hidden cursor-default"
+              className="group relative rounded-2xl p-8 overflow-hidden cursor-default border"
               style={{
-                background: "rgba(8,16,28,0.7)",
-                border: "1px solid rgba(96,165,250,0.12)",
+                background: isDark ? "rgba(8,16,28,0.7)" : "rgba(255,255,255,0.75)",
+                borderColor: isDark ? "rgba(96,165,250,0.12)" : "rgba(96,165,250,0.3)",
                 backdropFilter: "blur(20px)",
               }}
             >
@@ -525,20 +534,20 @@ const Landing = () => {
                 className="w-12 h-12 rounded-xl flex items-center justify-center mb-6"
                 style={{ backgroundColor: "rgba(96,165,250,0.1)", border: "1px solid rgba(96,165,250,0.25)" }}
               >
-                <Network className="w-5 h-5 text-blue-400" />
+                <Network className="w-5 h-5 text-blue-500 dark:text-blue-400" />
               </div>
-              <h3 className="text-[18px] font-semibold text-white mb-3">Motor de Grafos</h3>
-              <p className="text-[13px] leading-[1.8] text-white/50">
+              <h3 className="text-[18px] font-semibold mb-3 text-slate-900 dark:text-white">Motor de Grafos</h3>
+              <p className="text-[13px] leading-[1.8] text-slate-500 dark:text-white/50">
                 Um grafo de conhecimento conecta entidades — pessoas, projetos, editais e comunidades — revelando padrões invisíveis ao olho humano.
               </p>
             </div>
 
             {/* Card 3 */}
             <div
-              className="group relative rounded-2xl p-8 overflow-hidden cursor-default"
+              className="group relative rounded-2xl p-8 overflow-hidden cursor-default border"
               style={{
-                background: "rgba(8,16,28,0.7)",
-                border: "1px solid rgba(167,139,250,0.12)",
+                background: isDark ? "rgba(8,16,28,0.7)" : "rgba(255,255,255,0.75)",
+                borderColor: isDark ? "rgba(167,139,250,0.12)" : "rgba(167,139,250,0.3)",
                 backdropFilter: "blur(20px)",
               }}
             >
@@ -548,20 +557,20 @@ const Landing = () => {
                 className="w-12 h-12 rounded-xl flex items-center justify-center mb-6"
                 style={{ backgroundColor: "rgba(167,139,250,0.1)", border: "1px solid rgba(167,139,250,0.25)" }}
               >
-                <Zap className="w-5 h-5 text-purple-400" />
+                <Zap className="w-5 h-5 text-purple-500 dark:text-purple-400" />
               </div>
-              <h3 className="text-[18px] font-semibold text-white mb-3">IA Generativa</h3>
-              <p className="text-[13px] leading-[1.8] text-white/50">
+              <h3 className="text-[18px] font-semibold mb-3 text-slate-900 dark:text-white">IA Generativa</h3>
+              <p className="text-[13px] leading-[1.8] text-slate-500 dark:text-white/50">
                 LLMs avaliam compatibilidade entre perfis, gerando matches com score de confiança e explicabilidade para cada recomendação.
               </p>
             </div>
 
             {/* Card 4 */}
             <div
-              className="group relative rounded-2xl p-8 overflow-hidden cursor-default"
+              className="group relative rounded-2xl p-8 overflow-hidden cursor-default border"
               style={{
-                background: "rgba(8,16,28,0.7)",
-                border: "1px solid rgba(52,211,153,0.12)",
+                background: isDark ? "rgba(8,16,28,0.7)" : "rgba(255,255,255,0.75)",
+                borderColor: isDark ? "rgba(52,211,153,0.12)" : "rgba(52,211,153,0.3)",
                 backdropFilter: "blur(20px)",
               }}
             >
@@ -569,25 +578,27 @@ const Landing = () => {
                 className="w-12 h-12 rounded-xl flex items-center justify-center mb-6"
                 style={{ backgroundColor: "rgba(52,211,153,0.1)", border: "1px solid rgba(52,211,153,0.25)" }}
               >
-                <Layers className="w-5 h-5 text-emerald-400" />
+                <Layers className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
               </div>
-              <h3 className="text-[18px] font-semibold text-white mb-3">Multi-Perfil</h3>
-              <p className="text-[13px] leading-[1.8] text-white/50">
+              <h3 className="text-[18px] font-semibold mb-3 text-slate-900 dark:text-white">Multi-Perfil</h3>
+              <p className="text-[13px] leading-[1.8] text-slate-500 dark:text-white/50">
                 Dashboards adaptados para pesquisadores, gestores e setor privado — cada ator vê o que importa para si.
               </p>
             </div>
 
             {/* Card 5 — stat card */}
             <div
-              className="group relative rounded-2xl p-8 overflow-hidden cursor-default flex flex-col justify-between"
+              className="group relative rounded-2xl p-8 overflow-hidden cursor-default flex flex-col justify-between border"
               style={{
-                background: "linear-gradient(135deg, rgba(34,211,238,0.08) 0%, rgba(8,16,28,0.9) 100%)",
-                border: "1px solid rgba(34,211,238,0.2)",
+                background: isDark
+                  ? "linear-gradient(135deg, rgba(34,211,238,0.08) 0%, rgba(8,16,28,0.9) 100%)"
+                  : "linear-gradient(135deg, rgba(20,184,166,0.08) 0%, rgba(255,255,255,0.85) 100%)",
+                borderColor: isDark ? "rgba(34,211,238,0.2)" : "rgba(20,184,166,0.3)",
                 backdropFilter: "blur(20px)",
               }}
             >
               <div>
-                <p className="text-[12px] uppercase tracking-[0.2em] text-cyan-400 font-bold mb-4">Em números</p>
+                <p className="text-[12px] uppercase tracking-[0.2em] font-bold mb-4 text-teal-600 dark:text-cyan-400">Em números</p>
                 <div className="space-y-4">
                   {[
                     { val: "98%", label: "taxa de acerto dos matches" },
@@ -595,8 +606,11 @@ const Landing = () => {
                     { val: "360°", label: "visibilidade de perfil" },
                   ].map((s) => (
                     <div key={s.label}>
-                      <div className="text-[28px] font-bold text-white tracking-tight" style={{ textShadow: "0 0 20px rgba(34,211,238,0.3)" }}>{s.val}</div>
-                      <div className="text-[11px] text-white/40 uppercase tracking-wider">{s.label}</div>
+                      <div
+                        className="text-[28px] font-bold tracking-tight text-slate-900 dark:text-white"
+                        style={isDark ? { textShadow: "0 0 20px rgba(34,211,238,0.3)" } : undefined}
+                      >{s.val}</div>
+                      <div className="text-[11px] uppercase tracking-wider text-slate-400 dark:text-white/40">{s.label}</div>
                     </div>
                   ))}
                 </div>
@@ -609,7 +623,7 @@ const Landing = () => {
       {/* ════════════════════════════════════════════════════════════
           SEÇÃO 3 — ECOSSISTEMA INTERATIVO (GRAFO EM X + CROSSFADE)
       ════════════════════════════════════════════════════════════ */}
-      <section className="relative z-10 py-32 px-6 overflow-hidden border-t border-white/[0.06]" style={{ background: "#020810" }}>
+      <section className="relative z-10 py-32 px-6 overflow-hidden border-t border-slate-200 dark:border-white/[0.06] bg-slate-50/70 dark:bg-[#020810]/90 backdrop-blur-sm">
         {/* Background com efeito de profundidade */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 60% 50%, rgba(34,211,238,0.06) 0%, transparent 60%)" }} />
@@ -620,10 +634,10 @@ const Landing = () => {
         <motion.div {...fadeUp} className="mx-auto max-w-[1200px] relative">
           {/* Header */}
           <div className="mb-20 text-center">
-            <p className="text-[12px] uppercase tracking-[0.2em] text-cyan-400 font-bold mb-4">Plataforma</p>
-            <h2 className="text-[clamp(2rem,3.5vw,3rem)] font-[500] tracking-[-0.04em] text-white leading-[1.1]">
+            <p className="text-[12px] uppercase tracking-[0.2em] font-bold mb-4 text-teal-600 dark:text-cyan-400">Plataforma</p>
+            <h2 className="text-[clamp(2rem,3.5vw,3rem)] font-[500] tracking-[-0.04em] leading-[1.1] text-slate-900 dark:text-white">
               Um ecossistema inteligente{" "}
-              <span className="text-white/40">para cada perfil.</span>
+              <span className="text-slate-400 dark:text-white/40">para cada perfil.</span>
             </h2>
           </div>
 
@@ -655,7 +669,7 @@ const Landing = () => {
                       key={i}
                       x1="50" y1="50"
                       x2={c.x} y2={c.y}
-                      stroke={isActive ? item.accent : "rgba(255,255,255,0.07)"}
+                      stroke={isActive ? item.accent : (isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.12)")}
                       strokeWidth={isActive ? 0.6 : 0.35}
                       strokeDasharray={isActive ? "0" : "2 2"}
                       style={{
@@ -711,18 +725,18 @@ const Landing = () => {
                       <div
                         className="w-14 h-14 rounded-2xl flex items-center justify-center"
                         style={{
-                          backgroundColor: isActive ? `${item.accent}22` : "rgba(8,16,28,0.9)",
-                          border: `2px solid ${isActive ? item.accent : "rgba(255,255,255,0.09)"}`,
+                          backgroundColor: isActive ? `${item.accent}22` : (isDark ? "rgba(8,16,28,0.9)" : "rgba(255,255,255,0.9)"),
+                          border: `2px solid ${isActive ? item.accent : (isDark ? "rgba(255,255,255,0.09)" : "rgba(0,0,0,0.1)")}`,
                           boxShadow: isActive
                             ? `0 0 20px ${item.accent}55, 0 0 50px ${item.accent}22`
-                            : "0 0 0 1px rgba(255,255,255,0.04)",
+                            : (isDark ? "0 0 0 1px rgba(255,255,255,0.04)" : "0 2px 8px rgba(0,0,0,0.08)"),
                           transition: "all 0.3s ease",
                         }}
                       >
                         <Icon
                           className="w-6 h-6"
                           style={{
-                            color: isActive ? item.accent : "rgba(255,255,255,0.4)",
+                            color: isActive ? item.accent : (isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)"),
                             transition: "color 0.3s",
                             filter: isActive ? `drop-shadow(0 0 8px ${item.accent})` : "none",
                           }}
@@ -731,7 +745,7 @@ const Landing = () => {
                       <span
                         className="text-[10px] font-semibold text-center leading-tight max-w-[80px]"
                         style={{
-                          color: isActive ? item.accent : "rgba(255,255,255,0.35)",
+                          color: isActive ? item.accent : (isDark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.45)"),
                           textShadow: isActive ? `0 0 12px ${item.accent}90` : "none",
                           transition: "color 0.3s",
                         }}
@@ -749,9 +763,9 @@ const Landing = () => {
               <div
                 className="relative rounded-2xl overflow-hidden"
                 style={{
-                  background: "rgba(8,16,28,0.8)",
+                  background: isDark ? "rgba(8,16,28,0.8)" : "rgba(255,255,255,0.85)",
                   backdropFilter: "blur(24px)",
-                  border: `1px solid ${displayedItem.accent}30`,
+                  border: `1px solid ${displayedItem.accent}${isDark ? "30" : "40"}`,
                   boxShadow: `0 0 80px ${displayedItem.accent}12, inset 0 0 40px ${displayedItem.accent}05`,
                   transition: "border-color 0.5s, box-shadow 0.5s",
                   minHeight: "380px",
@@ -804,10 +818,10 @@ const Landing = () => {
                       >
                         {displayedItem.label}
                       </p>
-                      <h3 className="text-[clamp(1.4rem,2.5vw,1.9rem)] font-[500] tracking-[-0.03em] text-white leading-[1.2] mb-5">
+                      <h3 className="text-[clamp(1.4rem,2.5vw,1.9rem)] font-[500] tracking-[-0.03em] leading-[1.2] mb-5 text-slate-900 dark:text-white">
                         {displayedItem.title}
                       </h3>
-                      <p className="text-[14px] leading-[1.8] text-white/50 mb-8">
+                      <p className="text-[14px] leading-[1.8] mb-8 text-slate-500 dark:text-white/50">
                         {displayedItem.description}
                       </p>
                       <Link to={displayedItem.link}>
@@ -836,7 +850,7 @@ const Landing = () => {
       {/* ════════════════════════════════════════════════════════════
           SEÇÃO 4 — RADAR CHART (PROFILE SIMULATION)
       ════════════════════════════════════════════════════════════ */}
-      <section className="relative z-10 py-32 px-6 overflow-hidden border-t border-white/[0.06] bg-[#0a0a0a]">
+      <section className="relative z-10 py-32 px-6 overflow-hidden border-t border-slate-200 dark:border-white/[0.06] bg-white/60 dark:bg-[#0a0a0a]/80 backdrop-blur-sm">
         {/* Background glows */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-cyan-500/[0.06] blur-[100px] rounded-full" />
@@ -848,13 +862,16 @@ const Landing = () => {
 
             {/* Left — copy assertivo */}
             <div>
-              <p className="text-[12px] uppercase tracking-[0.2em] text-cyan-400 font-bold mb-3">
+              <p className="text-[12px] uppercase tracking-[0.2em] font-bold mb-3 text-teal-600 dark:text-cyan-400">
                 Inteligência de Perfil
               </p>
-              <h2 className="text-[clamp(2rem,3.5vw,3rem)] font-[500] tracking-[-0.04em] text-white leading-[1.1] mb-8">
+              <h2 className="text-[clamp(2rem,3.5vw,3rem)] font-[500] tracking-[-0.04em] leading-[1.1] mb-8 text-slate-900 dark:text-white">
                 A IA lê o que
                 <br />
-                <span className="text-cyan-400" style={{ textShadow: "0 0 15px rgba(34,211,238,0.4)" }}>
+                <span
+                  className="text-teal-600 dark:text-cyan-400"
+                  style={isDark ? { textShadow: "0 0 15px rgba(34,211,238,0.4)" } : undefined}
+                >
                   você não consegue ver.
                 </span>
               </h2>
@@ -885,8 +902,8 @@ const Landing = () => {
                       <Zap className="h-3.5 w-3.5" style={{ color: item.accent }} />
                     </div>
                     <div>
-                      <h4 className="text-[15px] font-semibold text-white mb-0.5">{item.title}</h4>
-                      <p className="text-[13px] text-white/50 leading-relaxed">{item.desc}</p>
+                      <h4 className="text-[15px] font-semibold mb-0.5 text-slate-800 dark:text-white">{item.title}</h4>
+                      <p className="text-[13px] leading-relaxed text-slate-500 dark:text-white/50">{item.desc}</p>
                     </div>
                   </div>
                 ))}
@@ -895,37 +912,49 @@ const Landing = () => {
 
             {/* Right — MacOS window + Radar neon */}
             <div>
-              {/* MacOS frame — STRICTLY DARK, no white backgrounds */}
+              {/* MacOS frame — adaptive light/dark */}
               <div
                 className="rounded-2xl overflow-hidden shadow-2xl"
                 style={{
-                  background: "#0a0f18",
-                  border: "1px solid rgba(255,255,255,0.07)",
-                  boxShadow: "0 0 80px rgba(34,211,238,0.07), 0 32px 80px rgba(0,0,0,0.6)",
+                  background: isDark ? "#0a0f18" : "rgba(255,255,255,0.85)",
+                  border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.1)",
+                  boxShadow: isDark
+                    ? "0 0 80px rgba(34,211,238,0.07), 0 32px 80px rgba(0,0,0,0.6)"
+                    : "0 4px 40px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.08)",
+                  backdropFilter: "blur(20px)",
                 }}
               >
                 {/* MacOS title bar */}
                 <div
                   className="h-10 flex items-center px-4 gap-2"
-                  style={{ background: "#060c14", borderBottom: "1px solid rgba(255,255,255,0.05)" }}
+                  style={{
+                    background: isDark ? "#060c14" : "rgba(248,250,252,0.9)",
+                    borderBottom: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.08)",
+                  }}
                 >
                   <div className="w-3 h-3 rounded-full bg-[#ff5f56]" style={{ boxShadow: "0 0 6px #ff5f5660" }} />
                   <div className="w-3 h-3 rounded-full bg-[#ffbd2e]" style={{ boxShadow: "0 0 6px #ffbd2e60" }} />
                   <div className="w-3 h-3 rounded-full bg-[#27c93f]" style={{ boxShadow: "0 0 6px #27c93f60" }} />
                   <div className="mx-auto flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-cyan-400" style={{ boxShadow: "0 0 6px #22d3ee" }} />
-                    <span className="text-[11px] font-mono" style={{ color: "rgba(255,255,255,0.3)" }}>profile_analysis.ariano</span>
+                    <span className="text-[11px] font-mono" style={{ color: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)" }}>profile_analysis.ariano</span>
                   </div>
                 </div>
 
                 {/* Sidebar + chart layout inside the mock window */}
-                <div className="flex" style={{ background: "#0a0f18" }}>
+                <div className="flex" style={{ background: isDark ? "#0a0f18" : "rgba(255,255,255,0.8)" }}>
                   {/* Sidebar */}
                   <div
                     className="w-[160px] shrink-0 p-3 flex flex-col gap-1"
-                    style={{ borderRight: "1px solid rgba(255,255,255,0.05)", background: "#07111c" }}
+                    style={{
+                      borderRight: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.07)",
+                      background: isDark ? "#07111c" : "rgba(248,250,252,0.9)",
+                    }}
                   >
-                    <span className="text-[9px] text-white/20 uppercase tracking-wider font-semibold mb-2 px-2 mt-1">Perfil</span>
+                    <span
+                      className="text-[9px] uppercase tracking-wider font-semibold mb-2 px-2 mt-1"
+                      style={{ color: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.35)" }}
+                    >Perfil</span>
                     {[
                       { label: "Visão Geral", active: true },
                       { label: "Skills" },
@@ -937,7 +966,7 @@ const Landing = () => {
                         className="px-2.5 h-7 rounded-lg flex items-center text-[11px] font-medium cursor-pointer"
                         style={{
                           background: item.active ? "rgba(34,211,238,0.08)" : "transparent",
-                          color: item.active ? "#22d3ee" : "rgba(255,255,255,0.3)",
+                          color: item.active ? (isDark ? "#22d3ee" : "#0d9488") : (isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.45)"),
                           border: item.active ? "1px solid rgba(34,211,238,0.2)" : "1px solid transparent",
                         }}
                       >
@@ -946,34 +975,35 @@ const Landing = () => {
                     ))}
                   </div>
 
-                  {/* Chart area — FIXED HEIGHT, no white leak */}
+                  {/* Chart area */}
                   <div className="flex-1 flex flex-col">
                     <div
                       className="px-4 py-2 flex items-center gap-2"
-                      style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}
+                      style={{ borderBottom: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.07)" }}
                     >
-                      <span className="text-[11px] text-white/30 font-mono">Análise Multidimensional · Perfil IA/Data</span>
+                      <span
+                        className="text-[11px] font-mono"
+                        style={{ color: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)" }}
+                      >Análise Multidimensional · Perfil IA/Data</span>
                     </div>
                     {/* CRITICAL: Div com altura fixa para o ResponsiveContainer não colapsar */}
-                    <div className="h-[350px] w-full relative" style={{ background: "#0a0f18" }}>
+                    <div className="h-[350px] w-full relative" style={{ background: isDark ? "#0a0f18" : "rgba(255,255,255,0.7)" }}>
                       {/* Neon center glow behind chart */}
                       <div
                         className="absolute inset-0 pointer-events-none"
-                        style={{
-                          background: "radial-gradient(ellipse at center, rgba(34,211,238,0.05) 0%, transparent 65%)",
-                        }}
+                        style={{ background: "radial-gradient(ellipse at center, rgba(34,211,238,0.05) 0%, transparent 65%)" }}
                       />
                       <ResponsiveContainer width="100%" height="100%">
                         <RadarChart cx="50%" cy="50%" outerRadius="60%" data={radarData}>
-                          <PolarGrid stroke="rgba(255,255,255,0.07)" strokeDasharray="3 3" />
+                          <PolarGrid stroke={isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.1)"} strokeDasharray="3 3" />
                           <PolarAngleAxis
                             dataKey="subject"
-                            tick={{ fill: "rgba(255,255,255,0.45)", fontSize: 11, fontWeight: 500 }}
+                            tick={{ fill: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.55)", fontSize: 11, fontWeight: 500 }}
                           />
                           <PolarRadiusAxis
                             angle={30}
                             domain={[0, 100]}
-                            tick={{ fill: "rgba(255,255,255,0.2)", fontSize: 9 }}
+                            tick={{ fill: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.3)", fontSize: 9 }}
                             axisLine={false}
                           />
                           <Radar
@@ -987,9 +1017,9 @@ const Landing = () => {
                           />
                           <Tooltip
                             contentStyle={{
-                              backgroundColor: "#0d1520",
+                              backgroundColor: isDark ? "#0d1520" : "rgba(255,255,255,0.95)",
                               borderColor: "rgba(34,211,238,0.3)",
-                              color: "#e2f8ff",
+                              color: isDark ? "#e2f8ff" : "#0f172a",
                               borderRadius: "10px",
                               fontSize: "12px",
                               boxShadow: "0 0 20px rgba(34,211,238,0.2)",
@@ -1003,7 +1033,10 @@ const Landing = () => {
                     {/* Footer stats bar */}
                     <div
                       className="flex items-center justify-around px-6 py-3"
-                      style={{ borderTop: "1px solid rgba(255,255,255,0.05)", background: "#060c14" }}
+                      style={{
+                        borderTop: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.07)",
+                        background: isDark ? "#060c14" : "rgba(248,250,252,0.9)",
+                      }}
                     >
                       {[
                         { label: "Skills", value: "95%" },
@@ -1014,13 +1047,16 @@ const Landing = () => {
                         <div key={i} className="text-center">
                           <div
                             className="text-[15px] font-bold"
-                            style={{ color: "#22d3ee", textShadow: "0 0 10px rgba(34,211,238,0.6)" }}
+                            style={{
+                              color: isDark ? "#22d3ee" : "#0d9488",
+                              textShadow: isDark ? "0 0 10px rgba(34,211,238,0.6)" : "none",
+                            }}
                           >
                             {s.value}
                           </div>
                           <div
                             className="text-[9px] uppercase tracking-widest"
-                            style={{ color: "rgba(255,255,255,0.25)" }}
+                            style={{ color: isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.4)" }}
                           >
                             {s.label}
                           </div>
@@ -1038,10 +1074,10 @@ const Landing = () => {
       {/* ════════════════════════════════════════════════════════════
           SEÇÃO 5 — TESTIMONIALS (INTOCÁVEL)
       ════════════════════════════════════════════════════════════ */}
-      <section className="relative z-10 py-10 px-6 overflow-hidden my-10 border-y border-white/[0.06]">
+      <section className="relative z-10 py-10 px-6 overflow-hidden my-10 border-y border-slate-200 dark:border-white/[0.06]">
         {/* Angular line shading background */}
         <div
-          className="absolute inset-0 pointer-events-none bg-[#0a0a0a]/70 backdrop-blur-md"
+          className="absolute inset-0 pointer-events-none backdrop-blur-md bg-white/60 dark:bg-[#0a0a0a]/70"
           style={{
             backgroundImage: `repeating-linear-gradient(
               -45deg,
@@ -1065,7 +1101,9 @@ const Landing = () => {
                     isRight ? "right-0 translate-x-[85%] md:translate-x-[80%] lg:translate-x-[75%] z-10 scale-[0.8] opacity-10" :
                       (i < activeTestimonial ? "left-0 -translate-x-[150%] opacity-0 pointer-events-none" : "right-0 translate-x-[150%] opacity-0 pointer-events-none");
 
-              const glowClass = isCenter ? "shadow-[0_0_40px_rgba(34,211,238,0.05)] bg-[#0d1520]/70 backdrop-blur-md" : "bg-[#0a0a0a]/20 backdrop-blur-sm pointer-events-none";
+              const glowClass = isCenter
+                ? "shadow-[0_0_40px_rgba(34,211,238,0.05)] backdrop-blur-md bg-white/80 dark:bg-[#0d1520]/70"
+                : "backdrop-blur-sm pointer-events-none bg-white/30 dark:bg-[#0a0a0a]/20";
 
               return (
                 <div
@@ -1073,20 +1111,24 @@ const Landing = () => {
                   className={`absolute top-1/2 -translate-y-1/2 w-[85vw] max-w-[720px] transition-all duration-700 ease-in-out border border-white/[0.08] rounded-2xl p-10 cursor-pointer ${posClass} ${glowClass}`}
                   onClick={() => { if (!isCenter) { if (isLeft) handlePrevTestimonial(); else handleNextTestimonial(); } }}
                 >
-                  <blockquote className={`text-[18px] md:text-[20px] font-[400] leading-[1.5] tracking-[-0.01em] transition-colors duration-700 ${isCenter ? 'text-white/85' : 'text-white/30'}`}>
+                  <blockquote className={`text-[18px] md:text-[20px] font-[400] leading-[1.5] tracking-[-0.01em] transition-colors duration-700 ${
+                    isCenter
+                      ? 'text-slate-800 dark:text-white/85'
+                      : 'text-slate-300 dark:text-white/30'
+                  }`}>
                     "{t.text}"
                   </blockquote>
                   <div className="mt-6 flex items-center gap-3">
                     {t.avatar ? (
-                      <img src={t.avatar} alt={t.name} className="h-10 w-10 rounded-full object-cover border border-white/10" />
+                      <img src={t.avatar} alt={t.name} className="h-10 w-10 rounded-full object-cover border border-slate-200 dark:border-white/10" />
                     ) : (
-                      <div className="h-10 w-10 rounded-full bg-cyan-400/10 border border-cyan-400/30 flex items-center justify-center text-cyan-400 font-bold text-sm">
+                      <div className="h-10 w-10 rounded-full bg-teal-400/10 border border-teal-400/30 flex items-center justify-center text-teal-600 font-bold text-sm dark:text-cyan-400">
                         {t.name.split(" ").map(n => n[0]).join("").substring(0, 2)}
                       </div>
                     )}
                     <div>
-                      <span className="text-[13px] font-medium text-white block">{t.name}</span>
-                      <span className="text-[13px] text-white/40 block">{t.role}</span>
+                      <span className="text-[13px] font-medium block text-slate-800 dark:text-white">{t.name}</span>
+                      <span className="text-[13px] block text-slate-500 dark:text-white/40">{t.role}</span>
                     </div>
                   </div>
                 </div>
@@ -1096,7 +1138,7 @@ const Landing = () => {
 
           {/* Controls */}
           <div className="flex items-center justify-center gap-6 mt-8 relative z-20">
-            <button onClick={handlePrevTestimonial} className="p-2.5 rounded-full border border-white/[0.08] bg-[#0a0a0a]/50 hover:bg-white/5 text-white/40 hover:text-white transition-colors backdrop-blur-sm">
+            <button onClick={handlePrevTestimonial} className="p-2.5 rounded-full border transition-colors backdrop-blur-sm border-slate-300 bg-white/60 hover:bg-white text-slate-500 hover:text-slate-900 dark:border-white/[0.08] dark:bg-[#0a0a0a]/50 dark:hover:bg-white/5 dark:text-white/40 dark:hover:text-white">
               <ChevronLeft size={20} />
             </button>
             <div className="flex gap-2.5">
@@ -1104,11 +1146,15 @@ const Landing = () => {
                 <button
                   key={i}
                   onClick={() => setActiveTestimonial(i)}
-                  className={`w-2.5 h-2.5 rounded-full transition-all duration-500 ${i === activeTestimonial ? 'bg-cyan-400 shadow-[0_0_10px_#22d3ee] scale-125' : 'bg-white/20 hover:bg-white/40'}`}
+                  className={`w-2.5 h-2.5 rounded-full transition-all duration-500 ${
+                    i === activeTestimonial
+                      ? 'bg-teal-500 dark:bg-cyan-400 shadow-[0_0_10px_#22d3ee] scale-125'
+                      : 'bg-slate-300 hover:bg-slate-400 dark:bg-white/20 dark:hover:bg-white/40'
+                  }`}
                 />
               ))}
             </div>
-            <button onClick={handleNextTestimonial} className="p-2.5 rounded-full border border-white/[0.08] bg-[#0a0a0a]/50 hover:bg-white/5 text-white/40 hover:text-white transition-colors backdrop-blur-sm">
+            <button onClick={handleNextTestimonial} className="p-2.5 rounded-full border transition-colors backdrop-blur-sm border-slate-300 bg-white/60 hover:bg-white text-slate-500 hover:text-slate-900 dark:border-white/[0.08] dark:bg-[#0a0a0a]/50 dark:hover:bg-white/5 dark:text-white/40 dark:hover:text-white">
               <ChevronRight size={20} />
             </button>
           </div>
@@ -1118,22 +1164,22 @@ const Landing = () => {
       {/* ════════════════════════════════════════════════════════════
           SEÇÃO 6 — CTA FINAL
       ════════════════════════════════════════════════════════════ */}
-      <section className="relative z-10 pt-32 pb-40 px-6 overflow-hidden bg-[#0a0a0a]">
+      <section className="relative z-10 pt-32 pb-40 px-6 overflow-hidden bg-white/60 dark:bg-[#0a0a0a]/80 backdrop-blur-sm">
         {/* Glow */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-cyan-500/[0.06] blur-[120px] rounded-full" />
         </div>
         <motion.div {...fadeUp} className="mx-auto max-w-[1200px] text-center relative">
-          <h2 className="text-[clamp(2rem,4vw,3.2rem)] font-[500] tracking-[-0.035em] text-white leading-[1.1] mx-auto max-w-[560px]">
+          <h2 className="text-[clamp(2rem,4vw,3.2rem)] font-[500] tracking-[-0.035em] leading-[1.1] mx-auto max-w-[560px] text-slate-900 dark:text-white">
             Faça parte da revolução tecnológica.
           </h2>
-          <p className="mt-5 text-[15px] text-white/50 max-w-[400px] mx-auto">
+          <p className="mt-5 text-[15px] max-w-[400px] mx-auto text-slate-500 dark:text-white/50">
             Integre-se ao projeto ARIANO e encontre oportunidades que moldam o futuro.
           </p>
           <div className="mt-10 flex justify-center">
             <Link to="/cadastro">
               <button
-                className="group relative inline-flex items-center gap-2.5 px-8 py-3.5 text-[15px] font-medium transition-all duration-200 border border-white/20 text-white hover:bg-white hover:text-black hover:border-white"
+                className="group relative inline-flex items-center gap-2.5 px-8 py-3.5 text-[15px] font-medium transition-all duration-200 border border-slate-300 text-slate-700 hover:bg-slate-900 hover:text-white hover:border-slate-900 dark:border-white/20 dark:text-white dark:hover:bg-white dark:hover:text-black dark:hover:border-white"
               >
                 Acessar Plataforma
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -1146,18 +1192,18 @@ const Landing = () => {
       {/* ════════════════════════════════════════════════════════════
           FOOTER
       ════════════════════════════════════════════════════════════ */}
-      <div className="relative z-10 border-t border-white/[0.06] bg-[#0a0a0a]/80 backdrop-blur-md">
+      <div className="relative z-10 border-t backdrop-blur-md border-slate-200 bg-white/70 dark:border-white/[0.06] dark:bg-[#0a0a0a]/80">
         <div className="mx-auto max-w-[1200px] px-6 py-10 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2">
             <StackedLogo size={16} />
-            <span className="text-[12px] font-bold text-white uppercase tracking-[0.08em]">ARIANO</span>
+            <span className="text-[12px] font-bold uppercase tracking-[0.08em] text-slate-800 dark:text-white">ARIANO</span>
           </div>
 
           <div className="flex flex-col items-center md:items-end gap-2">
-            <span className="text-[10px] text-white/30 uppercase tracking-widest font-semibold">Realização / Apoio Institucional</span>
+            <span className="text-[10px] uppercase tracking-widest font-semibold text-slate-400 dark:text-white/30">Realização / Apoio Institucional</span>
             <div className="flex items-center gap-4">
               <img src="/Coreto_LOGO.png" alt="Coreto Logo" className="h-6 object-contain opacity-60 hover:opacity-100 transition-opacity" />
-              <div className="h-4 w-px bg-white/10" />
+              <div className="h-4 w-px bg-slate-300 dark:bg-white/10" />
               <img
                 src={logoSecti}
                 alt="SECTI Logo"
@@ -1166,7 +1212,7 @@ const Landing = () => {
             </div>
           </div>
 
-          <span className="text-[12px] text-white/30">© {new Date().getFullYear()} CORETO</span>
+          <span className="text-[12px] text-slate-400 dark:text-white/30">© {new Date().getFullYear()} CORETO</span>
         </div>
       </div>
     </div>
