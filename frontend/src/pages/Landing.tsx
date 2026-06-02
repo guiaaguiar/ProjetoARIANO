@@ -75,6 +75,7 @@ const fadeUp = {
 // Nós posicionados nos 4 cantos para formar o layout em "X" (diagonal)
 const ECOSYSTEM_ITEMS = [
   {
+    id: "origem",
     icon: GitMerge,
     label: "Origem e História",
     title: "DNA Acadêmico e Governamental",
@@ -82,10 +83,10 @@ const ECOSYSTEM_ITEMS = [
     cta: "Conhecer a origem",
     link: "/cadastro",
     accent: "#22d3ee",
-    // Canto superior-esquerdo
-    nodePos: { top: "0%", left: "0%" },
+    nodePos: { top: "15%", left: "15%" },
   },
   {
+    id: "quadrupla",
     icon: Users,
     label: "Quádrupla Hélice",
     title: "Conectando a Quádrupla Hélice",
@@ -93,10 +94,10 @@ const ECOSYSTEM_ITEMS = [
     cta: "Ver o ecossistema",
     link: "/cadastro",
     accent: "#60a5fa",
-    // Canto superior-direito
-    nodePos: { top: "0%", right: "0%" },
+    nodePos: { top: "15%", left: "85%" },
   },
   {
+    id: "grafo",
     icon: Network,
     label: "Grafo de Conhecimento",
     title: "Cérebro em Grafo (Neo4j)",
@@ -104,10 +105,10 @@ const ECOSYSTEM_ITEMS = [
     cta: "Explorar o grafo",
     link: "/cadastro",
     accent: "#a78bfa",
-    // Canto inferior-esquerdo
-    nodePos: { bottom: "0%", left: "0%" },
+    nodePos: { top: "85%", left: "15%" },
   },
   {
+    id: "ia",
     icon: Zap,
     label: "IA Precomputada",
     title: "Precomputed Relational Intelligence",
@@ -115,10 +116,10 @@ const ECOSYSTEM_ITEMS = [
     cta: "Entender a IA",
     link: "/cadastro",
     accent: "#34d399",
-    // Canto inferior-direito
-    nodePos: { bottom: "0%", right: "0%" },
+    nodePos: { top: "85%", left: "85%" },
   },
   {
+    id: "ariano",
     icon: Brain,
     label: "Cérebro do CORETO",
     title: "O Cérebro do CORETO",
@@ -126,8 +127,7 @@ const ECOSYSTEM_ITEMS = [
     cta: "Ver a plataforma",
     link: "/cadastro",
     accent: "#f43f5e",
-    // Centro
-    nodePos: { top: "50%", left: "50%", transform: "translate(-50%, -50%)" },
+    nodePos: { top: "50%", left: "50%" },
   },
 ];
 
@@ -180,7 +180,7 @@ const Landing = () => {
   });
 
   const [activeTestimonial, setActiveTestimonial] = useState(0);
-  const [activeNode, setActiveNode] = useState<number>(4);
+  const [activeNode, setActiveNode] = useState<string>('ariano');
   const scrollTimeout = useRef<any>(null);
 
   const handlePrevTestimonial = () => setActiveTestimonial(prev => (prev === 0 ? TESTIMONIALS.length - 1 : prev - 1));
@@ -248,7 +248,7 @@ const Landing = () => {
   }, [theme]);
 
   // Display content for the active node (default to first item if none hovered)
-  const displayedItem = activeNode !== null ? ECOSYSTEM_ITEMS[activeNode] : ECOSYSTEM_ITEMS[0];
+  const displayedItem = ECOSYSTEM_ITEMS.find(item => item.id === activeNode) || ECOSYSTEM_ITEMS[4];
 
   return (
     <div
@@ -320,17 +320,19 @@ const Landing = () => {
             <motion.div
               {...fadeUp}
               transition={{ ...fadeUp.transition, delay: 0.2 } as any}
-              className="relative z-10 rounded-t-xl overflow-hidden bg-white/70 backdrop-blur-2xl border border-white/50 shadow-xl dark:bg-[#1a1a1a]/60 dark:border-white/10 dark:shadow-2xl"
+              className="relative z-10 rounded-t-xl overflow-hidden bg-white/70 dark:bg-[#1a1a1a]/80 backdrop-blur-2xl border border-slate-200 dark:border-white/10 shadow-2xl"
             >
               {/* MacOS Window Controls */}
-              <div className="h-10 border-b flex items-center px-4 gap-2 bg-white/40 border-white/50 dark:bg-[#060c14]/40 dark:border-white/[0.06]">
+              <div className="h-10 flex items-center px-4 gap-2"
+                style={{ background: isDark ? "#060c14" : "rgba(248,250,252,0.9)", borderBottom: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.08)" }}>
                 <div className="w-3 h-3 rounded-full bg-[#ff5f56] shadow-sm"></div>
                 <div className="w-3 h-3 rounded-full bg-[#ffbd2e] shadow-sm"></div>
                 <div className="w-3 h-3 rounded-full bg-[#27c93f] shadow-sm"></div>
               </div>
-              <div className="flex min-h-[420px]">
+              <div className="flex min-h-[420px]" style={{ background: isDark ? "#0a0f18" : "rgba(255,255,255,0.8)" }}>
                 {/* Sidebar mock */}
-                <div className="w-[200px] border-r p-3 flex flex-col gap-1 shrink-0 border-white/50 bg-white/40 dark:border-white/[0.06] dark:bg-[#0a0f18]/40">
+                <div className="w-[200px] p-3 flex flex-col gap-1 shrink-0"
+                  style={{ borderRight: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.07)", background: isDark ? "#07111c" : "rgba(248,250,252,0.9)" }}>
                   <div className="flex items-center gap-2 px-2 h-8 mb-2">
                     <div className="w-5 h-5 flex items-center justify-center">
                       <img src="/Coreto_LOGO.png" alt="Logo" className="w-full h-full object-contain" />
@@ -369,8 +371,8 @@ const Landing = () => {
                 </div>
 
                 {/* Main content — issue list */}
-                <div className="flex-1 flex flex-col min-w-0">
-                  <div className="flex items-center gap-3 px-4 h-10 border-b border-slate-200 dark:border-white/[0.06]">
+                <div className="flex-1 flex flex-col min-w-0" style={{ background: isDark ? "#0a0f18" : "rgba(255,255,255,0.7)" }}>
+                  <div className="flex items-center gap-3 px-4 h-10" style={{ borderBottom: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.07)" }}>
                     <div className="h-2 w-10 rounded-full bg-slate-200 dark:bg-white/10" />
                     <div className="h-2 w-8 rounded-full bg-slate-200 dark:bg-white/[0.07]" />
                     <div className="h-2 w-12 rounded-full bg-slate-200 dark:bg-white/[0.07]" />
@@ -389,22 +391,22 @@ const Landing = () => {
                       { priority: "bg-indigo-500", id: "Data Science", name: "Dra. Ana Silva", area: "Pesquisadora Sênior (Data Science)", score: "82%", status: "bg-indigo-500" },
                       { priority: "bg-cyan-500", id: "Frontend", name: "Mariana Costa", area: "Estudante Parceira (Frontend)", score: "78%", status: "bg-cyan-500" },
                     ].map((row, i) => (
-                      <div key={i} className="relative flex items-center gap-4 px-4 h-9 border-b transition-colors cursor-pointer border-slate-200/50 hover:bg-slate-200/50 dark:border-white/[0.06] dark:hover:bg-white/5">
+                      <div key={i} className="relative flex items-center gap-4 px-4 h-9 transition-colors cursor-pointer hover:bg-slate-200/50 dark:hover:bg-white/5" style={{ borderBottom: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.07)" }}>
                         <div className="h-3.5 w-3.5 rounded border flex items-center justify-center shrink-0 z-10 border-slate-300 dark:border-white/10">
                           <div className={`h-1.5 w-1.5 rounded-sm ${row.priority}`} />
                         </div>
                         <span className="text-[10px] text-teal-600 font-mono font-bold bg-teal-400/10 px-1.5 rounded shrink-0 z-10 dark:text-teal-400">{row.id}</span>
 
                         <div className="flex items-center gap-3 flex-1 min-w-0 z-10">
-                          <span className="text-[12px] font-medium truncate text-slate-900 dark:text-white">{row.name}</span>
-                          <span className="text-[12px] truncate hidden sm:inline-block text-slate-400 dark:text-white/40">{row.area}</span>
+                          <span className="text-[12px] font-medium truncate text-slate-700 dark:text-slate-300">{row.name}</span>
+                          <span className="text-[12px] truncate hidden sm:inline-block text-slate-500 dark:text-slate-400">{row.area}</span>
                         </div>
 
                         <div className="ml-auto flex items-center gap-3 z-10">
-                          <span className="text-[11px] font-mono text-slate-400 dark:text-white/40">{row.score}</span>
+                          <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">{row.score}</span>
                           <div className={`h-2 w-2 rounded-full ${row.status}`} />
                           <div className="h-5 w-5 rounded-full flex items-center justify-center bg-slate-100 dark:bg-white/5">
-                            <ArrowRight className="h-3 w-3 text-slate-400 dark:text-white/30" />
+                            <ArrowRight className="h-3 w-3 text-slate-500 dark:text-slate-400" />
                           </div>
                         </div>
                       </div>
@@ -413,8 +415,9 @@ const Landing = () => {
                 </div>
 
                 {/* Detail panel */}
-                <div className="w-[280px] border-l shrink-0 hidden lg:flex flex-col relative z-10 border-white/50 bg-white/40 dark:border-white/[0.06] dark:bg-[#0a0f18]/40">
-                  <div className="flex items-center justify-between px-4 h-10 border-b border-slate-200 dark:border-white/[0.06]">
+                <div className="w-[280px] shrink-0 hidden lg:flex flex-col relative z-10"
+                  style={{ borderLeft: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.07)", background: isDark ? "#07111c" : "rgba(248,250,252,0.9)" }}>
+                  <div className="flex items-center justify-between px-4 h-10" style={{ borderBottom: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.07)" }}>
                     <span className="text-[12px] font-medium text-slate-900 dark:text-white">Detalhes do Match</span>
                     <div className="flex gap-1.5">
                       <div className="h-4 w-4 rounded bg-slate-200 dark:bg-white/5" />
@@ -627,37 +630,20 @@ const Landing = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
             {/* ── COLUNA ESQUERDA: Grafo SVG interativo em X ── */}
-            <div className="relative w-full aspect-square" style={{ perspective: "1200px" }}>
-              <div 
-                className="absolute inset-0 w-full h-full"
-                style={{ 
-                  transformStyle: "preserve-3d", 
-                  transform: "rotateX(60deg) rotateZ(45deg)" 
-                }}
-              >
-                {/* SVG: linhas diagonais do centro para os 4 cantos (layout X) desenhadas no chão isométrico */}
-                <svg
-                  className="absolute inset-0 w-full h-full pointer-events-none"
-                  viewBox="0 0 100 100"
-                  preserveAspectRatio="none"
-                  style={{ overflow: "visible" }}
-                >
+            <div className="relative w-full aspect-square perspective-[1500px]">
+              <div className="absolute inset-0 transform rotate-x-[60deg] rotate-z-[45deg] preserve-3d">
+                {/* SVG Lines connecting the nodes */}
+                <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ overflow: "visible", transform: "translateZ(-1px)" }}>
                   {ECOSYSTEM_ITEMS.map((item, i) => {
-                    const isActive = activeNode === i;
-                    // Coords dos cantos em viewBox 0-100
-                    const corners = [
-                      { x: 12, y: 12 }, // top-left  (nó 0)
-                      { x: 88, y: 12 }, // top-right (nó 1)
-                      { x: 12, y: 88 }, // bot-left  (nó 2)
-                      { x: 88, y: 88 }, // bot-right (nó 3)
-                    ];
-                    if (i === 4) return null;
-                    const c = corners[i];
+                    if (item.id === "ariano") return null;
+                    const isActive = activeNode === item.id;
+                    const endX = parseInt(item.nodePos.left);
+                    const endY = parseInt(item.nodePos.top);
                     return (
                       <line
-                        key={i}
+                        key={item.id}
                         x1="50" y1="50"
-                        x2={c.x} y2={c.y}
+                        x2={endX} y2={endY}
                         stroke={isActive ? item.accent : (isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.12)")}
                         strokeWidth={isActive ? 0.6 : 0.35}
                         strokeDasharray={isActive ? "0" : "2 2"}
@@ -671,78 +657,47 @@ const Landing = () => {
                   })}
                 </svg>
 
-                {/* Nós centrais e periféricos */}
-                {ECOSYSTEM_ITEMS.map((item, i) => {
+                {ECOSYSTEM_ITEMS.map((item) => {
+                  const isActive = activeNode === item.id;
                   const Icon = item.icon;
-                  const isActive = activeNode === i;
-                  const isCenter = i === 4;
+                  const isCenter = item.id === "ariano";
 
                   return (
-                    <div
-                      key={i}
-                      className="absolute z-20 cursor-pointer"
-                      style={{ 
-                        ...item.nodePos,
-                        transformStyle: "preserve-3d" 
-                      } as any}
-                      onClick={() => setActiveNode(i)}
+                    <button
+                      key={item.id}
+                      className="absolute z-20 group"
+                      style={{ ...item.nodePos, transformStyle: "preserve-3d" } as any}
+                      onClick={() => setActiveNode(item.id)}
                     >
-                      {/* Base no chão (projetada isométricamente) */}
-                      <div 
-                        className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full backdrop-blur-md shadow-lg border transition-all duration-500 ${isCenter ? 'w-20 h-20' : 'w-16 h-16'} bg-white/10 dark:bg-black/20 border-white/20`}
-                        style={{ 
-                          boxShadow: isActive ? `0 0 40px ${item.accent}80, inset 0 0 20px ${item.accent}40` : undefined,
-                        }} 
-                      />
+                      {/* Base no chão */}
+                      <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border transition-all duration-300 ${isCenter ? 'w-20 h-20' : 'w-16 h-16'} ${isActive ? 'bg-white/20 dark:bg-black/40 scale-110' : 'bg-white/10 dark:bg-black/20 group-hover:scale-105'} ${isDark ? 'border-white/20' : 'border-slate-300'}`}
+                           style={{ boxShadow: isActive ? `0 0 30px ${item.accent}60` : undefined }} />
 
-                      {/* Objeto Flutuante com contra-rotação para ficar de pé */}
-                      <div
-                        className="absolute top-1/2 left-1/2 flex flex-col items-center gap-2"
-                        style={{
-                          transformStyle: "preserve-3d",
-                          transform: `translate(-50%, -50%) rotateZ(-45deg) rotateX(-60deg) translateY(${isActive ? '-64px' : '-40px'}) scale(${isActive ? 1.15 : 1})`,
-                          transition: "transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)"
-                        }}
-                      >
-                        <div
-                          className={`relative rounded-2xl flex items-center justify-center transition-all duration-300 ${
-                            isCenter ? "w-16 h-16" : "w-14 h-14"
-                          } bg-gradient-to-br from-white to-slate-200 dark:from-slate-700 dark:to-slate-900`}
-                          style={{
-                            border: `2px solid ${isActive ? item.accent : (isDark ? "rgba(255,255,255,0.09)" : "rgba(0,0,0,0.1)")}`,
-                            boxShadow: isActive
-                              ? `0 15px 0 ${item.accent}30, 0 25px 40px ${item.accent}40`
-                              : `0 10px 0 rgba(255,255,255,0.15), 0 15px 20px rgba(0,0,0,0.15)`,
-                          }}
-                        >
-                          <Icon
-                            className={`${isCenter ? "w-7 h-7" : "w-6 h-6"} text-white`}
-                            style={{
-                              color: isActive ? item.accent : "#ffffff",
-                              filter: isActive ? `drop-shadow(0 0 8px ${item.accent})` : "none",
-                            }}
-                          />
+                      {/* Elemento flutuante contra-rotacionado */}
+                      <div className="absolute top-1/2 left-1/2 flex flex-col items-center gap-2 transition-all duration-500"
+                           style={{
+                             transform: `translate(-50%, -50%) rotateZ(-45deg) rotateX(-60deg) translateY(${isActive ? '-60px' : '-40px'}) scale(${isActive ? 1.15 : 1})`,
+                             transformStyle: "preserve-3d"
+                           }}>
+                        <div className={`relative flex items-center justify-center transition-all duration-300 ${isCenter ? 'w-16 h-16 rounded-2xl' : 'w-14 h-14 rounded-2xl'} bg-gradient-to-br from-white to-slate-100 dark:from-slate-700 dark:to-slate-900`}
+                             style={{
+                               border: `2px solid ${isActive ? item.accent : (isDark ? "rgba(255,255,255,0.09)" : "rgba(0,0,0,0.1)")}`,
+                               boxShadow: isActive ? `0 15px 30px ${item.accent}40, inset 0 0 20px ${item.accent}20` : (isDark ? "0 10px 20px rgba(0,0,0,0.3)" : "0 10px 20px rgba(0,0,0,0.1)")
+                             }}>
+                          <Icon className={`${isCenter ? 'w-7 h-7' : 'w-6 h-6'}`} style={{ color: isActive ? item.accent : (isDark ? "#ffffff" : "#1e293b"), filter: isActive ? `drop-shadow(0 0 8px ${item.accent})` : "none" }} />
                         </div>
                         
                         {!isCenter && (
-                          <span
-                            className={`mt-2 text-[11px] font-medium tracking-wide text-center leading-tight max-w-[80px] transition-all duration-300 text-slate-800 dark:text-slate-300 ${
-                              isActive ? "opacity-100" : "opacity-60 hover:opacity-100"
-                            }`}
-                            style={
-                              isActive 
-                                ? { color: item.accent, textShadow: `0 0 12px ${item.accent}90` }
-                                : undefined
-                            }
-                          >
+                          <span className={`text-[11px] font-medium tracking-wide text-center leading-tight max-w-[80px] transition-all duration-300 text-slate-800 dark:text-slate-300 ${isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100"}`}
+                                style={isActive ? { color: item.accent, textShadow: `0 0 12px ${item.accent}90` } : undefined}>
                             {item.label}
                           </span>
                         )}
                         {isCenter && (
-                          <p className="text-[10px] text-slate-800 dark:text-white text-center mt-1 font-mono uppercase tracking-wider font-bold">ARIANO</p>
+                          <p className={`text-[10px] text-center mt-1 font-mono uppercase tracking-wider font-bold transition-all duration-300 ${isActive ? 'opacity-100' : 'opacity-80'} text-slate-800 dark:text-white`} style={isActive ? { color: item.accent } : undefined}>ARIANO</p>
                         )}
                       </div>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
