@@ -241,7 +241,7 @@ const Landing = () => {
 
   return (
     <div
-      className="relative min-h-screen text-foreground overflow-x-hidden bg-cover bg-center bg-no-repeat"
+      className="relative min-h-screen w-full text-foreground overflow-x-hidden bg-cover bg-center bg-no-repeat bg-fixed"
       style={{ backgroundImage: `url(${isDark ? bgDark : bgLight})` }}
     >
 
@@ -463,10 +463,10 @@ const Landing = () => {
       {/* ════════════════════════════════════════════════════════════
           SEÇÃO 2 — O QUE É O ARIANO (NOVA)
       ════════════════════════════════════════════════════════════ */}
-      <section className="relative z-10 py-32 px-6 overflow-hidden bg-white/60 dark:bg-[#0a0a0a]/80 backdrop-blur-sm">
+      <section className="relative z-10 py-32 px-6 overflow-hidden bg-transparent">
         {/* Ambient glow */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-cyan-500/[0.07] blur-[120px] rounded-full" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-cyan-500/[0.02] blur-[120px] rounded-full" />
         </div>
 
         <motion.div {...fadeUp} className="mx-auto max-w-[1200px] relative">
@@ -623,12 +623,12 @@ const Landing = () => {
       {/* ════════════════════════════════════════════════════════════
           SEÇÃO 3 — ECOSSISTEMA INTERATIVO (GRAFO EM X + CROSSFADE)
       ════════════════════════════════════════════════════════════ */}
-      <section className="relative z-10 py-32 px-6 overflow-hidden border-t border-slate-200 dark:border-white/[0.06] bg-slate-50/70 dark:bg-[#020810]/90 backdrop-blur-sm">
+      <section className="relative z-10 py-32 px-6 overflow-hidden border-t border-slate-200 dark:border-white/[0.06] bg-transparent">
         {/* Background com efeito de profundidade */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 60% 50%, rgba(34,211,238,0.06) 0%, transparent 60%)" }} />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, rgba(34,211,238,0.08) 0%, transparent 65%)", filter: "blur(40px)" }} />
-          <div className="absolute bottom-0 right-1/4 w-[350px] h-[350px] bg-blue-500/[0.05] blur-[100px] rounded-full" />
+          <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 60% 50%, rgba(34,211,238,0.02) 0%, transparent 60%)" }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, rgba(34,211,238,0.03) 0%, transparent 65%)", filter: "blur(40px)" }} />
+          <div className="absolute bottom-0 right-1/4 w-[350px] h-[350px] bg-blue-500/[0.02] blur-[100px] rounded-full" />
         </div>
 
         <motion.div {...fadeUp} className="mx-auto max-w-[1200px] relative">
@@ -850,11 +850,11 @@ const Landing = () => {
       {/* ════════════════════════════════════════════════════════════
           SEÇÃO 4 — RADAR CHART (PROFILE SIMULATION)
       ════════════════════════════════════════════════════════════ */}
-      <section className="relative z-10 py-32 px-6 overflow-hidden border-t border-slate-200 dark:border-white/[0.06] bg-white/60 dark:bg-[#0a0a0a]/80 backdrop-blur-sm">
+      <section className="relative z-10 py-32 px-6 overflow-hidden border-t border-slate-200 dark:border-white/[0.06] bg-transparent">
         {/* Background glows */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-cyan-500/[0.06] blur-[100px] rounded-full" />
-          <div className="absolute top-1/3 right-1/4 w-[300px] h-[300px] bg-blue-500/[0.05] blur-[100px] rounded-full" />
+          <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-cyan-500/[0.02] blur-[100px] rounded-full" />
+          <div className="absolute top-1/3 right-1/4 w-[300px] h-[300px] bg-blue-500/[0.02] blur-[100px] rounded-full" />
         </div>
 
         <motion.div {...fadeUp} className="mx-auto max-w-[1200px] relative">
@@ -1077,7 +1077,7 @@ const Landing = () => {
       <section className="relative z-10 py-10 px-6 overflow-hidden my-10 border-y border-slate-200 dark:border-white/[0.06]">
         {/* Angular line shading background */}
         <div
-          className="absolute inset-0 pointer-events-none backdrop-blur-md bg-white/60 dark:bg-[#0a0a0a]/70"
+          className="absolute inset-0 pointer-events-none bg-transparent"
           style={{
             backgroundImage: `repeating-linear-gradient(
               -45deg,
@@ -1164,10 +1164,10 @@ const Landing = () => {
       {/* ════════════════════════════════════════════════════════════
           SEÇÃO 6 — CTA FINAL
       ════════════════════════════════════════════════════════════ */}
-      <section className="relative z-10 pt-32 pb-40 px-6 overflow-hidden bg-white/60 dark:bg-[#0a0a0a]/80 backdrop-blur-sm">
+      <section className="relative z-10 pt-32 pb-40 px-6 overflow-hidden bg-transparent">
         {/* Glow */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-cyan-500/[0.06] blur-[120px] rounded-full" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-cyan-500/[0.02] blur-[120px] rounded-full" />
         </div>
         <motion.div {...fadeUp} className="mx-auto max-w-[1200px] text-center relative">
           <h2 className="text-[clamp(2rem,4vw,3.2rem)] font-[500] tracking-[-0.035em] leading-[1.1] mx-auto max-w-[560px] text-slate-900 dark:text-white">
