@@ -83,7 +83,7 @@ const ECOSYSTEM_ITEMS = [
     cta: "Conhecer a origem",
     link: "/cadastro",
     accent: "#22d3ee",
-    positionClass: "absolute top-[15%] left-[15%] -translate-x-1/2 -translate-y-1/2",
+    positionClass: "absolute top-1/2 left-[20%] -translate-x-1/2 -translate-y-1/2",
   },
   {
     id: "quadrupla",
@@ -94,7 +94,7 @@ const ECOSYSTEM_ITEMS = [
     cta: "Ver o ecossistema",
     link: "/cadastro",
     accent: "#60a5fa",
-    positionClass: "absolute top-[15%] right-[15%] translate-x-1/2 -translate-y-1/2",
+    positionClass: "absolute top-[20%] left-1/2 -translate-x-1/2 -translate-y-1/2",
   },
   {
     id: "grafo",
@@ -105,7 +105,7 @@ const ECOSYSTEM_ITEMS = [
     cta: "Explorar o grafo",
     link: "/cadastro",
     accent: "#a78bfa",
-    positionClass: "absolute bottom-[15%] left-[15%] -translate-x-1/2 translate-y-1/2",
+    positionClass: "absolute top-[80%] left-1/2 -translate-x-1/2 -translate-y-1/2",
   },
   {
     id: "ia",
@@ -116,7 +116,7 @@ const ECOSYSTEM_ITEMS = [
     cta: "Entender a IA",
     link: "/cadastro",
     accent: "#34d399",
-    positionClass: "absolute bottom-[15%] right-[15%] translate-x-1/2 translate-y-1/2",
+    positionClass: "absolute top-1/2 left-[80%] -translate-x-1/2 -translate-y-1/2",
   },
   {
     id: "ariano",
@@ -636,12 +636,12 @@ const Landing = () => {
                     if (item.id === "ariano") return null;
                     const isActive = activeNode === item.id;
                     
-                    let x2 = "15%";
-                    let y2 = "15%";
-                    if (item.id === "origem") { x2 = "15%"; y2 = "15%"; }
-                    if (item.id === "quadrupla") { x2 = "85%"; y2 = "15%"; }
-                    if (item.id === "grafo") { x2 = "15%"; y2 = "85%"; }
-                    if (item.id === "ia") { x2 = "85%"; y2 = "85%"; }
+                    let x2 = "50%";
+                    let y2 = "50%";
+                    if (item.id === "origem") { x2 = "20%"; y2 = "50%"; }
+                    if (item.id === "quadrupla") { x2 = "50%"; y2 = "20%"; }
+                    if (item.id === "grafo") { x2 = "50%"; y2 = "80%"; }
+                    if (item.id === "ia") { x2 = "80%"; y2 = "50%"; }
 
                     return (
                       <line
@@ -690,17 +690,17 @@ const Landing = () => {
                         }}
                       >
                         <div 
-                          className="w-20 h-20 rounded-2xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl shadow-[0_20px_25px_-5px_rgba(0,0,0,0.2),_inset_0_-4px_6px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_25px_-5px_rgba(0,0,0,0.5),_inset_0_-4px_6px_rgba(255,255,255,0.1)] flex items-center justify-center border border-slate-200 dark:border-slate-600 transition-all duration-300"
+                          className="w-20 h-20 rounded-2xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl shadow-[0_20px_25px_-5px_rgba(0,0,0,0.2),_inset_0_-4px_6px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_25px_-5px_rgba(0,0,0,0.5),_inset_0_-4px_6px_rgba(255,255,255,0.1)] flex items-center justify-center border border-slate-300 dark:border-slate-600 transition-all duration-300"
                           style={{
                             borderColor: isActive ? item.accent : undefined,
                           }}
                         >
-                          <Icon className="w-8 h-8 !text-slate-900 dark:!text-cyan-400 transition-colors duration-300" style={{ color: isActive ? item.accent : undefined }} />
+                          <Icon className="w-8 h-8 text-slate-900 dark:text-cyan-400 transition-colors duration-300" style={{ color: isActive ? item.accent : undefined }} />
                         </div>
 
                         {!isCenter && (
                           <span 
-                            className={`!text-slate-900 dark:!text-slate-300 mt-4 text-center font-semibold drop-shadow-sm transition-all duration-300 max-w-[120px] ${isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100"}`}
+                            className={`mt-4 text-center font-bold tracking-wide drop-shadow-md text-slate-900 dark:text-slate-200 transition-all duration-300 max-w-[120px] ${isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100"}`}
                             style={isActive ? { color: item.accent, textShadow: `0 0 12px ${item.accent}90` } : undefined}
                           >
                             {item.label}
@@ -708,7 +708,7 @@ const Landing = () => {
                         )}
                         {isCenter && (
                           <span 
-                            className={`!text-slate-900 dark:!text-slate-300 mt-4 text-center font-semibold drop-shadow-sm uppercase transition-all duration-300 ${isActive ? 'opacity-100' : 'opacity-80'}`} 
+                            className={`mt-4 text-center font-bold tracking-wide drop-shadow-md text-slate-900 dark:text-slate-200 uppercase transition-all duration-300 ${isActive ? 'opacity-100' : 'opacity-80'}`} 
                             style={isActive ? { color: item.accent } : undefined}
                           >
                             ARIANO
