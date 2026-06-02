@@ -792,7 +792,7 @@ const Landing = () => {
                       <h3 className="text-[clamp(1.4rem,2.5vw,1.9rem)] font-[500] tracking-[-0.03em] leading-[1.2] mb-5 text-slate-900 dark:text-white">
                         {displayedItem.title}
                       </h3>
-                      <p className="text-[14px] leading-[1.8] mb-8 text-slate-600 dark:text-slate-300">
+                      <p className="text-[14px] leading-[1.8] mb-8 text-slate-700 dark:text-slate-300">
                         {displayedItem.description}
                       </p>
                       <Link to={displayedItem.link}>
@@ -1076,7 +1076,7 @@ const Landing = () => {
                   <blockquote className={`text-[18px] md:text-[20px] font-[400] leading-[1.5] tracking-[-0.01em] transition-colors duration-700 ${
                     isCenter
                       ? 'text-slate-900 dark:text-white/85'
-                      : 'text-slate-300 dark:text-white/30'
+                      : 'text-slate-500 dark:text-white/30'
                   }`}>
                     "{t.text}"
                   </blockquote>
