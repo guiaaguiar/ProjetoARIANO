@@ -509,13 +509,13 @@ const Landing = () => {
               >
                 <GitMerge className="w-5 h-5 text-teal-500 dark:text-cyan-400" />
               </div>
-              <h3 className="text-[20px] font-semibold mb-3 text-slate-900 dark:text-white">Origem do Projeto</h3>
+              <h3 className="text-[20px] font-semibold mb-3 text-slate-900 dark:text-white">DNA Acadêmico e Governamental</h3>
               <p className="text-[14px] leading-[1.8] text-slate-500 dark:text-white/50">
-                Nascido dentro da <span className="text-teal-600 font-medium dark:text-cyan-400">SECTI-PE</span>, o ARIANO surgiu da necessidade de conectar pesquisadores, empresas e governo de forma estruturada e inteligente, eliminando silos de informação e acelerando a inovação no ecossistema de Pernambuco.
+                Nascido na intersecção entre a academia (<span className="text-teal-600 font-medium dark:text-cyan-400">UNINASSAU</span>) e a gestão pública, o ARIANO é o motor cognitivo do <span className="text-teal-600 font-medium dark:text-cyan-400">CORETO</span> — plataforma oficial de inovação da Prefeitura do Recife (SECTI). Nossa missão é eliminar silos e acelerar o ecossistema local.
               </p>
               <div className="mt-6 flex items-center gap-3">
                 <div className="h-1 w-8 rounded-full bg-teal-500/60 dark:bg-cyan-400/60" />
-                <span className="text-[12px] font-mono text-teal-600/80 dark:text-cyan-400/80">gov_tech · pernambuco</span>
+                <span className="text-[12px] font-mono text-teal-600/80 dark:text-cyan-400/80">govtech · recife</span>
               </div>
             </div>
 
@@ -536,9 +536,9 @@ const Landing = () => {
               >
                 <Network className="w-5 h-5 text-blue-500 dark:text-blue-400" />
               </div>
-              <h3 className="text-[18px] font-semibold mb-3 text-slate-900 dark:text-white">Motor de Grafos</h3>
+              <h3 className="text-[18px] font-semibold mb-3 text-slate-900 dark:text-white">O(1) Tempo de Raciocínio</h3>
               <p className="text-[13px] leading-[1.8] text-slate-500 dark:text-white/50">
-                Um grafo de conhecimento conecta entidades — pessoas, projetos, editais e comunidades — revelando padrões invisíveis ao olho humano.
+                Abandonamos as limitações de bancos relacionais. Utilizamos Grafos de Conhecimento (Neo4j) com adjacência livre de índice para cruzar múltiplas dimensões simultâneas, entregando matches em tempo real, independente da escala de dados.
               </p>
             </div>
 
@@ -559,9 +559,9 @@ const Landing = () => {
               >
                 <Zap className="w-5 h-5 text-purple-500 dark:text-purple-400" />
               </div>
-              <h3 className="text-[18px] font-semibold mb-3 text-slate-900 dark:text-white">IA Generativa</h3>
+              <h3 className="text-[18px] font-semibold mb-3 text-slate-900 dark:text-white">Inteligência Relacional Pré-computada</h3>
               <p className="text-[13px] leading-[1.8] text-slate-500 dark:text-white/50">
-                LLMs avaliam compatibilidade entre perfis, gerando matches com score de confiança e explicabilidade para cada recomendação.
+                Muito além do RAG tradicional. O sistema orquestra agentes de IA (<span className="font-medium text-purple-600 dark:text-purple-400">NVIDIA Nemotron</span>) que raciocinam ativamente sobre a rede (Graph Chain-of-Thought), criando conexões latentes, scores de afinidade e justificativas cirúrgicas para cada match.
               </p>
             </div>
 
@@ -580,9 +580,9 @@ const Landing = () => {
               >
                 <Layers className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
               </div>
-              <h3 className="text-[18px] font-semibold mb-3 text-slate-900 dark:text-white">Multi-Perfil</h3>
+              <h3 className="text-[18px] font-semibold mb-3 text-slate-900 dark:text-white">A Quádrupla Hélice da Inovação</h3>
               <p className="text-[13px] leading-[1.8] text-slate-500 dark:text-white/50">
-                Dashboards adaptados para pesquisadores, gestores e setor privado — cada ator vê o que importa para si.
+                Desenhado para escalar a colaboração. Conectamos Donos de Problemas (Governo e Indústria) a Solucionadores (Academia e Sociedade Civil) em um ambiente dinâmico onde cada ator visualiza o que realmente importa para si.
               </p>
             </div>
 
@@ -601,9 +601,9 @@ const Landing = () => {
                 <p className="text-[12px] uppercase tracking-[0.2em] font-bold mb-4 text-teal-600 dark:text-cyan-400">Em números</p>
                 <div className="space-y-4">
                   {[
-                    { val: "98%", label: "taxa de acerto dos matches" },
-                    { val: "3.2k+", label: "nós no ecossistema" },
-                    { val: "360°", label: "visibilidade de perfil" },
+                    { val: "98%", label: "Precisão Cirúrgica nos Matches" },
+                    { val: "O(1)", label: "Latência de Busca em Grafo" },
+                    { val: "360°", label: "Visibilidade Contextual do Perfil" },
                   ].map((s) => (
                     <div key={s.label}>
                       <div
