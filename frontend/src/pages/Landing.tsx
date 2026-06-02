@@ -255,16 +255,16 @@ const Landing = () => {
       className="relative min-h-screen w-full text-foreground overflow-x-hidden bg-cover bg-center bg-no-repeat bg-fixed"
       style={{ backgroundImage: `url(${isDark ? bgDark : bgLight})` }}
     >
-      <nav className="fixed top-0 z-50 w-full px-6 border-b bg-white/80 dark:bg-[#020810]/80 backdrop-blur-md border-slate-200 dark:border-white/10">
+      <nav className="fixed top-0 z-50 w-full px-6 border-b !bg-white/80 dark:!bg-[#020810]/80 backdrop-blur-md border-slate-200 dark:border-white/10">
         <div className="mx-auto flex h-[56px] max-w-[1200px] items-center justify-between">
-          <Link to="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="flex items-center gap-2 -ml-0.5">
+          <Link to="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="flex items-center gap-2 -ml-0.5 text-slate-900 dark:text-white">
             <StackedLogo size={16} />
-            <span className="text-[14px] font-bold tracking-[0.08em] uppercase text-slate-900 dark:text-white">ARIANO</span>
+            <span className="text-[14px] font-bold tracking-[0.08em] uppercase !text-slate-900 dark:!text-white">ARIANO</span>
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 text-slate-900 dark:text-white">
             <ThemeToggleButton />
             <Link to="/login">
-              <button className="text-[13px] h-8 px-3 transition-colors text-slate-600 hover:text-slate-900 dark:text-white/60 dark:hover:text-white">
+              <button className="text-[13px] h-8 px-3 transition-colors !text-slate-900 hover:!text-black dark:!text-white dark:hover:!text-white">
                 Entrar
               </button>
             </Link>
@@ -320,19 +320,17 @@ const Landing = () => {
             <motion.div
               {...fadeUp}
               transition={{ ...fadeUp.transition, delay: 0.2 } as any}
-              className="relative z-10 rounded-t-xl overflow-hidden bg-white/70 dark:bg-[#1a1a1a]/80 backdrop-blur-2xl border border-slate-200 dark:border-white/10 shadow-2xl"
+              className="relative z-10 rounded-t-xl overflow-hidden !bg-white/70 dark:!bg-slate-900/80 backdrop-blur-2xl border border-slate-200 dark:border-white/10 shadow-2xl"
             >
               {/* MacOS Window Controls */}
-              <div className="h-10 flex items-center px-4 gap-2"
-                style={{ background: isDark ? "#060c14" : "rgba(248,250,252,0.9)", borderBottom: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.08)" }}>
+              <div className="h-10 flex items-center px-4 gap-2 border-b border-slate-200/50 dark:border-white/5 bg-slate-50/50 dark:bg-black/20">
                 <div className="w-3 h-3 rounded-full bg-[#ff5f56] shadow-sm"></div>
                 <div className="w-3 h-3 rounded-full bg-[#ffbd2e] shadow-sm"></div>
                 <div className="w-3 h-3 rounded-full bg-[#27c93f] shadow-sm"></div>
               </div>
-              <div className="flex min-h-[420px]" style={{ background: isDark ? "#0a0f18" : "rgba(255,255,255,0.8)" }}>
+              <div className="flex min-h-[420px] bg-white/40 dark:bg-slate-900/50">
                 {/* Sidebar mock */}
-                <div className="w-[200px] p-3 flex flex-col gap-1 shrink-0"
-                  style={{ borderRight: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.07)", background: isDark ? "#07111c" : "rgba(248,250,252,0.9)" }}>
+                <div className="w-[200px] p-3 flex flex-col gap-1 shrink-0 bg-slate-50/50 dark:bg-black/20 border-r border-slate-200/50 dark:border-white/5">
                   <div className="flex items-center gap-2 px-2 h-8 mb-2">
                     <div className="w-5 h-5 flex items-center justify-center">
                       <img src="/Coreto_LOGO.png" alt="Logo" className="w-full h-full object-contain" />
@@ -706,7 +704,7 @@ const Landing = () => {
             {/* ── COLUNA DIREITA: Card dinâmico com crossfade ── */}
             <div className="lg:sticky lg:top-28 self-start">
               <div
-                className="relative rounded-2xl overflow-hidden"
+                className="relative rounded-2xl overflow-hidden !text-slate-900 dark:!text-white"
                 style={{
                   background: isDark ? "rgba(8,16,28,0.8)" : "rgba(255,255,255,0.85)",
                   backdropFilter: "blur(24px)",
@@ -725,7 +723,7 @@ const Landing = () => {
                   }}
                 />
 
-                <div className="relative p-10">
+                <div className="relative p-10 !text-slate-900 dark:!text-white">
                   {/* Animated icon */}
                   <AnimatePresence mode="wait">
                     <motion.div
@@ -756,17 +754,18 @@ const Landing = () => {
                       animate={{ opacity: 1, y: 0 } as any}
                       exit={{ opacity: 0, y: -20 } as any}
                       transition={{ duration: 0.35, ease: "easeOut" } as any}
+                      className="!text-slate-900 dark:!text-white"
                     >
                       <p
-                        className="text-[11px] uppercase tracking-[0.2em] font-bold mb-3"
+                        className="text-[11px] uppercase tracking-[0.2em] font-bold mb-3 !text-slate-900 dark:!text-white"
                         style={{ color: displayedItem.accent }}
                       >
-                        {displayedItem.label}
+                        <span className="!text-slate-900 dark:!text-white" style={{ color: displayedItem.accent }}>{displayedItem.label}</span>
                       </p>
-                      <h3 className="text-[clamp(1.4rem,2.5vw,1.9rem)] font-[500] tracking-[-0.03em] leading-[1.2] mb-5 text-slate-900 dark:text-white">
+                      <h3 className="text-[clamp(1.4rem,2.5vw,1.9rem)] font-[500] tracking-[-0.03em] leading-[1.2] mb-5 !text-slate-900 dark:!text-white">
                         {displayedItem.title}
                       </h3>
-                      <p className="text-[14px] leading-[1.8] mb-8 text-slate-700 dark:text-slate-300">
+                      <p className="text-[14px] leading-[1.8] mb-8 !text-slate-700 dark:!text-slate-300">
                         {displayedItem.description}
                       </p>
                       <Link to={displayedItem.link}>
@@ -1128,15 +1127,15 @@ const Landing = () => {
       {/* ════════════════════════════════════════════════════════════
           FOOTER
       ════════════════════════════════════════════════════════════ */}
-      <div className="relative z-10 border-t backdrop-blur-md border-slate-200 bg-white/90 dark:border-white/10 dark:bg-[#020810]/90">
+      <div className="relative z-10 border-t backdrop-blur-md border-slate-200 !bg-white/80 dark:border-white/10 dark:!bg-[#020810]/80 !text-slate-900 dark:!text-white">
         <div className="mx-auto max-w-[1200px] px-6 py-10 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 !text-slate-900 dark:!text-white">
             <StackedLogo size={16} />
-            <span className="text-[12px] font-bold uppercase tracking-[0.08em] text-slate-900 dark:text-white">ARIANO</span>
+            <span className="text-[12px] font-bold uppercase tracking-[0.08em] !text-slate-900 dark:!text-white">ARIANO</span>
           </div>
 
           <div className="flex flex-col items-center md:items-end gap-2">
-            <span className="text-[10px] uppercase tracking-widest font-semibold text-slate-400 dark:text-white/30">Realização / Apoio Institucional</span>
+            <span className="text-[10px] uppercase tracking-widest font-semibold text-slate-500 dark:text-white/40">Realização / Apoio Institucional</span>
             <div className="flex items-center gap-4">
               <img src="/Coreto_LOGO.png" alt="Coreto Logo" className="h-6 object-contain opacity-60 hover:opacity-100 transition-opacity" />
               <div className="h-4 w-px bg-slate-300 dark:bg-white/10" />
@@ -1148,7 +1147,7 @@ const Landing = () => {
             </div>
           </div>
 
-          <span className="text-[12px] text-slate-400 dark:text-white/30">© {new Date().getFullYear()} CORETO</span>
+          <span className="text-[12px] text-slate-500 dark:text-white/40">© {new Date().getFullYear()} CORETO</span>
         </div>
       </div>
     </div>
