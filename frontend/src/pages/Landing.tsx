@@ -255,7 +255,7 @@ const Landing = () => {
       className="relative min-h-screen w-full text-foreground overflow-x-hidden bg-cover bg-center bg-no-repeat bg-fixed"
       style={{ backgroundImage: `url(${isDark ? bgDark : bgLight})` }}
     >
-      <nav className="fixed top-0 z-50 w-full px-6 border-b bg-white/80 dark:bg-[#020810]/80 backdrop-blur-md border-slate-200/80 dark:border-white/10">
+      <nav className="fixed top-0 z-50 w-full px-6 border-b bg-white/80 dark:bg-[#020810]/80 backdrop-blur-md border-slate-200 dark:border-white/10">
         <div className="mx-auto flex h-[56px] max-w-[1200px] items-center justify-between">
           <Link to="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="flex items-center gap-2 -ml-0.5">
             <StackedLogo size={16} />
@@ -289,7 +289,7 @@ const Landing = () => {
               <h1 className="text-[clamp(1.8rem,3.5vw,2.8rem)] font-[500] leading-[1.15] tracking-[-0.04em] max-w-[720px] text-slate-900 dark:text-white">
                 Conexões estratégicas no ecossistema de inovação
               </h1>
-              <p className="mt-6 text-base leading-relaxed max-w-[420px] text-slate-600 dark:text-slate-300">
+              <p className="mt-6 text-base leading-relaxed max-w-[420px] text-slate-600 dark:text-slate-400">
                 Encontre o seu lugar no ecossistema e faça os matches perfeitos para seu perfil.
               </p>
               <div className="mt-10 flex items-center gap-4">
@@ -494,7 +494,7 @@ const Landing = () => {
               </span>{" "}
               Naturalmente Ordenada.
             </h2>
-            <p className="mt-5 text-[16px] max-w-[520px] mx-auto leading-relaxed text-slate-600 dark:text-slate-300">
+            <p className="mt-5 text-[16px] max-w-[520px] mx-auto leading-relaxed text-slate-600 dark:text-slate-400">
               O ARIANO é uma plataforma de matchmaking científico e tecnológico que conecta pesquisadores, governo e setor privado usando IA e teoria de grafos.
             </p>
           </div>
@@ -514,7 +514,7 @@ const Landing = () => {
                 <GitMerge className="w-5 h-5 text-teal-500 dark:text-cyan-400" />
               </div>
               <h3 className="text-[20px] font-semibold mb-3 text-slate-900 dark:text-white">DNA Acadêmico e Governamental</h3>
-              <p className="text-[14px] leading-[1.8] text-slate-600 dark:text-slate-300">
+              <p className="text-[14px] leading-[1.8] text-slate-600 dark:text-slate-400">
                 Nascido na intersecção entre a academia (<span className="text-teal-600 font-medium dark:text-cyan-400">UNINASSAU</span>) e a gestão pública, o ARIANO é o motor cognitivo do <span className="text-teal-600 font-medium dark:text-cyan-400">CORETO</span> — plataforma oficial de inovação da Prefeitura do Recife (SECTI). Nossa missão é eliminar silos e acelerar o ecossistema local.
               </p>
               <div className="mt-6 flex items-center gap-3">
@@ -536,7 +536,7 @@ const Landing = () => {
                 <Network className="w-5 h-5 text-blue-500 dark:text-blue-400" />
               </div>
               <h3 className="text-[18px] font-semibold mb-3 text-slate-900 dark:text-white">O(1) Tempo de Raciocínio</h3>
-              <p className="text-[13px] leading-[1.8] text-slate-600 dark:text-slate-300">
+              <p className="text-[13px] leading-[1.8] text-slate-600 dark:text-slate-400">
                 Abandonamos as limitações de bancos relacionais. Utilizamos Grafos de Conhecimento (Neo4j) com adjacência livre de índice para cruzar múltiplas dimensões simultâneas, entregando matches em tempo real, independente da escala de dados.
               </p>
             </div>
@@ -554,7 +554,7 @@ const Landing = () => {
                 <Zap className="w-5 h-5 text-purple-500 dark:text-purple-400" />
               </div>
               <h3 className="text-[18px] font-semibold mb-3 text-slate-900 dark:text-white">Inteligência Relacional Pré-computada</h3>
-              <p className="text-[13px] leading-[1.8] text-slate-600 dark:text-slate-300">
+              <p className="text-[13px] leading-[1.8] text-slate-600 dark:text-slate-400">
                 Muito além do RAG tradicional. O sistema orquestra agentes de IA (<span className="font-medium text-purple-600 dark:text-purple-400">NVIDIA Nemotron</span>) que raciocinam ativamente sobre a rede (Graph Chain-of-Thought), criando conexões latentes, scores de afinidade e justificativas cirúrgicas para cada match.
               </p>
             </div>
@@ -570,7 +570,7 @@ const Landing = () => {
                 <Layers className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
               </div>
               <h3 className="text-[18px] font-semibold mb-3 text-slate-900 dark:text-white">A Quádrupla Hélice da Inovação</h3>
-              <p className="text-[13px] leading-[1.8] text-slate-600 dark:text-slate-300">
+              <p className="text-[13px] leading-[1.8] text-slate-600 dark:text-slate-400">
                 Desenhado para escalar a colaboração. Conectamos Donos de Problemas (Governo e Indústria) a Solucionadores (Academia e Sociedade Civil) em um ambiente dinâmico onde cada ator visualiza o que realmente importa para si.
               </p>
             </div>
@@ -893,7 +893,7 @@ const Landing = () => {
                     </div>
                     <div>
                       <h4 className="text-[15px] font-semibold mb-0.5 text-slate-900 dark:text-white">{item.title}</h4>
-                      <p className="text-[13px] leading-relaxed text-slate-600 dark:text-slate-300">{item.desc}</p>
+                      <p className="text-[13px] leading-relaxed text-slate-600 dark:text-slate-400">{item.desc}</p>
                     </div>
                   </div>
                 ))}
@@ -1154,7 +1154,7 @@ const Landing = () => {
           <h2 className="text-[clamp(2rem,4vw,3.2rem)] font-[500] tracking-[-0.035em] leading-[1.1] mx-auto max-w-[560px] text-slate-900 dark:text-white">
             Faça parte da revolução tecnológica.
           </h2>
-          <p className="mt-5 text-[15px] max-w-[400px] mx-auto text-slate-600 dark:text-slate-300">
+          <p className="mt-5 text-[15px] max-w-[400px] mx-auto text-slate-600 dark:text-slate-400">
             Integre-se ao projeto ARIANO e encontre oportunidades que moldam o futuro.
           </p>
           <div className="mt-10 flex justify-center">
