@@ -255,21 +255,21 @@ const Landing = () => {
       className="relative min-h-screen w-full text-foreground overflow-x-hidden bg-cover bg-center bg-no-repeat bg-fixed"
       style={{ backgroundImage: `url(${isDark ? bgDark : bgLight})` }}
     >
-      <nav className="fixed top-0 z-50 w-full px-6 border-b !bg-white/80 dark:!bg-[#020810]/80 backdrop-blur-md border-slate-200 dark:border-white/10">
+      <nav className="fixed top-0 z-50 w-full px-6 bg-white/90 dark:bg-[#020810]/90 backdrop-blur-md border-b border-slate-200 dark:border-white/10">
         <div className="mx-auto flex h-[56px] max-w-[1200px] items-center justify-between">
-          <Link to="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="flex items-center gap-2 -ml-0.5 text-slate-900 dark:text-white">
+          <Link to="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="flex items-center gap-2 -ml-0.5">
             <StackedLogo size={16} />
-            <span className="text-[14px] font-bold tracking-[0.08em] uppercase !text-slate-900 dark:!text-white">ARIANO</span>
+            <span className="text-[14px] font-bold tracking-[0.08em] uppercase text-slate-900 dark:text-white">ARIANO</span>
           </Link>
-          <div className="flex items-center gap-2 text-slate-900 dark:text-white">
+          <div className="flex items-center gap-2">
             <ThemeToggleButton />
             <Link to="/login">
-              <button className="text-[13px] h-8 px-3 transition-colors !text-slate-900 hover:!text-black dark:!text-white dark:hover:!text-white">
+              <button className="text-[13px] h-8 px-3 transition-colors text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white">
                 Entrar
               </button>
             </Link>
             <Link to="/cadastro">
-              <button className="text-[13px] h-8 px-4 rounded-lg font-medium transition-colors bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">
+              <button className="text-[13px] h-8 px-4 rounded-lg font-medium transition-colors bg-slate-900 text-white hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">
                 Cadastrar-se
               </button>
             </Link>
@@ -320,17 +320,17 @@ const Landing = () => {
             <motion.div
               {...fadeUp}
               transition={{ ...fadeUp.transition, delay: 0.2 } as any}
-              className="relative z-10 rounded-t-xl overflow-hidden !bg-white/70 dark:!bg-slate-900/80 backdrop-blur-2xl border border-slate-200 dark:border-white/10 shadow-2xl"
+              className="relative z-10 rounded-t-xl overflow-hidden bg-white/80 dark:bg-[#1a1a1a]/80 backdrop-blur-2xl border border-slate-200 dark:border-white/10 shadow-2xl"
             >
               {/* MacOS Window Controls */}
-              <div className="h-10 flex items-center px-4 gap-2 border-b border-slate-200/50 dark:border-white/5 bg-slate-50/50 dark:bg-black/20">
+              <div className="h-10 flex items-center px-4 gap-2 border-b border-slate-200/50 dark:border-white/5 bg-slate-50/60 dark:bg-black/20">
                 <div className="w-3 h-3 rounded-full bg-[#ff5f56] shadow-sm"></div>
                 <div className="w-3 h-3 rounded-full bg-[#ffbd2e] shadow-sm"></div>
                 <div className="w-3 h-3 rounded-full bg-[#27c93f] shadow-sm"></div>
               </div>
-              <div className="flex min-h-[420px] bg-white/40 dark:bg-slate-900/50">
+              <div className="flex min-h-[420px]">
                 {/* Sidebar mock */}
-                <div className="w-[200px] p-3 flex flex-col gap-1 shrink-0 bg-slate-50/50 dark:bg-black/20 border-r border-slate-200/50 dark:border-white/5">
+                <div className="w-[200px] p-3 flex flex-col gap-1 shrink-0 bg-slate-50/80 dark:bg-black/20 border-r border-slate-200/70 dark:border-white/5">
                   <div className="flex items-center gap-2 px-2 h-8 mb-2">
                     <div className="w-5 h-5 flex items-center justify-center">
                       <img src="/Coreto_LOGO.png" alt="Logo" className="w-full h-full object-contain" />
@@ -368,9 +368,9 @@ const Landing = () => {
                   </div>
                 </div>
 
-                {/* Main content — issue list */}
-                <div className="flex-1 flex flex-col min-w-0" style={{ background: isDark ? "#0a0f18" : "rgba(255,255,255,0.7)" }}>
-                  <div className="flex items-center gap-3 px-4 h-10" style={{ borderBottom: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.07)" }}>
+                {/* Main content — match list */}
+                <div className="flex-1 flex flex-col min-w-0 bg-white/60 dark:bg-black/10">
+                  <div className="flex items-center gap-3 px-4 h-10 border-b border-slate-200/70 dark:border-white/5">
                     <div className="h-2 w-10 rounded-full bg-slate-200 dark:bg-white/10" />
                     <div className="h-2 w-8 rounded-full bg-slate-200 dark:bg-white/[0.07]" />
                     <div className="h-2 w-12 rounded-full bg-slate-200 dark:bg-white/[0.07]" />
@@ -389,7 +389,7 @@ const Landing = () => {
                       { priority: "bg-indigo-500", id: "Data Science", name: "Dra. Ana Silva", area: "Pesquisadora Sênior (Data Science)", score: "82%", status: "bg-indigo-500" },
                       { priority: "bg-cyan-500", id: "Frontend", name: "Mariana Costa", area: "Estudante Parceira (Frontend)", score: "78%", status: "bg-cyan-500" },
                     ].map((row, i) => (
-                      <div key={i} className="relative flex items-center gap-4 px-4 h-9 transition-colors cursor-pointer hover:bg-slate-200/50 dark:hover:bg-white/5" style={{ borderBottom: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.07)" }}>
+                      <div key={i} className="relative flex items-center gap-4 px-4 h-9 transition-colors cursor-pointer hover:bg-slate-100/80 dark:hover:bg-white/5 border-b border-slate-200/60 dark:border-white/5">
                         <div className="h-3.5 w-3.5 rounded border flex items-center justify-center shrink-0 z-10 border-slate-300 dark:border-white/10">
                           <div className={`h-1.5 w-1.5 rounded-sm ${row.priority}`} />
                         </div>
@@ -413,9 +413,8 @@ const Landing = () => {
                 </div>
 
                 {/* Detail panel */}
-                <div className="w-[280px] shrink-0 hidden lg:flex flex-col relative z-10"
-                  style={{ borderLeft: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.07)", background: isDark ? "#07111c" : "rgba(248,250,252,0.9)" }}>
-                  <div className="flex items-center justify-between px-4 h-10" style={{ borderBottom: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.07)" }}>
+                <div className="w-[280px] shrink-0 hidden lg:flex flex-col relative z-10 border-l border-slate-200/70 dark:border-white/5 bg-slate-50/80 dark:bg-black/20">
+                  <div className="flex items-center justify-between px-4 h-10 border-b border-slate-200/70 dark:border-white/5">
                     <span className="text-[12px] font-medium text-slate-900 dark:text-white">Detalhes do Match</span>
                     <div className="flex gap-1.5">
                       <div className="h-4 w-4 rounded bg-slate-200 dark:bg-white/5" />
@@ -425,7 +424,7 @@ const Landing = () => {
                   <div className="p-4 space-y-4">
                     <div className="font-medium text-[14px] text-slate-900 dark:text-white">Edital FAPESP: IA na Saúde</div>
                     <div className="space-y-1.5">
-                      <p className="text-[12px] leading-relaxed text-slate-600 dark:text-white/40">
+                      <p className="text-[12px] leading-relaxed text-slate-600 dark:text-slate-400">
                         Oportunidade perfeita para aplicar seus conhecimentos em modelos preditivos num projeto de impacto social, com bolsa e mentoria.
                       </p>
                     </div>
@@ -437,7 +436,7 @@ const Landing = () => {
                       { label: "Data limite", value: "Amanhã", color: "bg-teal-500" },
                     ].map((prop) => (
                       <div key={prop.label} className="flex items-center justify-between">
-                        <span className="text-[11px] text-slate-600 dark:text-white/40">{prop.label}</span>
+                        <span className="text-[11px] text-slate-600 dark:text-slate-400">{prop.label}</span>
                         <div className="flex items-center gap-2">
                           <span className="text-[11px] font-medium text-slate-900 dark:text-white">{prop.value}</span>
                           <div className={`h-2.5 w-2.5 rounded-full ${prop.color}`} />
@@ -446,7 +445,7 @@ const Landing = () => {
                     ))}
                     <div className="h-px bg-slate-200 dark:bg-white/[0.06]" />
                     <div className="space-y-3 pt-1">
-                      <span className="text-[11px] text-slate-600 dark:text-white/40">Skills em Comum</span>
+                      <span className="text-[11px] text-slate-600 dark:text-slate-400">Skills em Comum</span>
                       {["Python", "Machine Learning"].map((skill, n) => (
                         <div key={n} className="flex gap-2">
                           <div className="h-5 w-5 rounded-full bg-teal-400/20 text-teal-600 flex items-center justify-center shrink-0 mt-0.5 text-[9px] font-bold dark:text-teal-400">
@@ -627,110 +626,104 @@ const Landing = () => {
           {/* Two-column layout */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
-            {/* ── COLUNA ESQUERDA: Grafo SVG interativo em X ── */}
-            <div className="relative w-full aspect-square flex items-center justify-center" style={{ perspective: '1500px' }}>
-              <div className="relative w-[80%] h-[80%]" style={{ transform: 'rotateX(60deg) rotateZ(45deg)', transformStyle: 'preserve-3d' }}>
-                {/* SVG Lines connecting the nodes no chão */}
+            {/* ── COLUNA ESQUERDA: Grafo de Nós Flutuantes ── */}
+            <div className="relative w-full aspect-square flex items-center justify-center select-none">
+              <div className="relative w-full h-full">
+                {/* SVG Lines connecting nodes */}
                 <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ overflow: "visible" }}>
                   {ECOSYSTEM_ITEMS.map((item) => {
                     if (item.id === "ariano") return null;
                     const isActive = activeNode === item.id;
-                    
-                    let x2 = "50%";
-                    let y2 = "50%";
-                    if (item.id === "origem") { x2 = "10%"; y2 = "10%"; }
-                    if (item.id === "quadrupla") { x2 = "10%"; y2 = "90%"; }
-                    if (item.id === "grafo") { x2 = "90%"; y2 = "10%"; }
-                    if (item.id === "ia") { x2 = "90%"; y2 = "90%"; }
-
+                    let x2 = "50%"; let y2 = "50%";
+                    if (item.id === "origem")   { x2 = "20%"; y2 = "50%"; }
+                    if (item.id === "quadrupla") { x2 = "50%"; y2 = "20%"; }
+                    if (item.id === "grafo")     { x2 = "50%"; y2 = "80%"; }
+                    if (item.id === "ia")        { x2 = "80%"; y2 = "50%"; }
                     return (
                       <line
                         key={item.id}
                         x1="50%" y1="50%"
                         x2={x2} y2={y2}
-                        stroke={isActive ? item.accent : (isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.12)")}
+                        stroke={isActive ? item.accent : (isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.10)")}
                         strokeWidth={isActive ? 2 : 1}
-                        strokeDasharray={isActive ? "0" : "4 4"}
+                        strokeDasharray={isActive ? "0" : "5 5"}
                         style={{
-                          filter: isActive ? `drop-shadow(0 0 3px ${item.accent})` : "none",
-                          transition: "stroke 0.3s, stroke-width 0.3s, filter 0.3s",
+                          filter: isActive ? `drop-shadow(0 0 4px ${item.accent})` : "none",
+                          transition: "stroke 0.3s ease, stroke-width 0.3s ease, filter 0.3s ease",
                         }}
                       />
                     );
                   })}
                 </svg>
 
-                {ECOSYSTEM_ITEMS.map((item) => {
-                  const isActive = activeNode === item.id;
-                  const Icon = item.icon;
-                  const isCenter = item.id === "ariano";
+                {ECOSYSTEM_ITEMS.map((node) => {
+                  const isActive = activeNode === node.id;
+                  const isCenter = node.id === "ariano";
+                  const Icon = node.icon;
 
-                  let top = "50%";
-                  let left = "50%";
-                  if (item.id === "origem") { top = "10%"; left = "10%"; }
-                  if (item.id === "quadrupla") { top = "10%"; left = "90%"; }
-                  if (item.id === "grafo") { top = "90%"; left = "10%"; }
-                  if (item.id === "ia") { top = "90%"; left = "90%"; }
+                  // Flat X/Y positions — no 3D transform hell
+                  let top = "50%"; let left = "50%";
+                  if (node.id === "origem")   { top = "50%";  left = "20%"; }
+                  if (node.id === "quadrupla") { top = "20%";  left = "50%"; }
+                  if (node.id === "grafo")     { top = "80%";  left = "50%"; }
+                  if (node.id === "ia")        { top = "50%";  left = "80%"; }
 
                   return (
                     <div
-                      key={item.id}
-                      className="absolute z-20"
-                      style={{ 
-                        top, left, 
-                        transform: 'translate(-50%, -50%)',
-                        transformStyle: "preserve-3d" 
-                      }}
+                      key={node.id}
+                      className="absolute z-20 flex flex-col items-center"
+                      style={{ top, left, transform: "translate(-50%, -50%)" }}
+                      onMouseEnter={() => setActiveNode(node.id)}
+                      onClick={() => setActiveNode(node.id)}
                     >
-                      {/* 1. Base fixa no chão para ancorar a ilusão */}
-                      <div 
-                        className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border transition-all duration-300 ${isCenter ? 'w-24 h-24' : 'w-20 h-20'} ${isActive ? 'bg-white/20 dark:bg-black/40 scale-110' : 'bg-white/5 dark:bg-black/20'} ${isDark ? 'border-white/10' : 'border-slate-200'}`}
-                        style={{ boxShadow: isActive ? `0 0 30px ${item.accent}40` : undefined }} 
+                      {/* Ground shadow (oval blur beneath the node) */}
+                      <div
+                        className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-3 rounded-full bg-black/10 dark:bg-black/40 blur-md transition-all duration-300"
+                        style={{
+                          width: isActive ? (isCenter ? "80px" : "64px") : (isCenter ? "60px" : "48px"),
+                          height: isActive ? "14px" : "10px",
+                        }}
                       />
 
-                      {/* 2. Wrapper da Contra-rotação (Fica de pé) - CSS Inline estático */}
-                      <div 
-                        className="group absolute top-1/2 left-1/2"
-                        style={{ 
-                          transform: 'translate(-50%, -50%) rotateZ(-45deg) rotateX(-60deg)',
-                          transformStyle: "preserve-3d" 
+                      {/* Floating node card */}
+                      <div
+                        className={`
+                          relative flex items-center justify-center rounded-2xl cursor-pointer
+                          bg-white dark:bg-slate-800
+                          border border-slate-200 dark:border-slate-600
+                          shadow-xl transition-all duration-300 ease-out
+                          ${isCenter ? "w-20 h-20" : "w-16 h-16"}
+                          ${isActive
+                            ? "-translate-y-8 scale-110 shadow-2xl ring-2 ring-cyan-400 dark:ring-cyan-400"
+                            : "-translate-y-2 hover:-translate-y-5 hover:scale-105"
+                          }
+                        `}
+                        style={{
+                          borderColor: isActive ? node.accent : undefined,
+                          boxShadow: isActive
+                            ? `0 20px 40px -8px rgba(0,0,0,0.2), 0 0 0 2px ${node.accent}60, 0 0 30px ${node.accent}25`
+                            : undefined,
                         }}
                       >
-                           {/* 3. O Botão (Flutua) - Usa APENAS Tailwind para o Y e Animações */}
-                           <button 
-                               onClick={() => setActiveNode(item.id)}
-                               className={`transition-all duration-500 ease-out flex items-center justify-center w-20 h-20 rounded-2xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border border-slate-300 dark:border-slate-600 shadow-2xl outline-none ${
-                                   isActive 
-                                   ? '-translate-y-16 scale-110 ring-2' 
-                                   : '-translate-y-4 group-hover:-translate-y-10'
-                               }`}
-                               style={{
-                                   borderColor: isActive ? item.accent : undefined,
-                                   boxShadow: isActive ? `0 20px 25px -5px rgba(0,0,0,0.5), 0 0 30px ${item.accent}40` : undefined,
-                                   '--tw-ring-color': isActive ? item.accent : undefined,
-                               } as React.CSSProperties}
-                           >
-                               <Icon className="text-slate-900 dark:text-cyan-400 w-8 h-8 transition-colors duration-300" style={{ color: isActive ? item.accent : undefined }} />
-                           </button>
-                           
-                           {/* Legenda do nó (Fora do botão para não flutuar junto) */}
-                           {!isCenter && (
-                               <p 
-                                 className={`mt-4 text-center font-bold tracking-wide drop-shadow-md text-slate-900 dark:text-slate-200 absolute top-full left-1/2 -translate-x-1/2 w-max transition-all duration-300 pointer-events-none ${isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100"}`}
-                                 style={isActive ? { color: item.accent, textShadow: `0 0 12px ${item.accent}90` } : undefined}
-                               >
-                                   {item.label}
-                               </p>
-                           )}
-                           {isCenter && (
-                               <p 
-                                 className={`mt-4 text-center font-bold tracking-wide drop-shadow-md text-slate-900 dark:text-slate-200 uppercase absolute top-full left-1/2 -translate-x-1/2 w-max transition-all duration-300 pointer-events-none ${isActive ? 'opacity-100' : 'opacity-80'}`} 
-                                 style={isActive ? { color: item.accent } : undefined}
-                               >
-                                   ARIANO
-                               </p>
-                           )}
+                        <Icon
+                          className="transition-colors duration-300"
+                          style={{
+                            width: isCenter ? "2.25rem" : "1.75rem",
+                            height: isCenter ? "2.25rem" : "1.75rem",
+                            color: isActive ? node.accent : (isDark ? "#94a3b8" : "#64748b"),
+                          }}
+                        />
                       </div>
+
+                      {/* Node label */}
+                      <p
+                        className={`mt-3 text-[11px] font-semibold tracking-wide text-center pointer-events-none transition-all duration-300 ${
+                          isActive ? "opacity-100" : "opacity-50"
+                        } ${isCenter ? "uppercase" : ""}`}
+                        style={{ color: isActive ? node.accent : (isDark ? "#94a3b8" : "#475569") }}
+                      >
+                        {isCenter ? "ARIANO" : node.label}
+                      </p>
                     </div>
                   );
                 })}
@@ -782,26 +775,25 @@ const Landing = () => {
                     </motion.div>
                   </AnimatePresence>
 
-                  {/* Animated text content */}
+                  {/* Animated text content — cinematic crossfade on node hover */}
                   <AnimatePresence mode="wait">
                     <motion.div
-                      key={`content-${activeNode}`}
-                      initial={{ opacity: 0, y: 20 } as any}
-                      animate={{ opacity: 1, y: 0 } as any}
-                      exit={{ opacity: 0, y: -20 } as any}
-                      transition={{ duration: 0.35, ease: "easeOut" } as any}
-                      className="!text-slate-900 dark:!text-white"
+                      key={activeNode}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.2 }}
                     >
                       <p
-                        className="text-[11px] uppercase tracking-[0.2em] font-bold mb-3 text-slate-900 dark:text-white"
+                        className="text-[11px] uppercase tracking-[0.2em] font-bold mb-3"
                         style={{ color: displayedItem.accent }}
                       >
-                        <span className="text-slate-900 dark:text-white" style={{ color: displayedItem.accent }}>{displayedItem.label}</span>
+                        {displayedItem.label}
                       </p>
                       <h3 className="text-[clamp(1.4rem,2.5vw,1.9rem)] font-[500] tracking-[-0.03em] leading-[1.2] mb-5 text-slate-900 dark:text-white">
                         {displayedItem.title}
                       </h3>
-                      <p className="text-[14px] leading-[1.8] mb-8 text-slate-700 dark:text-slate-300">
+                      <p className="text-[14px] leading-[1.8] mb-8 text-slate-600 dark:text-slate-300">
                         {displayedItem.description}
                       </p>
                       <Link to={displayedItem.link}>
