@@ -734,7 +734,7 @@ const Landing = () => {
             {/* ── COLUNA DIREITA: Card dinâmico com crossfade ── */}
             <div className="lg:sticky lg:top-28 self-start">
               <div
-                className="relative rounded-2xl overflow-hidden !text-slate-900 dark:!text-white"
+                className="relative rounded-2xl overflow-hidden"
                 style={{
                   background: isDark ? "rgba(8,16,28,0.8)" : "rgba(255,255,255,0.85)",
                   backdropFilter: "blur(24px)",
@@ -753,7 +753,7 @@ const Landing = () => {
                   }}
                 />
 
-                <div className="relative p-10 !text-slate-900 dark:!text-white">
+                <div className="relative p-10">
                   {/* Animated icon */}
                   <AnimatePresence mode="wait">
                     <motion.div
@@ -794,7 +794,7 @@ const Landing = () => {
                       <h3 className="text-[clamp(1.4rem,2.5vw,1.9rem)] font-[500] tracking-[-0.03em] leading-[1.2] mb-5 text-slate-900 dark:text-white">
                         {displayedItem.title}
                       </h3>
-                      <p className="text-[14px] leading-[1.8] mb-8 text-slate-600 dark:text-slate-300">
+                      <p className="text-[14px] leading-[1.8] mb-8 text-slate-700 dark:text-slate-300">
                         {displayedItem.description}
                       </p>
                       <Link to={displayedItem.link}>
@@ -1156,11 +1156,11 @@ const Landing = () => {
       {/* ════════════════════════════════════════════════════════════
           FOOTER
       ════════════════════════════════════════════════════════════ */}
-      <div className="relative z-10 border-t backdrop-blur-md border-slate-200 !bg-white/80 dark:border-white/10 dark:!bg-[#020810]/80 !text-slate-900 dark:!text-white">
+      <div className="relative z-10 border-t backdrop-blur-md border-slate-200 bg-white/80 dark:border-white/10 dark:bg-[#020810]/80">
         <div className="mx-auto max-w-[1200px] px-6 py-10 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2 !text-slate-900 dark:!text-white">
+          <div className="flex items-center gap-2">
             <StackedLogo size={16} />
-            <span className="text-[12px] font-bold uppercase tracking-[0.08em] !text-slate-900 dark:!text-white">ARIANO</span>
+            <span className="text-[12px] font-bold uppercase tracking-[0.08em] text-slate-900 dark:text-white">ARIANO</span>
           </div>
 
           <div className="flex flex-col items-center md:items-end gap-2">
