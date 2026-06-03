@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     # Neo4j Aura — MUST be set via environment variables in production
     neo4j_uri: str = _LOCALHOST_SENTINEL
     neo4j_user: str = "neo4j"
-    neo4j_password: str = "ariano2026"
+    neo4j_password: str = ""
 
     # OpenRouter LLM (NVIDIA Nemotron 3 Super 120B)
     openrouter_api_key: str = ""
@@ -68,7 +68,7 @@ if not settings.neo4j_configured:
     _missing.append("NEO4J_URI")
 if settings.neo4j_user == "neo4j" and not settings.neo4j_configured:
     _missing.append("NEO4J_USER")
-if settings.neo4j_password == "ariano2026" and not settings.neo4j_configured:
+if not settings.neo4j_password and not settings.neo4j_configured:
     _missing.append("NEO4J_PASSWORD")
 
 if _missing:
