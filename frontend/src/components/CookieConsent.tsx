@@ -72,12 +72,6 @@ export function CookieConsent() {
 
             {/* Ícone de cookies (SVG inline — sem dependência extra) */}
             <div className="flex items-start gap-3">
-              <span
-                aria-hidden="true"
-                className="mt-0.5 text-2xl select-none leading-none"
-              >
-                🍪
-              </span>
               <div className="flex flex-col gap-1">
                 <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
                   Sua privacidade importa
