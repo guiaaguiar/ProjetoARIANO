@@ -14,6 +14,7 @@ import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Responsi
 
 import { StackedLogo } from "@/components/StackedLogo";
 import { ThemeToggleButton } from "@/components/ThemeToggleButton";
+import { CookieConsent } from "@/components/CookieConsent";
 
 /** Teal accent matched to wallpaper topographic lines */
 const TEAL_HSL = "190 80% 38%";
@@ -1178,6 +1179,9 @@ const Landing = () => {
           <span className="text-[12px] text-slate-500 dark:text-white/40">© {new Date().getFullYear()} CORETO</span>
         </div>
       </div>
+
+      {/* ── Cookie Consent Banner (fixed, não empurra o layout) ── */}
+      <CookieConsent />
     </div>
   );
 };
