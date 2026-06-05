@@ -604,10 +604,10 @@ const Landing = () => {
       </section>
 
       {/* ════════════════════════════════════════════════════════════
-          SEÇÃO 3 — ECOSSISTEMA INTERATIVO (GRAFO EM X + CROSSFADE)
+          SEÇÃO 3 — ECOSSISTEMA INTERATIVO (GRAFO EM X ESPALHADO + CROSSFADE)
       ════════════════════════════════════════════════════════════ */}
       <section className="relative z-10 py-32 px-6 overflow-hidden border-t border-slate-200 dark:border-white/[0.06] bg-transparent">
-        {/* Background com efeito de profundidade */}
+        {/* Ambient depth glows */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 60% 50%, rgba(34,211,238,0.02) 0%, transparent 60%)" }} />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, rgba(34,211,238,0.03) 0%, transparent 65%)", filter: "blur(40px)" }} />
@@ -615,7 +615,7 @@ const Landing = () => {
         </div>
 
         <motion.div {...fadeUp} className="mx-auto max-w-[1200px] relative">
-          {/* Header */}
+          {/* Section Header */}
           <div className="mb-20 text-center">
             <p className="text-[12px] uppercase tracking-[0.2em] font-bold mb-4 text-teal-600 dark:text-cyan-400">Plataforma</p>
             <h2 className="text-[clamp(2rem,3.5vw,3rem)] font-[500] tracking-[-0.04em] leading-[1.1] text-slate-900 dark:text-white">
@@ -627,104 +627,162 @@ const Landing = () => {
           {/* Two-column layout */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
-            {/* ── COLUNA ESQUERDA: Grafo de Nós Flutuantes ── */}
+            {/* ── COLUNA ESQUERDA: Grafo Isométrico Espalhado em X ── */}
             <div className="relative w-full aspect-square flex items-center justify-center select-none">
-              <div className="relative w-full h-full">
-                {/* SVG Lines connecting nodes */}
-                <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ overflow: "visible" }}>
+              <div className="relative w-full h-full" style={{ transformStyle: "preserve-3d" }}>
+
+                {/* Iluminação cinematográfica do chão */}
+                <div
+                  className="absolute inset-0 pointer-events-none rounded-full"
+                  style={{
+                    background: isDark
+                      ? "radial-gradient(ellipse at center, rgba(6,182,212,0.06) 0%, rgba(2,8,16,0) 70%)"
+                      : "radial-gradient(ellipse at center, rgba(6,182,212,0.05) 0%, rgba(255,255,255,0) 70%)",
+                  }}
+                />
+
+                {/* SVG Lines — centro → 4 cantos completamente espaçados */}
+                <svg
+                  className="absolute inset-0 w-full h-full pointer-events-none"
+                  style={{ overflow: "visible" }}
+                >
                   {ECOSYSTEM_ITEMS.map((item) => {
                     if (item.id === "ariano") return null;
                     const isActive = activeNode === item.id;
-                    let x2 = "50%"; let y2 = "50%";
-                    if (item.id === "origem")   { x2 = "20%"; y2 = "50%"; }
-                    if (item.id === "quadrupla") { x2 = "50%"; y2 = "20%"; }
-                    if (item.id === "grafo")     { x2 = "50%"; y2 = "80%"; }
-                    if (item.id === "ia")        { x2 = "80%"; y2 = "50%"; }
+                    const coordMap: Record<string, [string, string]> = {
+                      quadrupla: ["10%", "10%"],
+                      ia:        ["10%", "90%"],
+                      origem:    ["90%", "10%"],
+                      grafo:     ["90%", "90%"],
+                    };
+                    const [cy2, cx2] = coordMap[item.id] ?? ["50%", "50%"];
                     return (
                       <line
                         key={item.id}
                         x1="50%" y1="50%"
-                        x2={x2} y2={y2}
+                        x2={cx2} y2={cy2}
                         stroke={isActive ? item.accent : (isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.10)")}
-                        strokeWidth={isActive ? 2 : 1}
+                        strokeWidth={isActive ? 2.5 : 1}
                         strokeDasharray={isActive ? "0" : "5 5"}
                         style={{
-                          filter: isActive ? `drop-shadow(0 0 4px ${item.accent})` : "none",
-                          transition: "stroke 0.3s ease, stroke-width 0.3s ease, filter 0.3s ease",
+                          filter: isActive ? `drop-shadow(0 0 6px ${item.accent})` : "none",
+                          transition: "stroke 0.4s ease, stroke-width 0.4s ease, filter 0.4s ease",
                         }}
                       />
                     );
                   })}
                 </svg>
 
-                {ECOSYSTEM_ITEMS.map((node) => {
+                {/* Nós — Arquitetura de 3 Wrappers para animação livre de conflitos */}
+                {ECOSYSTEM_ITEMS.map((node, idx) => {
                   const isActive = activeNode === node.id;
                   const isCenter = node.id === "ariano";
                   const Icon = node.icon;
 
-                  // Flat X/Y positions — no 3D transform hell
-                  let top = "50%"; let left = "50%";
-                  if (node.id === "origem")   { top = "50%";  left = "20%"; }
-                  if (node.id === "quadrupla") { top = "20%";  left = "50%"; }
-                  if (node.id === "grafo")     { top = "80%";  left = "50%"; }
-                  if (node.id === "ia")        { top = "50%";  left = "80%"; }
+                  // Posições espalhadas nos 4 cantos + centro
+                  const posMap: Record<string, [string, string]> = {
+                    quadrupla: ["10%", "10%"],
+                    ia:        ["10%", "90%"],
+                    origem:    ["90%", "10%"],
+                    grafo:     ["90%", "90%"],
+                    ariano:    ["50%", "50%"],
+                  };
+                  const [nodeTop, nodeLeft] = posMap[node.id] ?? ["50%", "50%"];
+                  const floatDelay = idx * 0.55;
 
                   return (
+                    /* NÍVEL 1 — Wrapper de Posicionamento Absoluto */
                     <div
                       key={node.id}
-                      className="absolute z-20 flex flex-col items-center"
-                      style={{ top, left, transform: "translate(-50%, -50%)" }}
-                      onMouseEnter={() => setActiveNode(node.id)}
-                      onClick={() => setActiveNode(node.id)}
+                      className="absolute z-20"
+                      style={{
+                        top: nodeTop,
+                        left: nodeLeft,
+                        transform: "translate(-50%, -50%)",
+                      }}
                     >
-                      {/* Ground shadow (oval blur beneath the node) */}
-                      <div
-                        className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-3 rounded-full bg-black/10 dark:bg-black/40 blur-md transition-all duration-300"
-                        style={{
-                          width: isActive ? (isCenter ? "80px" : "64px") : (isCenter ? "60px" : "48px"),
-                          height: isActive ? "14px" : "10px",
-                        }}
-                      />
+                      {/* NÍVEL 2 — Wrapper de layout: botão + legenda */}
+                      <div className="flex flex-col items-center">
 
-                      {/* Floating node card */}
-                      <div
-                        className={`
-                          relative flex items-center justify-center rounded-2xl cursor-pointer
-                          bg-white dark:bg-slate-800
-                          border border-slate-200 dark:border-slate-600
-                          shadow-xl transition-all duration-300 ease-out
-                          ${isCenter ? "w-20 h-20" : "w-16 h-16"}
-                          ${isActive
-                            ? "-translate-y-8 scale-110 shadow-2xl ring-2 ring-cyan-400 dark:ring-cyan-400"
-                            : "-translate-y-2 hover:-translate-y-5 hover:scale-105"
-                          }
-                        `}
-                        style={{
-                          borderColor: isActive ? node.accent : undefined,
-                          boxShadow: isActive
-                            ? `0 20px 40px -8px rgba(0,0,0,0.2), 0 0 0 2px ${node.accent}60, 0 0 30px ${node.accent}25`
-                            : undefined,
-                        }}
-                      >
-                        <Icon
-                          className="transition-colors duration-300"
+                        {/* Sombra oval de chão */}
+                        <div
+                          className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-4 rounded-full blur-md transition-all duration-300"
                           style={{
-                            width: isCenter ? "2.25rem" : "1.75rem",
-                            height: isCenter ? "2.25rem" : "1.75rem",
-                            color: isActive ? node.accent : (isDark ? "#94a3b8" : "#64748b"),
+                            width: isActive ? (isCenter ? "78px" : "62px") : (isCenter ? "58px" : "46px"),
+                            height: isActive ? "14px" : "10px",
+                            background: isDark ? "rgba(0,0,0,0.5)" : "rgba(0,0,0,0.13)",
                           }}
                         />
-                      </div>
 
-                      {/* Node label */}
-                      <p
-                        className={`mt-3 text-[11px] font-semibold tracking-wide text-center pointer-events-none transition-all duration-300 ${
-                          isActive ? "opacity-100" : "opacity-50"
-                        } ${isCenter ? "uppercase" : ""}`}
-                        style={{ color: isActive ? node.accent : (isDark ? "#94a3b8" : "#475569") }}
-                      >
-                        {isCenter ? "ARIANO" : node.label}
-                      </p>
+                        {/* NÍVEL 3 — Botão Framer Motion: flutuação orgânica + hover cinematográfico */}
+                        <motion.button
+                          onClick={() => setActiveNode(node.id)}
+                          onHoverStart={() => setActiveNode(node.id)}
+                          className={[
+                            "group relative flex items-center justify-center",
+                            "rounded-3xl",
+                            "bg-white/85 dark:bg-slate-800/85",
+                            "backdrop-blur-xl",
+                            "border border-slate-200/80 dark:border-slate-600/80",
+                            "shadow-xl cursor-pointer outline-none",
+                            isCenter ? "w-24 h-24" : "w-20 h-20",
+                          ].join(" ")}
+                          style={{
+                            borderColor: isActive ? node.accent : undefined,
+                            boxShadow: isActive
+                              ? `0 20px 40px -8px rgba(0,0,0,0.18), 0 0 0 2px ${node.accent}55, 0 0 35px ${node.accent}22`
+                              : undefined,
+                            transition: "border-color 0.35s ease, box-shadow 0.35s ease",
+                          }}
+                          /* Flutuação suave infinita — fase única por nó */
+                          animate={{ y: [-5, 5, -5] }}
+                          transition={{
+                            y: {
+                              duration: 3.2 + idx * 0.45,
+                              repeat: Infinity,
+                              ease: "easeInOut",
+                              delay: floatDelay,
+                            },
+                          }}
+                          /* Hover cinematográfico: sobe + aumenta + sombra cian */
+                          whileHover={{
+                            y: -16,
+                            scale: 1.1,
+                            boxShadow: `0 30px 60px -12px rgba(0,0,0,0.22), 0 0 0 2px ${node.accent}80, 0 0 45px ${node.accent}30`,
+                            transition: { duration: 0.28, ease: [0.16, 1, 0.3, 1] },
+                          }}
+                          whileTap={{ scale: 0.95, transition: { duration: 0.1 } }}
+                        >
+                          <Icon
+                            className="transition-transform duration-300 group-hover:scale-110"
+                            style={{
+                              width: isCenter ? "2.25rem" : "1.85rem",
+                              height: isCenter ? "2.25rem" : "1.85rem",
+                              color: isActive ? node.accent : (isDark ? "#94a3b8" : "#475569"),
+                              transition: "color 0.3s ease",
+                            }}
+                          />
+                        </motion.button>
+
+                        {/* Legenda — acessível nos dois modos */}
+                        <p
+                          className={[
+                            "mt-4 text-[11px] font-bold tracking-wide text-center",
+                            "pointer-events-none select-none",
+                            "transition-all duration-300",
+                            isCenter ? "uppercase" : "",
+                            "drop-shadow-sm",
+                          ].join(" ")}
+                          style={{
+                            color: isActive
+                              ? node.accent
+                              : (isDark ? "#cbd5e1" : "#1e293b"),
+                            opacity: isActive ? 1 : 0.5,
+                          }}
+                        >
+                          {isCenter ? "ARIANO" : node.label}
+                        </p>
+                      </div>
                     </div>
                   );
                 })}
@@ -736,11 +794,12 @@ const Landing = () => {
               <div
                 className="relative rounded-2xl overflow-hidden"
                 style={{
-                  background: isDark ? "rgba(8,16,28,0.8)" : "rgba(255,255,255,0.85)",
-                  backdropFilter: "blur(24px)",
+                  background: isDark ? "rgba(8,16,28,0.82)" : "rgba(255,255,255,0.90)",
+                  backdropFilter: "blur(28px)",
+                  WebkitBackdropFilter: "blur(28px)",
                   border: `1px solid ${displayedItem.accent}${isDark ? "30" : "40"}`,
                   boxShadow: `0 0 80px ${displayedItem.accent}12, inset 0 0 40px ${displayedItem.accent}05`,
-                  transition: "border-color 0.5s, box-shadow 0.5s",
+                  transition: "border-color 0.5s ease, box-shadow 0.5s ease",
                   minHeight: "380px",
                 }}
               >
@@ -749,19 +808,19 @@ const Landing = () => {
                   className="absolute -top-16 -left-16 w-56 h-56 rounded-full pointer-events-none"
                   style={{
                     background: `radial-gradient(circle, ${displayedItem.accent}18 0%, transparent 65%)`,
-                    transition: "background 0.5s",
+                    transition: "background 0.5s ease",
                   }}
                 />
 
                 <div className="relative p-10">
-                  {/* Animated icon */}
+                  {/* Ícone animado */}
                   <AnimatePresence mode="wait">
                     <motion.div
                       key={`icon-${activeNode}`}
                       initial={{ opacity: 0, scale: 0.6, rotate: -10 } as any}
                       animate={{ opacity: 1, scale: 1, rotate: 0 } as any}
                       exit={{ opacity: 0, scale: 0.6, rotate: 10 } as any}
-                      transition={{ duration: 0.3, ease: "easeOut" } as any}
+                      transition={{ duration: 0.28, ease: "easeOut" } as any}
                       className="w-16 h-16 rounded-2xl flex items-center justify-center mb-8"
                       style={{
                         backgroundColor: `${displayedItem.accent}18`,
@@ -776,14 +835,14 @@ const Landing = () => {
                     </motion.div>
                   </AnimatePresence>
 
-                  {/* Animated text content — cinematic crossfade on node hover */}
+                  {/* Conteúdo textual com crossfade cinematográfico */}
                   <AnimatePresence mode="wait">
                     <motion.div
                       key={activeNode}
-                      initial={{ opacity: 0, y: 10 }}
+                      initial={{ opacity: 0, y: 14 }}
                       animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.2 }}
+                      exit={{ opacity: 0, y: -14 }}
+                      transition={{ duration: 0.22, ease: "easeOut" }}
                     >
                       <p
                         className="text-[11px] uppercase tracking-[0.2em] font-bold mb-3"
@@ -791,25 +850,37 @@ const Landing = () => {
                       >
                         {displayedItem.label}
                       </p>
-                      <h3 className="text-[clamp(1.4rem,2.5vw,1.9rem)] font-[500] tracking-[-0.03em] leading-[1.2] mb-5 text-slate-900 dark:text-white">
+
+                      {/* Título — preto no claro, branco no escuro */}
+                      <h3 className="text-[clamp(1.4rem,2.5vw,1.9rem)] font-[500] tracking-[-0.03em] leading-[1.2] mb-5 text-slate-950 dark:text-white">
                         {displayedItem.title}
                       </h3>
-                      <p className="text-[14px] leading-[1.8] mb-8 text-slate-700 dark:text-slate-300">
+
+                      {/* Descrição — escuro no claro, slate-300 no escuro */}
+                      <p className="text-[14px] leading-[1.85] mb-8 text-slate-800 dark:text-slate-300">
                         {displayedItem.description}
                       </p>
+
+                      {/* CTA Button — Framer Motion para hover limpo sem conflito */}
                       <Link to={displayedItem.link}>
-                        <button
-                          className="inline-flex items-center gap-2.5 px-6 py-3 text-[13px] font-semibold rounded-xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                        <motion.button
+                          className="inline-flex items-center gap-2.5 px-6 py-3 text-[13px] font-semibold rounded-xl outline-none"
                           style={{
-                            backgroundColor: `${displayedItem.accent}18`,
+                            backgroundColor: `${displayedItem.accent}15`,
                             color: displayedItem.accent,
-                            border: `1px solid ${displayedItem.accent}45`,
-                            boxShadow: `0 4px 20px ${displayedItem.accent}18`,
+                            border: `1px solid ${displayedItem.accent}40`,
                           }}
+                          whileHover={{
+                            scale: 1.04,
+                            backgroundColor: `${displayedItem.accent}28`,
+                            boxShadow: `0 10px 28px ${displayedItem.accent}28`,
+                            transition: { duration: 0.2, ease: [0.16, 1, 0.3, 1] },
+                          }}
+                          whileTap={{ scale: 0.96, transition: { duration: 0.1 } }}
                         >
                           {displayedItem.cta}
                           <ArrowRight className="h-4 w-4" />
-                        </button>
+                        </motion.button>
                       </Link>
                     </motion.div>
                   </AnimatePresence>
