@@ -1,15 +1,22 @@
-from fastapi import APIRouter, File, UploadFile, Form, HTTPException, BackgroundTasks, Response
+from fastapi import APIRouter, File, UploadFile, Form, HTTPException, BackgroundTasks, Response, Request
 from typing import Optional
 import tempfile
 import os
 
 from app.services.pdf_extractor import extract_text_from_pdf, extract_tags_with_llm
 from app.agents.orchestrator import OrchestratorAgent
-from app.core.security import get_password_hash, create_access_token
+from app.core.security import get_password_hash, create_access_token, decode_access_token
 from app.core.neo4j_driver import run_cypher
 import uuid
 import logging
 from datetime import datetime
+
+# Neo4j exception types for explicit resilience handling
+try:
+    from neo4j.exceptions import AuthError as Neo4jAuthError, ServiceUnavailable as Neo4jServiceUnavailable
+except ImportError:  # pragma: no cover
+    Neo4jAuthError = Exception  # type: ignore[assignment,misc]
+    Neo4jServiceUnavailable = Exception  # type: ignore[assignment,misc]
 
 logger = logging.getLogger(__name__)
 
@@ -166,8 +173,15 @@ async def register_user(
             "uid": uid,
         }
 
-    except HTTPException as he:
-        raise he
+    except HTTPException:
+        # Repropaga 401/403/503 do driver sem modificação (não engolir como 500)
+        raise
+    except (Neo4jAuthError, Neo4jServiceUnavailable) as e:
+        logger.error(f"❌ Falha de autenticação/disponibilidade Neo4j no registro: {e}")
+        raise HTTPException(
+            status_code=503,
+            detail="Banco de dados temporariamente inacessível por falha de credenciais. Contate o suporte.",
+        )
     except Exception as e:
         logger.error(f"💥 Erro catastrófico no registro: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Erro interno ao processar cadastro: {str(e)}")
@@ -184,17 +198,8 @@ async def check_user_exists(uid: str):
         return {"exists": False, "uid": uid, "error": str(e)}
 
 
-@router.post("/reset")
-async def reset_database(response: Response):
-    """LIMPEZA TOTAL: Deleta todos os usuários. (Debug Only)"""
-    try:
-        run_cypher("MATCH (u) WHERE u:Student OR u:Docente DETACH DELETE u")
-        logger.info("🧹 Neo4j Aura resetado.")
-        response.delete_cookie("auth_token")
-        return {"status": "success", "message": "Banco de dados e cookies limpos com sucesso."}
-    except Exception as e:
-        logger.error(f"❌ Erro ao resetar banco: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+# Rota /reset removida por questões críticas de segurança (Prevenção de Wipeout do DB)
+
 
 
 from pydantic import BaseModel
@@ -207,12 +212,22 @@ class FinalizeRequest(BaseModel):
 
 
 @router.post("/finalize")
-async def finalize_registration(body: FinalizeRequest):
+async def finalize_registration(body: FinalizeRequest, request: Request):
     """
     Persiste skills/matches do pipeline de IA no Neo4j Aura.
     Deferred persistence pattern — chamado após o CognitionExperience.
     """
     try:
+        # Verificação contra IDOR
+        token = request.cookies.get("auth_token")
+        if not token:
+            raise HTTPException(status_code=401, detail="Não autenticado")
+        
+        payload = decode_access_token(token)
+        if not payload or payload.get("sub") != body.uid:
+            logger.error(f"⚠️ Tentativa de IDOR bloqueada: token UID {payload.get('sub') if payload else 'None'} tentou alterar dados do UID {body.uid}")
+            raise HTTPException(status_code=403, detail="Acesso não autorizado para modificar este perfil")
+
         uid = body.uid
         profile_data = body.profile_data
         matches = body.matches
@@ -257,6 +272,15 @@ async def finalize_registration(body: FinalizeRequest):
         logger.info(f"✅ Cadastro finalizado com sucesso para {uid}.")
         return {"status": "success", "message": "Perfil e matches salvos no ecossistema."}
 
+    except HTTPException:
+        # Repropaga 401/403/503 do driver sem modificação (não engolir como 500)
+        raise
+    except (Neo4jAuthError, Neo4jServiceUnavailable) as e:
+        logger.error(f"❌ Falha de autenticação/disponibilidade Neo4j no finalize: {e}")
+        raise HTTPException(
+            status_code=503,
+            detail="Banco de dados temporariamente inacessível por falha de credenciais. Contate o suporte.",
+        )
     except Exception as e:
         logger.error(f"❌ Erro ao finalizar cadastro: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

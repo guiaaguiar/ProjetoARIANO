@@ -1,10 +1,10 @@
 # 📋 PROJETO ARIANO — Documento de Visão e Planejamento do MVP
 
-> **Versão:** 12.0.0  
-> **Data:** 02/05/2026  
-> **Status:** MVP 1.0.0 Online — Sprint 14 (UX Premium, Cadência Cognitiva & Justificativas Reais)
-> **Metodologia:** SCRUM (adaptado para contexto acadêmico)  
-> **Última atualização:** 02/05/2026 — Sprint 14 (Cadência Cognitiva, Justificativas Profundas, Fix de Sessão)
+> **Versão:** 13.0.0
+> **Data:** 04/06/2026
+> **Status:** MVP 1.0.0 Online — Sprint Definitiva Concluída
+> **Metodologia:** SCRUM (adaptado para contexto acadêmico)
+> **Última atualização:** 04/06/2026 — Revisão geral de documentação
 
 ---
 
@@ -30,11 +30,30 @@
 
 ---
 
+## Sumário
+
+1. [Introdução e Contextualização](#1-introdução-e-contextualização)
+2. [Fundamentação Teórica](#2-fundamentação-teórica)
+3. [Referência de Design — GitNexus](#3-referência-de-design--gitnexus)
+4. [Arquitetura do Sistema](#4-arquitetura-do-sistema)
+5. [Stack Tecnológica](#5-stack-tecnológica)
+6. [Design System — Teal Neon Edition](#6-design-system--teal-neon-edition)
+7. [Product Backlog (User Stories)](#7-product-backlog-user-stories)
+8. [Sprint Planning — Roadmap](#8-sprint-planning--roadmap)
+9. [Critérios de Aceite (Definition of Done)](#9-critérios-de-aceite-definition-of-done)
+10. [Estrutura do Repositório](#10-estrutura-do-repositório)
+11. [Ferramentas e Qualidade](#11-ferramentas-e-qualidade)
+12. [Riscos e Mitigações](#12-riscos-e-mitigações)
+13. [Glossário](#13-glossário)
+14. [Referências](#referências)
+
+---
+
 ## 1. Introdução e Contextualização
 
 ### 1.1 O que é o CORETO?
 
-O **CORETO** (**C**onexões para **R**evolução **E**mpreendedora e **T**ecnológica **O**nline) é uma **plataforma digital da Prefeitura do Recife** que funciona como um ecossistema de inovação conectando os quatro pilares da **quádrupla hélice**: **Academia**, **Governo**, **Indústria** e **Sociedade Civil**. A plataforma visa promover a colaboração entre esses eixos para resolver desafios urbanos e fomentar a inovação no ecossistema de Recife.
+O **CORETO** (**C**onexões para **R**evolução **E**mpreendedora e **T**ecnológica **O**nline) é uma **plataforma digital da Prefeitura do Recife (SECTI)** que funciona como um ecossistema de inovação, conectando os quatro pilares da **quádrupla hélice**: **Academia**, **Governo**, **Indústria** e **Sociedade Civil**. A plataforma visa promover a colaboração entre esses eixos para resolver desafios urbanos e fomentar a inovação no ecossistema de Recife.
 
 O nome "Coreto" é uma metáfora ao espaço público de encontro e troca — assim como o coreto de uma praça reúne pessoas, a plataforma reúne solucionadores de problemas (academia, empresas) com donos de problemas (governo, sociedade).
 
@@ -42,58 +61,65 @@ O nome "Coreto" é uma metáfora ao espaço público de encontro e troca — ass
 
 O **ARIANO** (**A**rquitetura de **I**nteligência **A**rtificial **N**aturalmente **O**rdenada) é o **motor de matchmaking inteligente** que opera por trás da plataforma CORETO. Ele é responsável por:
 
-1. **Interpretar** perfis de acadêmicos e requisitos de editais governamentais
-2. **Classificar** competências, áreas de atuação e níveis acadêmicos
+1. **Interpretar** perfis de acadêmicos (via bio + currículo PDF) e requisitos de editais governamentais
+2. **Classificar** competências, áreas de atuação e níveis de maturidade acadêmica automaticamente
 3. **Configurar** um grafo de conhecimento (Knowledge Graph) com relacionamentos ponderados
 4. **Executar matches** instantâneos via consulta direta ao grafo pré-configurado
 
-> **Filosofia-chave:** Os agentes de IA **não fazem o match diretamente**. Eles **preparam e configuram o grafo** — interpretam, classificam, enriquecem e criam relacionamentos com pesos calculados. O match em si é apenas uma **query Cypher** que explora a adjacência livre de índice em **O(1)**, garantindo respostas instantâneas independente do volume de dados.
+> **Filosofia central — Precomputed Relational Intelligence:** Os agentes de IA **não fazem o match diretamente**. Eles **preparam e configuram o grafo** — interpretam, classificam, enriquecem e criam relacionamentos com pesos calculados. O match em si é apenas uma **query Cypher** que explora a adjacência livre de índice em **O(1)**, garantindo respostas instantâneas independente do volume de dados.
 
 ### 1.3 Escopo do MVP — Academia ↔ Governo
 
-> **⚠️ IMPORTANTE:** O MVP (Minimum Viable Product) foca exclusivamente no **matchmaking entre Academia e Governo**, por serem os eixos mais demonstráveis e assertivos para um projeto acadêmico.
+> **⚠️ IMPORTANTE:** O MVP foca exclusivamente no **matchmaking entre Academia e Governo**, por serem os eixos mais demonstráveis e assertivos para o contexto acadêmico do projeto.
 
 | Pilar do MVP | Entidades | Exemplos Concretos |
 |---|---|---|
 | 🎓 **Academia** | Alunos, Pesquisadores, Docentes | Estudante de CC com skills em ML e NLP |
 | 🏛️ **Governo** | Editais FACEPE, Chamadas Públicas, Programas de Fomento | Edital FACEPE 2026 — IA para Saúde |
 
-**Entregas do MVP:**
-- ✅ Cadastro de entidades acadêmicas (alunos, pesquisadores, docentes) e editais governamentais
-- ✅ Agentes de IA (NVIDIA Nemotron 3 via OpenRouter) que **interpretam e configuram o grafo** (enriquecimento, classificação, criação de arestas ponderadas)
-- ✅ Match via **Cypher query pura** ou O(1) de Busca em Memória sobre o grafo instanciado.
-- ✅ Interface web robusta e otimizada (Vite, React) consumindo os endpoints backend diretamente via REST Axios
-- ✅ **Zero-config Execution:** Garantida com motor de grafo in-memory nativo, agora persistido via **Vercel KV (Redis)** para eliminar o modo efêmero.
-- ✅ **Deploy Fullstack (Vercel):** Backend FastAPI (Serverless) e Frontend Vite integrados em monorepo com persistência "Neo4j Local" integrada.
-- ✅ **Segurança de Credenciais:** Gestão de chaves via Environment Variables (Secrets) ocultas em produção (Vercel KV e OpenRouter).
-- 🚀 **Autenticação Dual:** Login com email/senha, cookies JWT, dois perfis simultâneos (user + admin) (Sprint 4)
-- 🚀 **CORETO — Cadastro de Talento:** Cadastro com match estratégico visível em tempo real pela IA + consulta O(1) posterior (Sprint 4)
-- 🚀 **Portal do Usuário:** Perfil, Matches pessoais O(1) e Ecossistema individual em /user/* (Sprint 4)
-- 🚀 **Portal Admin:** Dashboard, Grafo completo e Comunidades em /admin/* (Sprint 4)
-- 🚀 **Campos Inteligentes:** bio, currículo (PDF), maturidade (0-10 IA) e o_que_busco (IA) — determinados automaticamente pela IA (Sprint 4)
-- 🚀 **Comunidades de Pensamento:** Enriquecimento contínuo do grafo via Chain-of-Thought multi-agente e análise de clusters via **NetworkX** (Sprint 4)
-- 🚀 **Engenharia de Prompt Avançada:** Agentes especialistas com contexto profundo do grafo (Sprint 4)
-- 🚀 **Cadência Cognitiva:** Fluxo de IA síncrono com ritmo humano e justificativas profundas personalizadas (Sprint 14)
-- 🚀 **Persistência Atômica:** Sincronização de sessão em tempo real pós-cadastro (Sprint 14)
+### 1.4 Entregas do MVP
+
+**Concluídas (✅):**
+- Cadastro de entidades acadêmicas (alunos, pesquisadores, docentes) e editais governamentais
+- Agentes de IA (NVIDIA Nemotron 3 via OpenRouter) que **interpretam e configuram o grafo** (enriquecimento, classificação, criação de arestas ponderadas)
+- Match via **query Cypher pura** com complexidade O(1) sobre o grafo instanciado
+- Interface web robusta e otimizada (Vite, React 18) consumindo endpoints REST via Axios
+- **Zero-config Execution:** Motor de grafo in-memory nativo, persistido via **Vercel KV (Redis)** para eliminar o modo efêmero das serverless functions
+- **Deploy Fullstack (Vercel):** Backend FastAPI (Serverless) e Frontend Vite integrados em monorepo
+- **Segurança de Credenciais:** Gestão de chaves via Environment Variables (Secrets) ocultas em produção
+- **Autenticação Dual:** Login com email/senha, cookies JWT HttpOnly, dois perfis simultâneos (user + admin)
+- **CORETO — Cadastro Inteligente:** Cadastro com match estratégico visível em tempo real pela IA + consulta O(1) posterior
+- **Portal do Usuário:** Perfil, Matches pessoais O(1) e Ecossistema individual em `/user/*`
+- **Portal Admin:** Dashboard, Grafo completo e Comunidades em `/admin/*`
+- **Campos Inteligentes:** `bio`, `curriculo_texto` (extraído de PDF), `maturidade` (0-10, determinado pela IA) e `o_que_busco` (gerado pela IA)
+- **Comunidades de Pensamento:** Enriquecimento contínuo do grafo via Graph-CoT multi-agente e análise de clusters via **NetworkX**
+- **Engenharia de Prompt Avançada:** Agentes especialistas com contexto profundo do grafo e scratchpad de raciocínio
+- **IA Transparente:** Pipeline multi-step visível ao usuário (`/v2/analyze`, `/v2/extract`, `/v2/match`)
+- **Grafo Dinâmico em Tempo Real:** Componente `MiniGraphAnimation` renderiza nós reais extraídos pela LLM
+
+**Em Roadmap (🚀):**
+- Renderização orgânica de Comunidades de Pensamento (Minkowski Sum) com labels contidos via clipping em Canvas
+- Centralização inteligente de nós com viewport real, zoom contextual e menu em cascata (Esc)
+- Navegação em-grafo via ligações do side panel + filtros dinâmicos de tipo e visibilidade
 
 ---
 
 ## 2. Fundamentação Teórica
 
-A arquitetura do ARIANO é fundamentada em cinco pilares teóricos complementares, cada um com contribuições específicas para o sistema de matchmaking inteligente. Esta seção detalha os conceitos teóricos, sua relevância para o domínio de inovação acadêmica e como são implementados na prática.
+A arquitetura do ARIANO é fundamentada em cinco pilares teóricos complementares. Esta seção detalha os conceitos, sua relevância para o domínio de inovação acadêmica e como são implementados na prática.
 
 ### 2.1 Grafos de Conhecimento (Knowledge Graphs)
 
-Um **grafo de conhecimento** (Knowledge Graph, KG) é uma estrutura de dados heterogênea composta por entidades representadas como **nós** (vértices) e seus relacionamentos como **arestas** (edges) tipadas e ponderadas. Formalmente, um KG pode ser definido como uma tripla `G = (V, E, R)` onde `V` é o conjunto de nós, `E` o conjunto de arestas e `R` o conjunto de tipos de relação.
+Um **grafo de conhecimento** (Knowledge Graph, KG) é uma estrutura de dados heterogênea composta por entidades representadas como **nós** (vértices) e seus relacionamentos como **arestas** tipadas e ponderadas. Formalmente, um KG é definido como uma tripla `G = (V, E, R)` onde `V` é o conjunto de nós, `E` o conjunto de arestas e `R` o conjunto de tipos de relação.
 
 No contexto do ARIANO, o grafo de conhecimento modela o ecossistema de inovação acadêmica:
 
 - **Nós** representam: Estudantes, Pesquisadores, Professores, Editais, Skills (competências) e Áreas de atuação
-- **Arestas** representam: `HAS_SKILL` (possui competência), `RESEARCHES_AREA` (pesquisa área), `REQUIRES_SKILL` (edital requer), `ELIGIBLE_FOR` (elegível para — **a aresta de match**), `SIMILAR_TO` (afinidade entre perfis) e `RELATED_TO` (complementaridade entre skills)
+- **Arestas** representam: `HAS_SKILL`, `RESEARCHES_AREA`, `REQUIRES_SKILL`, `ELIGIBLE_FOR` (a aresta de match), `SIMILAR_TO` (afinidade entre perfis) e `RELATED_TO` (complementaridade entre skills)
 
 A vantagem fundamental de um grafo sobre modelos relacionais (SQL) reside na propriedade de **adjacência livre de índice** (index-free adjacency): cada nó mantém ponteiros diretos para seus vizinhos, tornando a travessia entre nós conectados uma operação **O(1)** constante, independente do volume total de dados. Em contraste, operações de JOIN em bancos relacionais crescem de forma quadrática ou exponencial com a complexidade e profundidade das relações — um gargalo crítico em sistemas que precisam cruzar múltiplas dimensões (skills × áreas × maturidade × elegibilidade).
 
-Esta propriedade é o que permite ao ARIANO retornar matches instantaneamente após a pré-configuração do grafo, viabilizando a Fase 3 (consulta O(1)) descrita na architectura do sistema.
+Esta propriedade é o que permite ao ARIANO retornar matches instantaneamente após a pré-configuração do grafo, viabilizando a Fase 3 (consulta O(1)) descrita na seção de arquitetura.
 
 ### 2.2 Agentes de IA como Configuradores de Grafo (Precomputed Relational Intelligence)
 
@@ -106,11 +132,11 @@ FASE 2: Match = Query Cypher O(1) sobre grafo pré-configurado (online, instant�
 
 Esta separação entre **tempo de configuração** (compute-intensive, IA-driven) e **tempo de consulta** (O(1), query-only) é análoga ao paradigma de **compilação vs. execução** em linguagens de programação: o custo computacional pesado ocorre uma única vez, e todas as consultas subsequentes se beneficiam da estrutura pré-otimizada.
 
-A abordagem difere radicalmente do padrão RAG (Retrieval-Augmented Generation) tradicional e do paradigma Graph-CoT puro:
+**Comparação com abordagens alternativas:**
 
 | Dimensão | RAG Tradicional | Graph-CoT Puro | ARIANO (Precomputed + Graph-CoT Híbrido) |
 |----------|----------------|----------------|------------------------------------------|
-| **Processamento** | LLM processa dados a cada consulta | LLM raciocina iterativamente por consulta | Agentes processam dados **uma vez**, configuram o grafo. Graph-CoT apenas no enriquecimento |
+| **Processamento** | LLM processa dados a cada consulta | LLM raciocina iterativamente por consulta | Agentes processam dados **uma vez**, configuram o grafo |
 | **Custo por consulta** | Alto (chamada LLM) | Muito alto (múltiplas chamadas LLM iterativas) | **Zero** (query Cypher pura) |
 | **Latência** | Segundos | Dezenas de segundos | **Milissegundos** |
 | **Qualidade do raciocínio** | Superficial (contexto limitado) | Profunda (iterativa, multi-hop) | **Profunda na configuração**, instantânea na consulta |
@@ -121,27 +147,25 @@ A abordagem difere radicalmente do padrão RAG (Retrieval-Augmented Generation) 
 
 ### 2.3 Quádrupla Hélice da Inovação
 
-O modelo da **Quádrupla Hélice** (Quadruple Helix) é um framework de inovação sistêmica proposto por Carayannis & Campbell (2009) que expande a Tríplice Hélice clássica — definida por Etzkowitz & Leydesdorff (1995) como a interação dinâmica entre Academia, Governo e Indústria — ao incluir a **Sociedade Civil** como quarto pilar de inovação. A premissa central é que inovação sustentável emerge da **co-criação** entre todos os atores do ecossistema, não apenas da transferência tecnológica linear de um pilar para outro.
+O modelo da **Quádrupla Hélice** (Quadruple Helix) é um framework de inovação sistêmica proposto por Carayannis & Campbell (2009) que expande a Tríplice Hélice clássica — definida por Etzkowitz & Leydesdorff (1995) como a interação dinâmica entre Academia, Governo e Indústria — ao incluir a **Sociedade Civil** como quarto pilar. A premissa central é que inovação sustentável emerge da **co-criação** entre todos os atores do ecossistema.
 
 O CORETO implementa este modelo digitalmente, e o ARIANO é o mecanismo cognitivo que conecta esses pilares através de matchmaking inteligente. No MVP atual, o foco está na interseção **Academia ↔ Governo** (editais de fomento ↔ perfis acadêmicos), com a arquitetura preparada para expansão aos demais pilares.
 
 ### 2.4 Graph Chain-of-Thought (Graph-CoT) — Raciocínio Cognitivo sobre Grafos
 
-O **Graph Chain-of-Thought (Graph-CoT)** é um paradigma emergente na intersecção entre Retrieval-Augmented Generation (RAG) e grafos de conhecimento, proposto como evolução do RAG tradicional para domínios com dados altamente relacionais. Diferente do RAG convencional — que trata cada documento como uma unidade independente de conhecimento e realiza lookup estático — o Graph-CoT permite que um LLM **raciocine iterativamente** sobre a estrutura do grafo, decidindo dinamicamente quais nós visitar, que conexões explorar e quando parar.
+O **Graph Chain-of-Thought (Graph-CoT)** é um paradigma emergente na intersecção entre Retrieval-Augmented Generation (RAG) e grafos de conhecimento. Diferente do RAG convencional — que trata cada documento como uma unidade independente de conhecimento — o Graph-CoT permite que um LLM **raciocine iterativamente** sobre a estrutura do grafo, decidindo dinamicamente quais nós visitar, que conexões explorar e quando parar.
 
-#### 2.4.1 Fundamentação — O Problema da Alucinação em Grafos
+#### 2.4.1 O Problema da Alucinação em Grafos
 
-Large Language Models (LLMs) frequentemente geram conteúdo que aparenta ser factual mas carece de fundamentação empírica — o fenômeno conhecido como **alucinação** (Maynez et al., 2020). Modelos RAG tradicionais mitigam este problema ao incorporar corpora textuais externos como fonte de conhecimento, tratando cada documento como unidade isolada.
+Large Language Models (LLMs) frequentemente geram conteúdo que aparenta ser factual mas carece de fundamentação empírica — o fenômeno conhecido como **alucinação** (Maynez et al., 2020). Modelos RAG tradicionais mitigam este problema ao incorporar corpora textuais externos, mas tratam cada documento como unidade isolada.
 
-No entanto, informações do mundo real raramente existem isoladamente — elas estão **interconectadas**, formando redes de relações. Grafos de conhecimento armazenam informação não apenas em formato textual, mas também através de **conexões estruturadas entre entidades**, com arestas tipadas representando relações como `HAS_SKILL`, `REQUIRES_SKILL`, `SIMILAR_TO`. Esta diversidade relacional permite processos de recuperação e raciocínio significativamente mais ricos que abordagens puramente textuais.
+Informações do mundo real raramente existem isoladamente — elas estão **interconectadas**, formando redes de relações. Grafos de conhecimento armazenam informação não apenas em formato textual, mas também através de **conexões estruturadas entre entidades**, permitindo processos de recuperação e raciocínio significativamente mais ricos.
 
 #### 2.4.2 RAG Tradicional com Grafos vs. Graph-CoT
 
-A literatura distingue duas abordagens fundamentais para integração de LLMs com grafos:
-
 | Dimensão | RAG Tradicional com Grafos | Graph-CoT |
-|----------|---------------------------|-----------|
-| **Retrieval** | Queries pré-definidas (Cypher) retornam subgrafos estáticos | LLM decide dinamicamente o que buscar a cada iteração |
+|----------|---------------------------|-----------| 
+| **Retrieval** | Queries pré-definidas retornam subgrafos estáticos | LLM decide dinamicamente o que buscar a cada iteração |
 | **Raciocínio** | Lookup direto sobre dados estruturados | Raciocínio iterativo com loop `Thought → Action → Observation` |
 | **Multi-hop** | Limitado a profundidades pré-definidas (Hop-0, Hop-1, Hop-2) | Dinâmico — o LLM decide a profundidade com base na necessidade |
 | **Adaptação** | Estratégia fixa de retrieval | Estratégia adaptativa — ajusta retrieval com base no que já sabe |
@@ -154,26 +178,26 @@ Cada iteração do Graph-CoT consiste em três sub-passos, inspirado no paradigm
 ```
 LOOP até suficiência de informação:
   1. REASONING (Pensamento):
-     → O LLM analisa a informação atual e determina quais dados adicionais são necessários do grafo
+     → O LLM analisa a informação atual e determina quais dados adicionais são necessários
      → Documenta o raciocínio no scratchpad (cadeia de pensamento visível)
 
   2. INTERACTION (Ação):
      → O LLM formula ações usando primitivas do grafo:
-       • RetrieveNode[query]            — busca o nó mais relevante via embeddings
-       • NodeFeature[nó, atributo]      — inspeciona atributo específico de um nó
-       • NeighbourCheck[nó, tipo]       — lista vizinhos de um tipo específico
-       • NodeDegree[nó, tipo]           — conta conexões de um tipo específico
+       • RetrieveNode[query]         — busca o nó mais relevante
+       • NodeFeature[nó, atributo]   — inspeciona atributo específico de um nó
+       • NeighbourCheck[nó, tipo]    — lista vizinhos de um tipo específico
+       • NodeDegree[nó, tipo]        — conta conexões de um tipo específico
 
   3. EXECUTION (Observação):
      → O sistema executa a ação e retorna dados reais do grafo
      → O LLM incorpora a observação ao seu contexto e decide se precisa de mais informação
 ```
 
-> **Referência de implementação:** O framework Cognitive-RAG (Reddy, 2024) implementa este paradigma em Python usando um `GraphAgent` que mantém um scratchpad de raciocínio e executa até `max_steps=15` iterações de Thought-Action-Observation antes de convergir em uma resposta final. Disponível em: https://github.com/Nikhilreddy024/Cognitive-RAG
+> **Referência de implementação:** O framework Cognitive-RAG (Reddy, 2024) implementa este paradigma em Python usando um `GraphAgent` que mantém um scratchpad de raciocínio e executa até `max_steps=15` iterações de Thought-Action-Observation antes de convergir. Repositório: https://github.com/Nikhilreddy024/Cognitive-RAG
 
 #### 2.4.4 Aplicação no ARIANO — Graph-CoT Adaptado para Matchmaking
 
-O ARIANO adapta o paradigma Graph-CoT para o domínio de matchmaking acadêmico, com modificações significativas que o tornam um **modelo híbrido** superior tanto ao RAG tradicional quanto ao Graph-CoT puro:
+O ARIANO adapta o paradigma Graph-CoT para o domínio de matchmaking acadêmico como um **modelo híbrido** superior tanto ao RAG tradicional quanto ao Graph-CoT puro:
 
 ```
 ┌────────────────────────────────────────────────────────────────┐
@@ -194,16 +218,16 @@ O ARIANO adapta o paradigma Graph-CoT para o domínio de matchmaking acadêmico,
 │  │  FASE 2 (ENRIQUECIMENTO) — Graph-CoT COMPLETO            │  │
 │  │  ContextualAnalyzer usa Graph-CoT ITERATIVO para:        │  │
 │  │  Loop: Thought → Action → Observation (até convergência) │  │
-│  │  • Identifica clusters de afinidade dinâmicamente         │  │
+│  │  • Identifica clusters de afinidade dinamicamente        │  │
 │  │  • Cria SIMILAR_TO, RELATED_TO, OVERLAPS_WITH            │  │
 │  │  • Re-calibra TODOS os scores com contexto expandido     │  │
 │  └──────────────────────────────────────────────────────────┘  │
 │                          ↓                                     │
 │  ┌──────────────────────────────────────────────────────────┐  │
 │  │  FASE 3 (CONSULTA) — O(1) DIRETO                         │  │
-│  │  Sem IA, sem Graph-CoT, sem custo                        │  │
+│  │  Sem IA, sem Graph-CoT, sem custo adicional              │  │
 │  │  Match = query Cypher sobre grafo pré-enriquecido        │  │
-│  │  Latência: milissegundos. Custo: zero.                   │  │
+│  │  Latência: milissegundos. Custo LLM: zero.               │  │
 │  └──────────────────────────────────────────────────────────┘  │
 └────────────────────────────────────────────────────────────────┘
 ```
@@ -219,43 +243,42 @@ O ARIANO adapta o paradigma Graph-CoT para o domínio de matchmaking acadêmico,
 
 ### 2.5 Cognitive RAG — Da Cognição Biológica à Inteligência Artificial
 
-O paradigma **Cognitive RAG** (Reddy et al., 2024) propõe uma abordagem que imita processos cognitivos biológicos na recuperação e processamento de informação. Assim como o cérebro humano não processa informação em bloco — mas sim em ciclos de **atenção seletiva**, **memória de trabalho** e **raciocínio inferencial** — o Cognitive RAG implementa um loop cognitivo onde:
+O paradigma **Cognitive RAG** (Reddy et al., 2024) propõe uma abordagem que imita processos cognitivos biológicos na recuperação e processamento de informação. Assim como o cérebro humano não processa informação em bloco — mas em ciclos de **atenção seletiva**, **memória de trabalho** e **raciocínio inferencial** — o Cognitive RAG implementa um loop cognitivo onde:
 
-1. **Atenção Seletiva (Selective Retrieval):** O agente não busca toda informação disponível de uma vez — ele identifica qual informação específica precisa e busca apenas isso (análogo à atenção focal do córtex pré-frontal)
+1. **Atenção Seletiva (Selective Retrieval):** O agente identifica qual informação específica precisa e busca apenas isso (análogo à atenção focal do córtex pré-frontal)
+2. **Memória de Trabalho (Scratchpad):** O agente mantém um "rascunho" progressivo de raciocínio — cada observação do grafo é incorporada ao contexto (análogo à memória de trabalho de Baddeley & Hitch, 1974)
+3. **Raciocínio Inferencial (Step-wise Reasoning):** O agente conclui informações que não estão explícitas no grafo — se dois perfis compartilham skills em comum e ambos têm alta maturidade, o agente pode inferir uma conexão `SIMILAR_TO` sem que ela exista explicitamente
+4. **Critério de Suficiência (Halting):** O agente decide autonomamente quando tem informação suficiente — não consome passos desnecessários (análogo à metacognição — "saber que se sabe")
 
-2. **Memória de Trabalho (Scratchpad):** O agente mantém um "rascunho" progressivo de raciocínio — cada observação do grafo é incorporada ao contexto, permitindo raciocínio acumulativo (análogo à memória de trabalho de Baddeley & Hitch, 1974)
+No ARIANO, este paradigma cognitivo se materializa especialmente no **ContextualAnalyzer**, que opera como o "neocórtex" do sistema — analisando o grafo inteiro, identificando padrões latentes e criando conexões emergentes.
 
-3. **Raciocínio Inferencial (Step-wise Reasoning):** O agente conclui informações que não estão explícitas no grafo — se dois perfis compartilham 4 skills em comum e ambos têm alta maturidade, o agente pode inferir uma conexão `SIMILAR_TO` sem que ela exista explicitamente (análogo ao raciocínio dedutivo do neocórtex)
-
-4. **Critério de Suficiência (Halting):** O agente decide autonomamente quando tem informação suficiente para gerar uma resposta — não consome passos desnecessários (análogo à metacognição — "saber que se sabe")
-
-No ARIANO, este paradigma cognitivo se materializa especialmente no **ContextualAnalyzer** (Sprint 4), que opera como o "neocórtex" do sistema — analisando o grafo inteiro, identificando padrões latentes que nenhum agente individualmente perceberia, e criando conexões emergentes que enriquecem todo o ecossistema.
-
-**Comparação com abordagens tradicionais — Profundidade de Raciocínio:**
+**Comparação por profundidade de raciocínio:**
 
 | Abordagem | Profundidade | Analogia Cognitiva | Aplicação no ARIANO |
-|-----------|-------------|--------------------|--------------------|
+|-----------|-------------|--------------------|---------------------|
 | **Hop-0** (nó único) | Superficial — apenas o nó mais relevante | Reflexo — resposta automática sem análise | Não utilizado |
-| **Hop-1** (vizinhos diretos) | Rasa — nó + vizinhos imediatos | Associação simples — "isso me lembra de..." | Fase 3 (consulta O(1)) |
-| **Hop-2** (vizinhos dos vizinhos) | Média — contexto expandido | Memória episódica — conexões indiretas | Fase 1 (cadastro, análise rápida) |
-| **Graph-CoT** (dinâmico) | Profunda — iterativo até suficiência | Raciocínio deliberado — análise consciente | Fase 2 (enriquecimento, ContextualAnalyzer) |
+| **Hop-1** (vizinhos diretos) | Rasa — nó + vizinhos imediatos | Associação simples | Fase 3 (consulta O(1)) |
+| **Hop-2** (vizinhos dos vizinhos) | Média — contexto expandido | Memória episódica | Fase 1 (cadastro, análise rápida) |
+| **Graph-CoT** (dinâmico) | Profunda — iterativo até suficiência | Raciocínio deliberado | Fase 2 (enriquecimento, ContextualAnalyzer) |
 
-> **Referência acadêmica:** O framework Cognitive-RAG demonstrou em benchmarks (datasets MAPLE, BioMedical, Legal, Amazon, GoodReads) que a abordagem Graph-CoT **supera consistentemente** estratégias hop-based em accuracy de resposta, justamente porque a profundidade de traversal é determinada pela complexidade da pergunta, não por um parâmetro fixo.
+> **Referência acadêmica:** O framework Cognitive-RAG demonstrou em benchmarks (datasets MAPLE, BioMedical, Legal, Amazon, GoodReads) que a abordagem Graph-CoT **supera consistentemente** estratégias hop-based em accuracy de resposta, pois a profundidade de traversal é determinada pela complexidade da pergunta, não por um parâmetro fixo.
 > Repositório: https://github.com/Nikhilreddy024/Cognitive-RAG
 
 ---
 
 ## 3. Referência de Design — GitNexus
 
-O design visual e interativo (Dark theme com efeitos neon, hover rings e visualização do conhecimento mapeado em nós) do ARIANO foi inspirado profundamente no projeto **GitNexus**, servindo como modelo estético consolidado de sucesso para o nosso visualizador de grafos em interface web. O conceito original e a referência base que usamos pode ser explorado publicamente:
+O design visual e interativo do ARIANO (Dark theme com efeitos neon, hover rings e visualização de grafos em nós iluminados) foi inspirado profundamente no projeto **GitNexus**, servindo como modelo estético de sucesso para o nosso visualizador de grafos em interface web.
 
-**Link do Repositório do GitNexus:** [https://github.com/abhigyanpatwari/GitNexus](https://github.com/abhigyanpatwari/GitNexus)
+**Repositório do GitNexus:** [https://github.com/abhigyanpatwari/GitNexus](https://github.com/abhigyanpatwari/GitNexus)
+
+A adaptação do tema original (roxo) para o **Teal Neon** do ARIANO mantém a atmosfera tecnológica premium enquanto cria uma identidade visual própria, diferenciando o produto no contexto acadêmico e governamental.
 
 ---
 
 ## 4. Arquitetura do Sistema
 
-### 4.1 Visão Geral da Arquitetura
+### 4.1 Visão Geral
 
 ```
                      ┌──────────────────────────────────────┐
@@ -272,41 +295,43 @@ O design visual e interativo (Dark theme com efeitos neon, hover rings e visuali
                      │   dual profile)                       │
                      └──────────┬───────────────────────────┘
                                 │ REST API (Axios)
-                     ┌──────────┴───────────────────────────┐
+                     ┌──────────▼───────────────────────────┐
                      │       BACKEND (Python + FastAPI)       │
                      │                                       │
                      │  Auth (email/password + cookies JWT)   │
                      │  Agente Orquestrador (multi-agent)     │
-                     │  ├─ ProfileAnalyzer (bio+CV → skills,  │
-                     │  │   maturidade, o_que_busco)          │
+                     │  ├─ ProfileAnalyzer                   │
+                     │  │   (bio+CV → skills, maturidade,    │
+                     │  │    o_que_busco) via Graph-CoT       │
                      │  ├─ EditalInterpreter                  │
                      │  ├─ EligibilityCalculator (scoring)    │
-                     │  ├─ ContextualAnalyzer (Sprint 4)      │
-                     │  └─ CommunityEnricher (Sprint 4)       │
+                     │  ├─ ContextualAnalyzer (Graph-CoT)     │
+                     │  └─ CommunityEnricher                  │
                      │  Match Engine (Cypher O(1))            │
                      └──────────┬───────────────────────────┘
-                                │ Bolt / Memory
-                     ┌──────────┴───────────────────────────┐
+                                │ In-Memory + KV Sync
+                     ┌──────────▼───────────────────────────┐
                      │   DATA LAYER = "CÉREBRO" DO ARIANO    │
-                     │   Neo4j Local (Vercel KV Persistent)  │
-                     │   - Engine: MemoryGraphStore (Python) │
-                     │   - Sync: Vercel KV REST API          │
+                     │   MemoryGraphStore (Python)           │
+                     │   - Processamento: O(1) in-memory     │
+                     │   - Persistência: Vercel KV (Redis)   │
                      │   - Formato: JSON Serialized Graph    │
                      └──────────────────────────────────────┘
-
-### 🗄️ Persistência de Dados (Vercel KV)
-
-O ARIANO utiliza um motor de grafos híbrido. Enquanto o processamento ocorre em memória para performance O(1), a persistência é garantida pelo **Vercel KV**:
-- **Sincronização Atômica:** Cada alteração no grafo dispara um comando `SET` assíncrono para o Redis da Vercel.
-- **Recuperação Automática:** No boot da Serverless Function, o estado mais recente é carregado via `GET`, garantindo que o "Cérebro" do sistema seja permanente.
-- **Zero-Dependency:** Não há necessidade de gerenciar instâncias externas de Neo4j ou AuraDB, reduzindo a latência de rede e custos.
 ```
+
+#### 🗄️ Estratégia de Persistência (Vercel KV)
+
+O ARIANO utiliza um motor de grafos híbrido: processamento em memória para performance O(1), persistência garantida pelo **Vercel KV (Redis)**:
+
+- **Sincronização Atômica:** Cada alteração no grafo dispara um `SET` assíncrono para o Redis da Vercel
+- **Recuperação Automática:** No boot da Serverless Function, o estado mais recente é carregado via `GET`
+- **Zero-Dependency:** Sem necessidade de gerenciar instâncias externas de Neo4j ou AuraDB
 
 ### 4.2 Fluxo de Dados — Três Fases Distintas
 
-#### FASE 1 — Cadastro + Match Estratégico (tempo real, visível ao usuário)
+#### FASE 1 — Cadastro + Match Estratégico
 
-> Este é o fluxo do primeiro contato do usuário com a plataforma, na página `/user/cadastro` (CORETO). A IA faz o match estratégico em tempo real — o usuário vê o processamento acontecendo.
+> Fluxo do primeiro contato do usuário com a plataforma em `/user/cadastro`. A IA faz o match estratégico em tempo real — o usuário vê o processamento acontecendo através do `AgentProcessingTimeline`.
 
 ```
 Usuário se cadastra em /user/cadastro
@@ -314,53 +339,61 @@ Usuário se cadastra em /user/cadastro
   → NÃO seleciona tags de skills/áreas — a IA faz isso sozinha
   → Backend cria o nó no grafo
   → Orquestrador aciona agentes EM TEMPO REAL (visível na UI):
-    → ProfileAnalyzer lê bio + currículo:
-      → Extrai skills e áreas automaticamente
-      → Determina maturidade (0-10) com justificativa
-      → Gera o_que_busco como texto descritivo
-    → EligibilityCalculator calcula matches:
-      → Scoring: skills(40%) + area(25%) + maturidade(15%) + priority(10%) + context(10%)
+    → ProfileAnalyzer (via /v2/analyze):
+      → Extrai curriculo_texto do PDF via PyMuPDF (PDF descartado)
+      → Executa Graph-CoT sequencial (Hop-2):
+        → RetrieveNode → busca perfis similares no grafo
+        → NeighbourCheck → analisa skills dos perfis similares
+        → Reasoning → infere maturidade (0-10) e o_que_busco
+      → Extrai skills e áreas automaticamente (sem intervenção do usuário)
+    → EligibilityCalculator (via /v2/match):
+      → Scoring multi-dimensional:
+          skills (40%) + area (25%) + maturidade (15%)
+          + priority (10%) + context (10%)
       → o_que_busco como bônus (não eliminatório)
       → Cria arestas ELIGIBLE_FOR com score e justificativa
-  → **Diálogo entre Agentes:** A interface exibe a "conversa" entre os agentes especialistas, humanizando o processo cognitivo.
-  → **Grafo Vivo:** O grafo atua como o coração visual, expandindo-se e criando conexões de luz (neon) à medida que a IA valida as informações.
-  → Usuário vê seus matches com scores e justificativas após a imersão cognitiva.
+  → Interface exibe a "conversa" entre os agentes (scratchpad visível)
+  → Grafo SVG anima a criação do nó e conexões em tempo real
+  → Usuário vê matches com scores, barras de progresso e justificativas
 ```
 
 #### FASE 2 — Enriquecimento Contínuo (Comunidades de Pensamento)
 
-> Em produção, este fluxo seria executado automaticamente a cada 24h. No MVP, é acionado manualmente pela página `/admin/comunidades`.
+> Em produção, este fluxo seria executado automaticamente a cada 24h. No MVP, é acionado manualmente em `/admin/comunidades`.
 
 ```
-Ciclo de enriquecimento acionado (botão manual)
+Ciclo de enriquecimento acionado (botão manual ou cron 24h)
   → Agente Orquestrador analisa estado do grafo e decide ordem de ativação
-    → ContextualAnalyzer varre o grafo completo:
-      → Identifica clusters de afinidade entre acadêmicos
-      → Cria arestas SIMILAR_TO entre perfis com alta sobreposição
-      → Cria arestas RELATED_TO entre skills complementares
+    → ContextualAnalyzer (Graph-CoT ITERATIVO):
+      → Loop Thought → Action → Observation (até convergência):
+        → Identifica clusters de afinidade entre acadêmicos
+        → Cria arestas SIMILAR_TO entre perfis com alta sobreposição
+        → Cria arestas RELATED_TO entre skills complementares
+        → Cria arestas OVERLAPS_WITH entre áreas sobrepostas
     → ProfileAnalyzer re-analisa perfis com contexto expandido (vizinhos N-hop)
       → Re-calcula maturidade com base em novas conexões
     → EditalInterpreter re-interpreta editais sabendo quais comunidades existem
     → EligibilityCalculator recalcula TODOS os scores com o grafo enriquecido
-      → Scores sobem ou descem com base em raciocínio profundo dos agentes
-        → Grafo mais inteligente, matches mais assertivos ✓
+      → Scores sobem ou descem com base em raciocínio profundo ✓
 ```
 
 > **Conceito-chave:** Cada ciclo de enriquecimento faz o grafo funcionar como um **cérebro em evolução**. Um estudante que inicialmente tinha 70% de match com um edital pode subir para 88% porque o ContextualAnalyzer descobriu que colegas com skills similares tiveram excelente performance em editais da mesma agência.
 
-#### FASE 3 — Consulta de Matches O(1) (pós-cadastro, instantâneo)
+#### FASE 3 — Consulta de Matches O(1)
 
-> Este é o fluxo quando o usuário JÁ está cadastrado e acessa `/user/matchs`. Os matches foram pré-computados na Fase 1 e enriquecidos na Fase 2.
+> Fluxo quando o usuário JÁ está cadastrado e acessa `/user/matchs`. Os matches foram pré-computados na Fase 1 e enriquecidos na Fase 2.
 
 ```
 Usuário acessa /user/matchs (já cadastrado)
   → Backend executa Cypher:
     MATCH (a {uid: $me})-[r:ELIGIBLE_FOR]->(e:Edital)
+    WHERE e.deadline > date()
     RETURN a, r, e ORDER BY r.score DESC, e.funding DESC
   → O(1) via adjacência livre de índice
-    → Matches pré-computados retornados instantaneamente
-    → Filtros: editais, usuários similares
+    → Matches pré-computados retornados em milissegundos
+    → Filtros: editais vs usuários similares
     → Desempate por funding quando scores iguais
+    → Editais com deadline expirado automaticamente excluídos
 ```
 
 ### 4.3 Modelagem do Grafo
@@ -370,7 +403,7 @@ Usuário acessa /user/matchs (já cadastrado)
     │  🎓 Student  │──────────────────>│  📚 Skill   │
     └─────────────┘                    └────────────┘
           │                                 ▲
-          │ SIMILAR_TO (Sprint 4)           │
+          │ SIMILAR_TO                      │
           ▼                                │
     ┌─────────────┐     HAS_SKILL          │
     │ 🎓 Researcher│──────────────────────>│
@@ -387,68 +420,64 @@ Usuário acessa /user/matchs (já cadastrado)
     └─────────────┘   (score, justification, context_bonus)
 ```
 
-**Tipos de arestas:**
+#### 4.3.1 Tipos de Arestas
 
 | Aresta | Tipo | Criada por | Descrição |
-|--------|------|------------|----------|
+|--------|------|------------|-----------|
 | `HAS_SKILL` | Primária | ProfileAnalyzer | Acadêmico possui competência |
 | `RESEARCHES_AREA` | Primária | ProfileAnalyzer | Acadêmico pesquisa área |
 | `REQUIRES_SKILL` | Primária | EditalInterpreter | Edital requer competência |
 | `TARGETS_AREA` | Primária | EditalInterpreter | Edital foca em área |
-| `ELIGIBLE_FOR` | Primária | EligibilityCalculator | **Aresta de match** com score |
+| `ELIGIBLE_FOR` | Primária | EligibilityCalculator | **Aresta de match** com score e justificativa |
 | `ADVISES` | Primária | Seed | Professor orienta estudante |
-| `SIMILAR_TO` | Enriquecida | ContextualAnalyzer (Sprint 4) | Afinidade entre acadêmicos |
-| `RELATED_TO` | Enriquecida | ContextualAnalyzer (Sprint 4) | Skills complementares |
-| `OVERLAPS_WITH` | Enriquecida | ContextualAnalyzer (Sprint 4) | Áreas sobrepostas |
+| `SIMILAR_TO` | Enriquecida | ContextualAnalyzer | Afinidade entre acadêmicos |
+| `RELATED_TO` | Enriquecida | ContextualAnalyzer | Skills complementares que co-ocorrem |
+| `OVERLAPS_WITH` | Enriquecida | ContextualAnalyzer | Áreas com sobreposição semântica |
 
-**Campos por entidade (atualizado Sprint 4):**
+#### 4.3.2 Campos por Entidade
 
 | Entidade | Campos preenchidos pelo usuário | Campos determinados pela IA / Sistema |
-|----------|-------------------------------|-----------------------------|
-| **Student** | name, email, password, institution, course, semester, bio, currículo (PDF) | curriculo_texto (PyMuPDF), maturidade (0-10), o_que_busco, skills, areas |
-| **Researcher** | name, email, password, institution, bio, currículo (PDF) | curriculo_texto (PyMuPDF), maturidade (0-10), o_que_busco, skills, areas |
-| **Professor** | name, email, password, institution, department, research_group, bio, currículo (PDF) | curriculo_texto (PyMuPDF), maturidade (0-10), o_que_busco, skills, areas |
-| **Edital** | title, description, instituicao, edital_type, funding, deadline, min_maturidade | — (interpretado pelo EditalInterpreter) |
+|----------|-------------------------------|---------------------------------------|
+| **Student** | name, email, password, institution, course, semester, bio, currículo (PDF upload) | curriculo_texto (PyMuPDF), maturidade (0-10), o_que_busco, skills[], areas[] |
+| **Researcher** | name, email, password, institution, bio, currículo (PDF upload) | curriculo_texto (PyMuPDF), maturidade (0-10), o_que_busco, skills[], areas[] |
+| **Professor** | name, email, password, institution, department, research_group, bio, currículo (PDF upload) | curriculo_texto (PyMuPDF), maturidade (0-10), o_que_busco, skills[], areas[] |
+| **Edital** | title, description, instituicao, edital_type, funding, deadline, min_maturidade | — (campos extraídos pelo EditalInterpreter) |
 
-> **Nota:** `maturidade` (0-10) substitui o antigo `level`. É calculado automaticamente pelo ProfileAnalyzer com base em bio, currículo e contexto do grafo. `o_que_busco` é um texto gerado pela IA descrevendo o que o acadêmico busca, usado como bônus no scoring (não eliminatório). `lattes_url` e `curriculo_url` foram removidos. `agency` foi substituído por `instituicao`.
->
-> **Extração de Currículo (PDF → Texto):**
-> - O usuário faz upload do PDF do currículo **direto do computador** no formulário de cadastro
-> - O backend recebe o arquivo temporariamente, extrai todo o texto via **PyMuPDF (fitz)** em <100ms
-> - Salva **APENAS o texto extraído** no campo `curriculo_texto` do nó no grafo
-> - O arquivo PDF é **descartado** — não é armazenado em nenhum lugar
-> - Os agentes de IA usam `curriculo_texto` como contexto para análise profunda do perfil
->
-> **Regra de Visibilidade do Edital:**
-> - Um edital **só aparece como match visível** se seu `deadline > data de hoje`. Editais com deadline expirado são automaticamente excluídos de todos os resultados de match. É o **único critério eliminatório** do sistema.
+> **Notas sobre o modelo de dados:**
+> - `maturidade` (0-10) substitui o antigo campo `level`. É calculado automaticamente pelo ProfileAnalyzer com base em bio, currículo e contexto do grafo.
+> - `o_que_busco` é um texto gerado pela IA descrevendo o que o acadêmico busca, usado como bônus no scoring (não eliminatório).
+> - `curriculo_texto` é o texto extraído do PDF via PyMuPDF (fitz). O arquivo PDF é descartado imediatamente após a extração.
+> - Um edital **só aparece como match visível** se `deadline > data de hoje`. Este é o **único critério eliminatório** do sistema.
+> - Campos removidos em versões anteriores: `lattes_url`, `curriculo_url`, `level`. Campo renomeado: `agency` → `instituicao`.
 
-#### 4.4.2 Três Subciclos do Enriquecimento (Contextualização Semântica)
+### 4.4 Subciclos do Enriquecimento (Contextualização Semântica)
 
 O ciclo completo de enriquecimento, orquestrado pelo Orchestrator Agent, consiste em três subciclos sequenciais que transformam dados brutos em **Comunidades de Pensamento (CoTs)** com nomes e temas significativos.
- descobertos no grafo — se vizinhos SIMILAR_TO do acadêmico têm matches altos com editais similares, o acadêmico recebe um bônus proporcional
-3. `community_relevance` mede o quão integrado o acadêmico está na rede — perfis mais conectados (maior grau via `NodeDegree`) recebem scores ligeiramente superiores
 
-**Resultado:** Os próximos matches são mais assertivos porque o agente de match tem acesso a **muito mais contexto** — não apenas as skills diretas do acadêmico, mas toda a rede de afinidades, padrões de sucesso descobertos, e inferências sobre capacidades latentes.
+O contexto expandido gerado pelo enriquecimento impacta diretamente o scoring:
+- `peer_success` mede o sucesso de vizinhos `SIMILAR_TO` do acadêmico em editais similares
+- `community_relevance` mede o quão integrado o acadêmico está na rede — perfis mais conectados recebem scores ligeiramente superiores
 
-#### 4.4.3 Visualização de Comunidades via NetworkX (Sprint 4)
+**Resultado:** Os próximos matches são mais assertivos porque o agente tem acesso a **muito mais contexto** — não apenas as skills diretas do acadêmico, mas toda a rede de afinidades, padrões de sucesso descobertos, e inferências sobre capacidades latentes.
+
+### 4.5 Visualização de Comunidades via NetworkX
 
 A detecção e visualização das Comunidades de Pensamento é potencializada pelo **NetworkX 3.x** como motor computacional server-side. A integração funciona em três camadas:
 
 **Camada 1 — Construção do Grafo NetworkX (Backend):**
-O serviço `graph_visualizer.py` sincroniza o grafo Neo4j para uma instância NetworkX in-memory. Nós e arestas são importados com seus atributos (tipo, maturidade, skills, scores). Este grafo Python é a base para todos os cálculos de layout e comunidade.
 
 ```python
 # graph_visualizer.py — Pipeline de Visualização
 import networkx as nx
 
-# 1. Carregar grafo do Neo4j para NetworkX
+# 1. Carregar grafo do MemoryGraphStore para NetworkX
 G = nx.Graph()
-for node in neo4j_nodes:
+for node in graph_nodes:
     G.add_node(node.uid, type=node.type, label=node.name, ...)
-for edge in neo4j_edges:
+for edge in graph_edges:
     G.add_edge(edge.source, edge.target, weight=edge.score, ...)
 
-# 2. Detectar comunidades via Louvain (Graph-CoT materializado)
+# 2. Detectar comunidades via Louvain
 communities = nx.community.louvain_communities(G, weight='weight')
 # → [{uid1, uid2, uid3}, {uid4, uid5}, ...]
 
@@ -456,9 +485,9 @@ communities = nx.community.louvain_communities(G, weight='weight')
 positions = nx.spring_layout(G, k=2.0, iterations=50, seed=42)
 # → {uid: (x, y), ...}
 
-# 4. Retornar JSON para React SVG
+# 4. Retornar JSON para React
 return {
-    "nodes": [{"id": uid, "x": pos[0], "y": pos[1], 
+    "nodes": [{"id": uid, "x": pos[0], "y": pos[1],
                "community": community_id, "type": node_type, ...}],
     "edges": [...],
     "communities": [{"id": i, "members": list(c), "color": palette[i]} ...]
@@ -466,76 +495,73 @@ return {
 ```
 
 **Camada 2 — API REST (FastAPI):**
-Endpoint `GET /api/graph/layout?scope=full|personal&uid=xxx` retorna o JSON com posições pre-computadas. O parâmetro `scope=personal` filtra apenas o ego-network do usuário (vizinhos diretos + comunidade). O backend cacheia resultados por 5 minutos (TTL), invalidando ao receber novos nós ou ao executar o ciclo de enriquecimento.
 
-**Camada 3 — Renderização Interativa (react-force-graph):**
-O componente `NetworkXGraphView.tsx` / `MiniGraph.tsx` recebe o JSON enriquecido e renderiza a rede usando um motor de simulação de forças (Canvas/WebGL):
-- **Interatividade Total:** Arraste de nós, zoom suave e pan.
-- **Temas de Comunidade:** Legendas dinâmicas exibem os temas extraídos pelo backend (ex: "Tecnologia & Saúde").
-- **Visual Premium:** Nós com efeitos de brilho (glow) proporcionais à influência.
-- **Animações Fluidas:** Simulação em tempo real para estabilização orgânica do grafo.
+Endpoint `GET /api/graph/layout?scope=full|personal&uid=xxx` retorna o JSON com posições pré-computadas. O parâmetro `scope=personal` filtra apenas o ego-network do usuário (vizinhos diretos + comunidade). O backend cacheia resultados por 5 minutos (TTL), invalidando ao receber novos nós ou ao executar o ciclo de enriquecimento.
 
-> **Vantagem arquitetural:** O ARIANO agora oferece uma "Passive UI" que serve como janela para uma "Active Intelligence". A detecção de comunidades não é apenas matemática; é uma **contextualização semântica** que dá propósito a cada grupo de acadêmicos e editais.
+**Camada 3 — Renderização Interativa (React + Canvas):**
 
-### 4.5 Engenharia de Prompt Avançada — Graph-CoT Nativo nos Agentes (Sprint 4)
+O componente `NetworkXGraphView.tsx` / `MiniGraph.tsx` recebe o JSON enriquecido e renderiza a rede usando Canvas HTML5 / WebGL:
+- **Interatividade Total:** Arraste de nós, zoom suave e pan
+- **Temas de Comunidade:** Legendas dinâmicas exibem os temas extraídos pelo backend
+- **Visual Premium:** Nós com efeitos de brilho (glow) proporcionais à influência
+- **Animações Fluidas:** Simulação em tempo real para estabilização orgânica do grafo
 
-Os agentes do ARIANO são configurados com prompts especializados que implementam o paradigma Graph-CoT (seção 2.4) diretamente na engenharia de prompt, tornando-os verdadeiros **agentes cognitivos** com capacidade de raciocínio iterativo, memória de trabalho (scratchpad) e critério de suficiência autônomo.
+### 4.6 Engenharia de Prompt Avançada — Graph-CoT Nativo nos Agentes
 
-#### 4.5.1 Arquitetura de Prompt — Três Pilares
+Os agentes do ARIANO são configurados com prompts especializados que implementam o paradigma Graph-CoT diretamente na engenharia de prompt, tornando-os verdadeiros **agentes cognitivos** com raciocínio iterativo, memória de trabalho (scratchpad) e critério de suficiência autônomo.
 
-1. **Contexto Profundo do Grafo (Retrieval Layer):**
-   Antes de processar qualquer entidade, o agente recebe o subgrafo expandido via `get_entity_deep_context(uid, depth)`, que inclui:
-   - Vizinhos diretos e suas features (skills, áreas, maturidade)
-   - Matches existentes de perfis similares (via `SIMILAR_TO`)
-   - Padrões de sucesso na comunidade (via `RELATED_TO`)
-   - Profundidade de busca ajustada dinamicamente por contexto
+#### 4.6.1 Arquitetura de Prompt — Três Pilares
 
-2. **Raciocínio em Cadeia com Scratchpad (Reasoning Layer):**
-   Baseado no paradigma Graph-CoT, os prompts instruem os agentes a manter um scratchpad de raciocínio explícito:
-   ```
-   [SCRATCHPAD — ProfileAnalyzer para João Pedro]:
-   
-   Step 1 — Leitura do perfil:
-     Bio: "Estudante de CC, 7º semestre, estagiou na Porto Digital..."
-     Currículo: "Formação em CC-UNINASSAU. Experiência: Data Science..."
-     → Identifico forte background em dados e ML aplicado.
-   
-   Step 2 — Contexto do grafo (via get_similar_profiles):
-     Perfis similares encontrados: Maria Silva (9.2), Pedro Santos (7.1)
-     Skills compartilhadas: ML (3/3), Python (3/3), NLP (2/3)
-     → O cluster indica foco em IA aplicada à saúde.
-   
-   Step 3 — Inferência de maturidade:
-     Semestre: 7/10 (0.7)
-     Estágio: Porto Digital (+0.5 por experiência prática)
-     Bio depth: descrição detalhada (+0.3 por autoconsciência)
-     Cluster avg: (9.2 + 7.1) / 2 = 8.15 (referência)
-     → Maturidade calculada: 6.5 (abaixo da média do cluster)
-     → Justificativa: "Bom potencial, experiência prática sólida,
-        mas falta profundidade em pesquisa acadêmica formal."
-   
-   Step 4 — Geração de o_que_busco:
-     Com base nos passos 1-3, infiro que João busca:
-     → "Oportunidades de pesquisa aplicada em Machine Learning
-        e NLP, preferencialmente em projetos de impacto social
-        na área de Saúde Digital."
-   
-   Step 5 — Extração de skills e áreas (AUTOMÁTICO, sem tags manuais):
-     Skills: [ML, NLP, Python, Data Science, Análise de Dados]
-     Áreas: [Inteligência Artificial, Saúde Digital, Ciência de Dados]
-     Confidence: [0.95, 0.82, 0.98, 0.90, 0.75]
-   ```
+**1. Contexto Profundo do Grafo (Retrieval Layer):**
+Antes de processar qualquer entidade, o agente recebe o subgrafo expandido via `get_entity_deep_context(uid, depth)`, que inclui:
+- Vizinhos diretos e suas features (skills, áreas, maturidade)
+- Matches existentes de perfis similares (via `SIMILAR_TO`)
+- Padrões de sucesso na comunidade (via `RELATED_TO`)
+- Profundidade de busca ajustada dinamicamente por contexto
 
-3. **Contextos Presetados por Fluxo (Orchestration Layer):**
-   Os agentes operam com diferentes configurações que ajustam profundidade de raciocínio, temperatura do LLM e number de primitivas Graph-CoT disponíveis:
+**2. Raciocínio em Cadeia com Scratchpad (Reasoning Layer):**
+Os prompts instruem os agentes a manter um scratchpad explícito. Exemplo de saída do ProfileAnalyzer:
 
-   | Contexto | Profundidade | Temperatura | Primitivas Graph-CoT | Uso |
-   |----------|-------------|-------------|---------------------|-----|
-   | `CONTEXT_CADASTRO` | Hop-2 (rápida) | 0.3 (determinística) | RetrieveNode, NodeFeature | Página CORETO — análise rápida + match imediato |
-   | `CONTEXT_ENRICHMENT` | Graph-CoT completo | 0.7 (criativa) | Todas (RetrieveNode, NodeFeature, NeighbourCheck, NodeDegree) | Comunidades de Pensamento — análise profunda |
-   | `CONTEXT_RECALIBRATION` | Hop-3 (expandida) | 0.2 (mais determinística) | NodeFeature, NeighbourCheck | Re-scoring com novas conexões |
+```
+[SCRATCHPAD — ProfileAnalyzer para João Pedro]:
 
-   Cada contexto ajusta os prompts, permitindo que os mesmos agentes sejam ativados em ordens variadas pelo Orquestrador dependendo da necessidade — maximizando a reutilização de código enquanto adapta o comportamento cognitivo.
+Step 1 — Leitura do perfil:
+  Bio: "Estudante de CC, 7º semestre, estagiou na Porto Digital..."
+  Currículo: "Formação em CC-UNINASSAU. Experiência: Data Science..."
+  → Identifico forte background em dados e ML aplicado.
+
+Step 2 — Contexto do grafo (via get_similar_profiles):
+  Perfis similares: Maria Silva (maturidade: 9.2), Pedro Santos (7.1)
+  Skills compartilhadas: ML (3/3), Python (3/3), NLP (2/3)
+  → O cluster indica foco em IA aplicada à saúde.
+
+Step 3 — Inferência de maturidade:
+  Semestre: 7/10 (base: 0.7)
+  Estágio Porto Digital: +0.5 (experiência prática relevante)
+  Bio detalhada: +0.3 (autoconsciência e clareza)
+  Cluster avg: (9.2 + 7.1) / 2 = 8.15 (referência contextual)
+  → Maturidade calculada: 6.5
+  → Justificativa: "Bom potencial, experiência prática sólida,
+     mas falta profundidade em pesquisa acadêmica formal."
+
+Step 4 — Geração de o_que_busco:
+  → "Oportunidades de pesquisa aplicada em Machine Learning
+     e NLP, preferencialmente em projetos de impacto social
+     na área de Saúde Digital."
+
+Step 5 — Extração de skills e áreas (sem seleção manual):
+  Skills: [ML, NLP, Python, Data Science, Análise de Dados]
+  Áreas: [Inteligência Artificial, Saúde Digital, Ciência de Dados]
+  Confidence: [0.95, 0.82, 0.98, 0.90, 0.75]
+```
+
+**3. Contextos Presetados por Fluxo (Orchestration Layer):**
+
+| Contexto | Profundidade | Temperatura LLM | Primitivas Graph-CoT | Uso |
+|----------|-------------|-----------------|---------------------|-----|
+| `CONTEXT_CADASTRO` | Hop-2 (rápida) | 0.3 (determinística) | RetrieveNode, NodeFeature | Análise rápida + match imediato no cadastro |
+| `CONTEXT_ENRICHMENT` | Graph-CoT completo | 0.7 (criativa) | Todas as quatro primitivas | Comunidades de Pensamento — análise profunda |
+| `CONTEXT_RECALIBRATION` | Hop-3 (expandida) | 0.2 (mais determinística) | NodeFeature, NeighbourCheck | Re-scoring com novas conexões |
 
 ---
 
@@ -550,25 +576,26 @@ Os agentes do ARIANO são configurados com prompts especializados que implementa
 │                                                           │
 │  🎨 FRONTEND                                              │
 │  ├─ Vite 5 + React 18 + TypeScript                       │
-│  ├─ Tailwind CSS v4 (Design System: Teal Neon/Glassmorphism)│
-│  ├─ react-force-graph (motor interativo Canvas/WebGL)      │
+│  ├─ Tailwind CSS v4 (tema Teal Neon / Glassmorphism)     │
+│  ├─ react-force-graph + Canvas HTML5 (motor interativo)  │
+│  ├─ Recharts (gráficos de maturidade e perfil)            │
 │  └─ Framer Motion (animações e transições fluídas)        │
 │                                                           │
 │  ⚙️ BACKEND                                               │
 │  ├─ Python 3.12 + FastAPI                                 │
-│  ├─ LangChain + LangChain-OpenAI (agentes IA)             │
-│  ├─ NVIDIA Nemotron 3 Super 120B via OpenRouter (LLM)     │
-│  ├─ NetworkX 3.x (graph layout, community detection,      │
-│  │   centrality analysis, Graph-CoT visualization)        │
-│  └─ Neomodel (OGM) + Neo4j Driver (Cypher nativo)         │
+│  ├─ LangChain + LangChain-OpenAI (orquestração de agentes)│
+│  ├─ NVIDIA Nemotron 3 Super 120B via OpenRouter (LLM)    │
+│  ├─ NetworkX 3.x (layout, community detection, Graph-CoT) │
+│  ├─ PyMuPDF / fitz (extração de texto de PDFs)           │
+│  └─ Neomodel (OGM) + MemoryGraphStore (grafo in-memory)  │
 │                                                           │
 │  🗄️ DADOS                                                 │
-│  ├─ Neo4j Local (Python Interpreter)                       │
-│  └─ Vercel KV / Redis (Camada de Persistência)             │
+│  ├─ MemoryGraphStore (processamento O(1) in-memory)       │
+│  └─ Vercel KV / Redis (persistência híbrida serverless)   │
 │                                                           │
 │  🔧 DEVOPS & DEPLOY                                       │
-│  ├─ **Vercel Fullstack Deployment** (Monorepo)            │
-│  ├─ **Vercel Secrets / Env Vars** (Gestão Segura)           │
+│  ├─ Vercel Fullstack Deployment (monorepo)                │
+│  ├─ Vercel Secrets / Env Vars (gestão segura de chaves)  │
 │  └─ GitHub Actions (CI/CD)                                │
 │                                                           │
 └──────────────────────────────────────────────────────────┘
@@ -576,59 +603,67 @@ Os agentes do ARIANO são configurados com prompts especializados que implementa
 
 ### 5.2 Justificativas Tecnológicas
 
-A arquitetura do desenvolvimento atende rigorosos padrões de Boas Práticas, assegurando escalabilidade limpa e manutenibilidade na transição entre MVP Mockado e Serviço Completo:
-
-| **Vercel Fullstack Deploy** | **Escalabilidade & Agilidade:** O uso do Vercel para hospedar o backend FastAPI (via Serverless Functions) e o frontend Vite em um único repositório garante sincronia total de deploy e latência reduzida nas chamadas de API. |
-| **Secrets Management** | **Segurança Pró-Ativa:** Implementação de variáveis de ambiente restritas para chaves LLM (OpenRouter), garantindo que credenciais sensíveis nunca vazem no repositório público. |
-| **NetworkX 3.x (Graph Engine Python)** | **Computação de Inteligência Semântica:** NetworkX atua como o motor de inteligência do grafo, realizando detecção de comunidades (`louvain_communities`) e permitindo a extração de temas semânticos no backend. O frontend utiliza `react-force-graph` para garantir uma experiência interativa premium (zoom, arraste, simulation) com base na inteligência fornecida pelo servidor. |
-| **Arquitetura Vite + React (SPA)** | **Separação de Preocupações (SoC):** Por ser 100% Client-Side focado, eliminamos a complexidade misturada do padrão SSR (como o NextJS traria). Com Vite o desenvolvimento tem Hot Reload menor que 50ms, facilitando UI iterativas robustas como Visualizadores Force Directed. |
-| **Banco Mock Matemático Restrito** | **Testabilidade Previsível:** Ao criarmos um Mock com exatas 20 entidades para todos os grupos, testamos nossa interface em bounds de uso claros. Além disso, as atribuições de arestas (`edges`) seguiram permutações predeterminadas garantidas (Ex: 1 aluno para 10 editais precisos), refletindo comportamento em ambiente real previsível. |
-| **TypeScript / Zod** | **Segurança de Código (Type Safety):** Ao criar tipos `Entity`, `Match`, `Skill` rígidos garantimos total solidez nas travessias de loops e mapeamentos no layout final, evitando qualquer "undefined" exceptions no navegador do usuário final. |
-| **Tailwind CSS e Clean CSS** | **Tokens via Custom Properties:** Variáveis bem definidas para suportar todo o UI (ex: `color-void`, cores de nodes), permitindo padronização visual completa entre módulos. |
-| **Design Controlado e Não Poluído** | **Feedback Visual Progressivo:** Interfaces cognitivamente amigáveis. Mostramos ligações nos grafos só em `hovers` sob demanda de nós ou seleções via cliques (estabilização focada), com `dimming` para clarear os entornos, evitando "espaguetes visuais" indesejados no grafo. |
-| **Paradigma Neo4j (Backend)** | **Big O Eficiente:** Preparando para uso full Graph-like (Cypher), priorizamos acesso aos vizinhos em memória `O(1)`, substituindo a curva de gargalo de `JOINs O(n^2)` contidos em bancos de dados relacionais. |
+| Tecnologia | Justificativa |
+|------------|---------------|
+| **Vercel Fullstack Deploy** | Hospeda o backend FastAPI (via Serverless Functions) e o frontend Vite em único repositório, garantindo sincronia total de deploy e latência reduzida nas chamadas de API |
+| **Vercel KV (Redis)** | Resolve o problema de state efêmero das serverless functions. Cada alteração no grafo é sincronizada atomicamente via `SET`, e o estado é recuperado no boot via `GET` |
+| **NVIDIA Nemotron 3 Super 120B** | Modelo MoE (Mixture of Experts) com 12B de parâmetros ativos, arquitetura híbrida Mamba-Transformer e context window de 1M tokens. Disponível gratuitamente via OpenRouter |
+| **NetworkX 3.x** | Motor computacional server-side para detecção de comunidades (`louvain_communities`) e layout de grafo (`spring_layout`). O frontend recebe posições pré-computadas, garantindo fluidez na UI |
+| **Vite + React (SPA)** | Hot Reload <50ms facilita desenvolvimento iterativo de UI complexa como visualizadores de grafo force-directed. Sem overhead de SSR (Next.js) |
+| **TypeScript + Zod** | Tipos rígidos para `Entity`, `Match`, `Skill` garantem solidez nas travessias do grafo e mapeamentos do layout, evitando exceções de runtime no navegador |
+| **LangChain** | Framework maduro para orquestração de LLMs e construção de agentes com ferramentas, memória e chains complexas |
+| **PyMuPDF (fitz)** | Extração de texto de PDFs em <100ms por documento — fundamental para processar currículos em tempo real durante o cadastro |
 
 ---
 
-## 6. Design System — Blue Neon Edition
+## 6. Design System — Teal Neon Edition
 
-### 6.1 Paleta de Cores
+### 6.1 Identidade Visual
 
-Adaptada do GitNexus (tema roxo) para **azul neon** do ARIANO:
+O ARIANO adota o tema **"Teal Neon"** — uma evolução do tema original Blue Neon Edition, refinado nas Sprints 5-7 para harmonizar melhor com o contexto da plataforma CORETO. O estilo é inspirado na estética de interfaces de dados científicos de alta tecnologia: fundos quase-pretos azulados, destaques em ciano/teal vibrante e efeitos de brilho (glow) nos elementos de dados ativos.
 
-| Token | Hex | Uso |
-|-------|-----|-----|
-| `--color-void` | `#020810` | Background principal (tom azulado escuro) |
+### 6.2 Paleta de Cores
+
+| Token CSS | Hex | Uso |
+|-----------|-----|-----|
+| `--color-void` | `#020810` | Background principal |
 | `--color-deep` | `#060d18` | Áreas secundárias |
 | `--color-surface` | `#0a1420` | Superfícies de painéis |
-| `--color-elevated` | `#101c2a` | Elementos elevados |
-| `--color-hover` | `#142235` | Hover state |
+| `--color-elevated` | `#101c2a` | Elementos elevados / cards |
+| `--color-hover` | `#142235` | Estado hover |
 | `--color-border-subtle` | `#1e2e3a` | Bordas sutis |
 | `--color-border-default` | `#2a3a4a` | Bordas padrão |
 | `--color-text-primary` | `#e4e4ed` | Texto principal |
-| `--color-text-secondary` | `#8888a0` | Texto secundário |
-| `--color-accent` | `#0ea5e9` | **Accent principal (azul neon sky-500)** |
+| `--color-text-secondary` | `#8888a0` | Texto secundário / labels |
+| `--color-accent` | `#0ea5e9` | Accent principal (teal/sky-500) |
 | `--color-accent-glow` | `#38bdf8` | Glow effect (sky-400) |
-| `--color-accent-dim` | `#0369a1` | Accent dark |
+| `--color-accent-dim` | `#0369a1` | Accent escuro |
 
-### 6.2 Cores dos Nós
+### 6.3 Cores dos Nós do Grafo
 
 | Entidade | Cor | Hex | Justificativa |
 |----------|-----|-----|---------------|
-| **Edital** | Azul Escuro | `#2563eb` | Nó central, tom institucional/governamental |
-| **Student** | Cyan Brilhante | `#00e5ff` | Tom vibrante ciano, destaque na academia |
+| **Edital** | Azul Institucional | `#2563eb` | Nó central, tom governamental |
+| **Student** | Cyan Brilhante | `#00e5ff` | Tom vibrante, destaque na academia |
 | **Researcher** | Emerald | `#10b981` | Ciência, crescimento |
-| **Professor** | Amber | `#f59e0b` | Experiência, destaque |
-| **Skill** | Violet | `#8b5cf6` | Competências |
+| **Professor** | Amber | `#f59e0b` | Experiência, autoridade |
+| **Skill** | Violet | `#8b5cf6` | Competências abstratas |
 | **Area** | Indigo | `#6366f1` | Áreas de atuação |
-| **ELIGIBLE_FOR** | Gradiente Cyan→Blue | `#38bdf8` → `#2563eb` | Aresta de match |
+| **ELIGIBLE_FOR** | Gradiente Cyan→Blue | `#38bdf8` → `#2563eb` | Aresta de match ativa |
 
-### 6.3 Tipografia
+### 6.4 Tipografia
 
-| Token | Valor |
-|-------|-------|
-| `--font-sans` | `'Outfit', system-ui, sans-serif` |
-| `--font-mono` | `'JetBrains Mono', 'Fira Code', monospace` |
+| Papel | Família | Token CSS |
+|-------|---------|-----------|
+| Texto geral (sans) | `Outfit`, system-ui | `--font-sans` |
+| Código e dados (mono) | `JetBrains Mono`, `Fira Code` | `--font-mono` |
+
+### 6.5 Princípios de UX do Grafo
+
+- **Feedback Visual Progressivo:** Ligações nos grafos exibidas apenas em `hover` ou seleção — evita "espaguetes visuais" em grafos densos
+- **Dimming Contextual:** Ao selecionar um nó, os demais ficam com opacidade reduzida, focando a atenção nas conexões relevantes
+- **Efeitos de Glow:** Nós selecionados ou em destaque recebem aumento de `shadowBlur` proporcional à sua influência (NodeDegree)
+- **Labels Bulletproof:** `ctx.clip()` no Canvas garante que nenhum nome de nó transborde seu círculo delimitador
 
 ---
 
@@ -638,7 +673,7 @@ Adaptada do GitNexus (tema roxo) para **azul neon** do ARIANO:
 
 | ID | User Story | Prioridade | Estimativa |
 |----|-----------|------------|------------|
-| US-01 | Como desenvolvedor, quero um ambiente Docker configurado para que o Neo4j e o backend rodem em containers | Alta | 3 pts |
+| US-01 | Como desenvolvedor, quero um ambiente Docker configurado para que o backend rode em containers | Alta | 3 pts |
 | US-02 | Como desenvolvedor, quero CI/CD com GitHub Actions para que cada PR seja validada automaticamente | Média | 2 pts |
 | US-03 | Como desenvolvedor, quero a estrutura de pastas do projeto organizada para facilitar a colaboração | Alta | 1 pt |
 
@@ -646,10 +681,10 @@ Adaptada do GitNexus (tema roxo) para **azul neon** do ARIANO:
 
 | ID | User Story | Prioridade | Estimativa |
 |----|-----------|------------|------------|
-| US-04 | Como PO, quero nós modelados para Student, Researcher, Professor e Edital no Neo4j | Alta | 3 pts |
+| US-04 | Como PO, quero nós modelados para Student, Researcher, Professor e Edital no grafo | Alta | 3 pts |
 | US-05 | Como PO, quero nós auxiliares Skill e Area para conectividade no grafo | Alta | 2 pts |
 | US-06 | Como PO, quero arestas HAS_SKILL, RESEARCHES_AREA, REQUIRES_SKILL e ELIGIBLE_FOR | Alta | 3 pts |
-| US-07 | Como tester, quero dados seed com ≥15 acadêmicos + ≥8 editais fictícios | Média | 2 pts |
+| US-07 | Como tester, quero dados seed com ≥15 acadêmicos + ≥8 editais para validação | Média | 2 pts |
 
 ### Epic 3: Agentes IA (Graph Configurators)
 
@@ -658,14 +693,14 @@ Adaptada do GitNexus (tema roxo) para **azul neon** do ARIANO:
 | US-08 | Como PO, quero que o ProfileAnalyzer extraia skills e classifique áreas de cadastros acadêmicos | Alta | 5 pts |
 | US-09 | Como PO, quero que o EditalInterpreter extraia requisitos e áreas de editais | Alta | 5 pts |
 | US-10 | Como PO, quero que o EligibilityCalculator calcule scores de match e crie arestas ELIGIBLE_FOR | Alta | 8 pts |
-| US-11 | Como usuário, quero que o match seja uma query Cypher pura retornando resultados instantâneos | Alta | 3 pts |
+| US-11 | Como usuário, quero que o match seja uma query pura retornando resultados instantâneos | Alta | 3 pts |
 
 ### Epic 4: Frontend
 
 | ID | User Story | Prioridade | Estimativa |
 |----|-----------|------------|------------|
 | US-12 | Como usuário, quero um dashboard mostrando totais de acadêmicos, editais e matches | Média | 3 pts |
-| US-13 | Como usuário, quero cadastrar perfis acadêmicos via formulário | Alta | 3 pts |
+| US-13 | Como usuário, quero cadastrar perfis acadêmicos via formulário inteligente | Alta | 3 pts |
 | US-14 | Como usuário, quero cadastrar editais governamentais via formulário | Alta | 3 pts |
 | US-15 | Como usuário, quero visualizar o grafo interativamente com nós tipados e cores | Alta | 8 pts |
 | US-16 | Como usuário, quero ver matches ranqueados com score e justificativa | Alta | 5 pts |
@@ -675,181 +710,206 @@ Adaptada do GitNexus (tema roxo) para **azul neon** do ARIANO:
 
 ## 8. Sprint Planning — Roadmap (Práticas Ágeis)
 
-A estratégia de desenvolvimento do projeto ARIANO é fortemente pautada nos princípios ágeis utilizando uma adaptação do **framework SCRUM** para o nosso contexto acadêmico. Todas as sprints contaram com sessões de *Sprint Planning* para refinar os requisitos em histórias do usuário, *Sprint Reviews* para garantir as entregas incrementais e *Retrospectives* para contínuos ajustes de rota e validação da equipe.
+A estratégia de desenvolvimento do projeto ARIANO é fortemente pautada nos princípios ágeis utilizando uma adaptação do **framework SCRUM** para o contexto acadêmico. Todas as sprints contaram com sessões de *Sprint Planning* para refinar os requisitos em histórias do usuário, *Sprint Reviews* para garantir as entregas incrementais e *Retrospectives* para ajustes contínuos de rota.
 
-> **💡 Acompanhamento Online (Kanban):** O detalhamento granular das tarefas, seus respectivos responsáveis (Team Assignees), Story Points e status de execução encontram-se ativamente geridos no nosso painel do **Notion**. Ele serve como fonte da verdade oficial para a entrega ao professor e materialização contínua das responsabilidades. As seções abaixo resumem os escopos gerais e o que foi realizado em cada iteração:
+> **💡 Acompanhamento Online (Kanban):** O detalhamento granular das tarefas, responsáveis (Team Assignees), Story Points e status de execução estão geridos no painel do **Notion**, que serve como fonte da verdade oficial para a entrega ao professor.
+
+---
 
 ### Sprint 0 — Fundação (Semana 1) ✅ CONCLUÍDA
 
-**Foco:** Planejamento arquitetural e setup do ambiente base.  
-Trabalhamos a estruturação institucional de repositórios, documentação e modelagens. Adotamos o SCRUM para fragmentar o entendimento inicial do ecossistema e conceber o conceito do motor ARIANO. Estabelecemos a versão inicial do Design System (Blue Neon), criamos documentos de visão, selecionamos nossa stack principal e nivelamos o ambiente para os times de Frontend, Backend e Infraestrutura trabalharem de modo assíncrono.
+**Foco:** Planejamento arquitetural e setup do ambiente base.
 
-### Sprint 1 — Frontend + Visualização de Grafo (Semana 2-3) ✅ CONCLUÍDA
+**Entregas:**
+- Estruturação institucional de repositórios, documentação e modelagens
+- Adoção do SCRUM para fragmentar o entendimento inicial do ecossistema
+- Concepção do conceito do motor ARIANO (Precomputed Relational Intelligence)
+- Versão inicial do Design System (Blue Neon)
+- Documentos de visão, seleção da stack principal
+- Nivelamento do ambiente para times de Frontend, Backend e Infraestrutura trabalharem de modo assíncrono
 
-**Foco:** Interface de Usuário (UI) robusta e visualização fidedigna dos nós em simulação controlada.  
-O ciclo desta sprint validou nosso modelo abstrato num painel de visualização utilizável e analítico. Consolidando as dailies de alinhamento técnico, fechamos com sucesso a migração tecnológica para visualizadores em rede utilizando grafos interativos. Aplicamos também uma governança restrita de dados em Mock para limitação segura e previsível focando na performance de navegação dos sub-componentes visuais, garantindo os cenários de usabilidade planejados no Design Review. Na Sprint 4, a visualização é migrada para **NetworkX** (backend) com renderização React SVG (frontend), eliminando dependências JavaScript pesadas e integrando nativamente a detecção de Comunidades de Pensamento via `louvain_communities()`.
+---
 
-### Sprint 2 — Data Layer, APIs e Agentes IA (Semana 4-5) ✅ CONCLUÍDA
+### Sprint 1 — Frontend + Visualização de Grafo (Semanas 2-3) ✅ CONCLUÍDA
 
-**Foco:** Construir a "Core Engine" implementando agentes de inteligência artificial (LangChain + NVIDIA Nemotron 3 Super via OpenRouter) interligados com instâncias Neo4j.  
-O planejamento desta sprint engloba o nascimento do núcleo matemático do nosso Produto. As cerimônias se voltam para discutir e integrar o motor de inferência aos endpoints via FastAPI. Os agentes assumem a responsabilidade primária de interpretar os dados e arquitetarmos conexões lógicas e ponderadas sob comandos Cypher diretamente no Neo4j, conectando e ativando o banco de dados orientado a grafos.
+**Foco:** Interface de Usuário (UI) robusta e visualização fidedigna dos nós em simulação controlada.
 
-**Entregáveis técnicos da Sprint 2:**
+**Entregas:**
+- Migração tecnológica para visualizadores de rede com grafos interativos (force-directed)
+- Governança restrita de dados em Mock (20 entidades, permutações predeterminadas) para testabilidade previsível
+- Validação do modelo abstrato num painel de visualização utilizável e analítico
+
+> **Nota:** Na Sprint 4, a visualização foi migrada para **NetworkX** (backend) com renderização Canvas/React (frontend), eliminando dependências JavaScript pesadas e integrando nativamente a detecção de Comunidades via `louvain_communities()`.
+
+---
+
+### Sprint 2 — Data Layer, APIs e Agentes IA (Semanas 4-5) ✅ CONCLUÍDA
+
+**Foco:** Construir a "Core Engine" implementando agentes de IA (LangChain + NVIDIA Nemotron 3 Super via OpenRouter) interligados com o grafo via FastAPI.
+
+**Entregáveis técnicos:**
 - **ProfileAnalyzer:** Agente que extrai skills e classifica áreas acadêmicas via Nemotron 3 Super (com fallback rule-based)
-- **EditalInterpreter:** Agente que interpreta editais e extrai requisitos técnicos via Nemotron 3 Super
-- **EligibilityCalculator:** Agente principal que calcula scores multi-dimensionais (skill 45%, area 25%, level 15%, priority 15%) e cria arestas ELIGIBLE_FOR
+- **EditalInterpreter:** Agente que interpreta editais e extrai requisitos técnicos
+- **EligibilityCalculator:** Agente principal que calcula scores multi-dimensionais e cria arestas `ELIGIBLE_FOR`
 - **Match Engine:** Motor de consulta O(1) via Cypher puro sobre arestas pré-computadas
-- **Neo4j Driver Nativo:** Wrapper para execução de queries Cypher complexas
 - **Agent API Routes:** Endpoints REST completos para operações dos agentes
-- **Seed + Pipeline:** Script automatizado para popular banco e executar pipeline de agentes
+- **Seed + Pipeline:** Script automatizado para popular o grafo e executar o pipeline de agentes
 
-### Sprint 3 — Integração, Deploy e Security Hardening (Semana 5-6) ✅ CONCLUÍDA
+---
 
-**Foco:** Garantir execução global e proteção de dados sensíveis.  
-Finalizamos a integração total E2E, removendo mocks e estabilizando a comunicação via Axios. O grande marco foi o **Deploy Fullstack no Vercel**, onde configuramos um monorepo que hospeda tanto a lógica de IA (Python) quanto a interface. Implementamos camadas de segurança via **Environment Variables (Secrets)** para proteger as chaves do NVIDIA Nemotron, e refatoramos a estrutura de pastas movendo o core do app para a raiz, garantindo que o backend seja nativamente descoberto pelos ambientes de nuvem.
+### Sprint 3 — Integração, Deploy e Security Hardening (Semanas 5-6) ✅ CONCLUÍDA
 
-**Expectativas Cumpridas e Entregas (Sprint 3):**
-- **Integração Total:** Comunicação fluída entre interface React e motor FastAPI sem dependência de dados estáticos.
-- **Ambiente de Produção Vivo:** App acessível publicamente via Vercel com escalabilidade serverless.
-- **Segurança Blindada:** API Keys do OpenRouter/NVIDIA tratadas como segredos de infraestrutura, fora do versionamento.
-- **Robustez Pydantic:** Configurações de ambiente validadas e corrigidas para suporte a múltiplos contextos (Local vs Prod).
-- **Consolidação de Agentes:** Pipeline completo de análise → interpretação → matchmaking rodando em produção.
+**Foco:** Garantir execução global e proteção de dados sensíveis.
 
-### Sprint 4 — Inteligência Profunda, Portais & Experiência (Semana 7-8) ✅ CONCLUÍDA
+**Entregas:**
+- **Integração Total:** Comunicação fluída entre interface React e motor FastAPI sem dependência de dados estáticos
+- **Deploy Fullstack no Vercel:** Monorepo hospedando tanto a lógica de IA (Python) quanto a interface
+- **Segurança Blindada:** API Keys do OpenRouter/NVIDIA tratadas como segredos de infraestrutura, fora do versionamento
+- **Robustez Pydantic:** Configurações de ambiente validadas e corrigidas para suporte a múltiplos contextos (Local vs Prod)
+- **Consolidação de Agentes:** Pipeline completo de análise → interpretação → matchmaking rodando em produção
+
+---
+
+### Sprint 4 — Inteligência Profunda, Portais & Experiência (Semanas 7-8) ✅ CONCLUÍDA
 
 **Foco:** Transformar o ARIANO em um produto completo com dois portais (Usuário e Admin), autenticação, cadastro inteligente com match visível em tempo real, comunidades de pensamento e excelência visual.
 
 **Pilares e Entregas:**
 
 | Pilar | Entrega | Impacto |
-|-------|---------|--------|
-| 🔐 **Autenticação Dual** | Login com cookies JWT, dois perfis simultâneos (user + admin), popup persistente | Base para portais separados |
-| 🧠 **Inteligência Profunda** | Modelo de dados atualizado (bio, currículo, maturidade IA, o_que_busco IA) + agentes especialistas + orquestrador | IA determina automaticamente skills, áreas, maturidade e objetivos |
-| 🎯 **CORETO — Match Visível** | Cadastro com match estratégico em tempo real pela IA (não O(1)) — o usuário vê a IA trabalhando | **PRINCIPAL ENTREGA DO MVP** — demonstração viva em sala |
-| 👤 **Portal do Usuário** | /user/profile, /user/matchs (O(1)), /user/ecossistema (grafo pessoal) | Experiência personalizada para o académico |
-| 🔗 **Comunidades de Pensamento** | Ciclo de enriquecimento do grafo via Chain-of-Thought multi-agente | Grafo fica progressivamente mais inteligente |
-| ✨ **Excelência Visual** | Animações fluidas, polimento UX/UI, page transitions | Impacto visual máximo na apresentação |
+|-------|---------|---------|
+| 🔐 **Autenticação Dual** | Login com cookies JWT HttpOnly, dois perfis simultâneos (user + admin) | Base para portais separados |
+| 🧠 **Inteligência Profunda** | Modelo de dados atualizado + agentes especialistas + orquestrador Graph-CoT | IA determina automaticamente skills, áreas, maturidade e objetivos |
+| 🎯 **CORETO — Match Visível** | Cadastro com match estratégico em tempo real (não O(1)) — o usuário vê a IA trabalhando | **Principal entrega do MVP** — demonstração viva em sala |
+| 👤 **Portal do Usuário** | `/user/profile`, `/user/matchs` (O(1)), `/user/ecossistema` (grafo pessoal) | Experiência personalizada para o acadêmico |
+| 🔗 **Comunidades de Pensamento** | Ciclo de enriquecimento via Graph-CoT multi-agente | Grafo progressivamente mais inteligente |
+| ✨ **Excelência Visual** | Animações fluídas, polimento UX/UI, page transitions, breathing effects | Impacto visual máximo na apresentação |
 | 🔍 **Verificação Final** | Auditoria completa de UX/UI (10+ páginas, desktop + mobile) | Gate de qualidade antes da entrega |
 
-**Entregas técnicas detalhadas da Sprint 4:**
+**Detalhes técnicos:**
 
-1. **Modelo de Dados Atualizado + Engenharia de Prompt Avançada:**
-   - Novos campos: `bio` (descrição livre), `curriculo_url` (PDF), `maturidade` (0-10, IA), `o_que_busco` (IA)
+1. **Modelo de Dados Atualizado:**
+   - Novos campos: `bio`, `curriculo_texto` (PDF → texto via PyMuPDF), `maturidade` (0-10, IA), `o_que_busco` (IA)
    - Removidos: `lattes_url`, `level`. Renomeados: `agency` → `instituicao`, `min_level` → `min_maturidade`
-   - Novos agentes: `Orchestrator` (controle de fluxo), `ContextualAnalyzer` (análise profunda)
-   - Prompts especialistas com Chain-of-Thought — IA atribui skills e áreas automaticamente
-   - Scoring: skills(40%) + area(25%) + maturidade(15%) + priority(10%) + context(10%). `o_que_busco` como bônus, `funding` como desempate
+   - Scoring revisado: skills(40%) + area(25%) + maturidade(15%) + priority(10%) + context(10%)
 
 2. **Sistema de Autenticação:**
-   - Login popup com email/senha, cookies JWT HttpOnly (7 dias)
+   - Login popup com email/senha, cookies JWT HttpOnly (7 dias de validade)
    - Dois perfis simultâneos: `ariano_user` + `ariano_admin`
-   - Popup não pode ser ignorado (shake animation + campos vermelhos)
-   - Admin sem opção "Criar Conta" — conteúdo fica em loading se não logado
+   - Popup persistente com shake animation e validação visual
 
-3. **Página CORETO — Cadastro + Match Estratégico Visível em `/user/cadastro`:**
-   - Formulário tipo (Studante/Pesquisador/Professor) com campos adaptados por tipo
-   - SEM tags manuais — a IA extrai skills e áreas automaticamente do bio + currículo
+3. **Página CORETO (`/user/cadastro`):**
+   - Formulário adaptável por tipo (Estudante/Pesquisador/Professor)
+   - SEM seleção manual de tags — a IA extrai skills e áreas automaticamente
    - Pipeline visual mostrando cada agente processando em tempo real (com timing em ms)
-   - Grafo SVG (posições pre-computadas via NetworkX) animando a criação do nó e suas conexões enquanto IA trabalha
-   - Cards de resultado com score bars + justificativa
+   - Grafo SVG/Canvas animando a criação do nó e conexões enquanto a IA trabalha
 
 4. **Portal do Usuário (`/user/*`):**
-   - `/user/profile`: Visualizar/editar perfil. Mostra maturidade e o_que_busco (read-only IA)
-   - `/user/matchs`: Matches pessoais via O(1). Filtros: editais vs usuários similares
+   - `/user/profile`: Visualizar/editar perfil, exibe maturidade e `o_que_busco` (read-only, gerados por IA)
+   - `/user/matchs`: Matches pessoais via O(1) com filtros (editais vs usuários similares)
    - `/user/ecossistema`: Grafo pessoal (layout NetworkX) mostrando APENAS nós conectados ao usuário
 
 5. **Portal Admin (`/admin/*`):**
-   - Migração das páginas existentes: Dashboard, Acadêmicos, Editais, Matches, Grafo
-   - Nova página: `/admin/comunidades` (enriquecimento do grafo)
+   - Dashboard, Acadêmicos, Editais, Matches, Grafo (migrados)
+   - Nova página: `/admin/comunidades` (ciclo de enriquecimento manual)
 
 6. **Comunidades de Pensamento (`/admin/comunidades`):**
-   - Botão para executar ciclo manualmente (prod: cada 24h)
-   - Detecção de comunidades via NetworkX `louvain_communities()`, renderização React SVG
+   - Botão para executar ciclo manualmente (em produção: cada 24h via cron)
+   - Detecção de comunidades via NetworkX `louvain_communities()`, renderização React Canvas
    - Timeline do Orquestrador mostrando agentes em cadeia + scratchpad Graph-CoT visível
-   - Painel Before/After (ex: "72% → 88% (+16%)")
+   - Painel Before/After mostrando variação nos scores (ex: "72% → 88% (+16%)")
 
-7. **Animações + Polimento + Estabilização:**
-   - Breathing effect, pulse rings, edge drawing, page transitions
-   - Label collision, skeletons, toast notifications, error boundary
-
-8. **Verificação Final de UX/UI:**
-   - Auditoria visual de 10+ páginas (desktop + mobile)
-   - Simulação cronometrada da apresentação (5 min)
-   - Deploy final na Vercel
+---
 
 ### Sprint 5 — Deploy, Bugfixes e Polimento (Semana 9) ✅ CONCLUÍDA
 
-**Foco:** Refinamento geral da plataforma, resolução de débitos técnicos e otimização da experiência do usuário nas camadas de login e cadastro.
+**Foco:** Refinamento geral, resolução de débitos técnicos e otimização da experiência de autenticação e cadastro.
 
 **Entregas:**
-- Refatoração profunda do sistema de autenticação via API com proteção de rotas real (ProtectedRoute vs AuthPopup).
-- Ajustes de design global: harmonização do "Teal Neon" em todas as telas, implementação de glassmorphism unificado nos painéis laterais.
-- Atualização do projeto ARIANO Docs, incluindo consolidação da migração do monorepo.
-- Bugfix: Resolução de falhas críticas na criação de usuários com upload de currículo em PDF e conversão instantânea.
+- Refatoração profunda do sistema de autenticação via API com proteção de rotas real (`ProtectedRoute` vs `AuthPopup`)
+- Harmonização do tema "Teal Neon" em todas as telas, glassmorphism unificado nos painéis laterais
+- Atualização da documentação do projeto e consolidação da migração do monorepo
+- Bugfix: Resolução de falhas críticas na criação de usuários com upload de currículo PDF e conversão instantânea
+
+---
 
 ### Sprint 6 — Grafo de Alta Precisão & UX Avançada (Semana 10) ✅ CONCLUÍDA
 
 **Foco:** Transformar a visualização de comunidades (Graph-CoT) num painel de altíssima fidelidade estética e usabilidade impecável.
 
-**Pilares e Entregas Técnicas:**
-1. **Comunidades Orgânicas (Slime/Blob):** Implementação do cálculo matemático de Minkowski Sum para desenhar clusters de pensamento.
-2. **Textos à Prova de Falhas (Bulletproof Labels):** Uso de `ctx.clip()` no Canvas HTML5 garantindo que nenhum nome de nó transborde seu círculo.
-3. **Dinâmica de Foco e Glow (Neon Polish):** Nós selecionados recebem aumento de `shadowBlur`.
+**Entregas técnicas:**
+1. **Comunidades Orgânicas (Blob/Minkowski):** Implementação do cálculo matemático de Minkowski Sum para desenhar clusters de pensamento com bordas suaves
+2. **Labels Bulletproof:** Uso de `ctx.clip()` no Canvas HTML5 garantindo que nenhum nome de nó transborde seu círculo
+3. **Dinâmica de Foco e Glow:** Nós selecionados recebem aumento de `shadowBlur` proporcional à sua influência
+
+---
 
 ### Sprint 7 — Landing Page & Design Premium (Semana 11) ✅ CONCLUÍDA
 
 **Foco:** Criação de uma Landing Page impactante e refinamento da identidade visual global.
 
 **Entregas:**
-- Nova Landing Page interativa com motor de grafos 3D (Three.js).
-- Otimização de builds e code-splitting para performance máxima (Vercel).
-- Refinamento de tipografia e paleta de cores teal neon.
+- Nova Landing Page interativa com motor de grafos 3D (Three.js)
+- Otimização de builds e code-splitting para performance máxima no Vercel
+- Refinamento de tipografia e paleta de cores teal neon
+
+---
 
 ### Sprint 8 — IA Transparente & Pipeline Multi-Step (Semana 12) ✅ CONCLUÍDA
 
 **Foco:** Garantir que a inteligência artificial seja visível em tempo real e que a arquitetura seja resiliente ao ambiente serverless do Vercel.
 
-**Entregas Técnicas:**
-1. **Pipeline de IA Multi-Step:** Substituição do polling genérico por uma sequência de chamadas síncronas (`/v2/analyze`, `/v2/extract`, `/v2/match`), garantindo transparência total do processo cognitivo.
-2. **Grafo Dinâmico em Tempo Real:** O componente `MiniGraphAnimation` agora renderiza nodes reais extraídos pela LLM durante o cadastro, eliminando dados mockados.
-3. **Resiliência Serverless (Stateless):** Implementação de persistência de contexto via payload síncrono, evitando perda de estado durante o processamento da IA.
-4. **Auto-Auth Robusto:** Correção do fluxo de redirecionamento pós-cadastro com delay de 1.5s para sincronização de cookies JWT no Vercel.
-5. **Data de Conclusão:** 02/05/2026 às 02:35.
-
-**Pilares e Entregas Técnicas:**
-1. **Status API:** Endpoint para rastrear o progresso dos agentes em tempo real.
-2. **Polling de Cognição:** O frontend agora "escuta" os pensamentos da IA (scratchpad) e os exibe dinamicamente.
-3. **Persistência de Sessão:** Refatoração do fluxo de cookies para garantir auto-login estável pós-cadastro.
-4. **Matches Dinâmicos:** Substituição total de mocks por resultados injetados pela IA em tempo real.
+**Entregas técnicas:**
+1. **Pipeline de IA Multi-Step:** Substituição do polling genérico por sequência de chamadas síncronas (`/v2/analyze`, `/v2/extract`, `/v2/match`), garantindo transparência total do processo cognitivo
+2. **Grafo Dinâmico em Tempo Real:** Componente `MiniGraphAnimation` renderiza nós reais extraídos pela LLM durante o cadastro, eliminando dados mockados
+3. **Resiliência Serverless (Stateless):** Implementação de persistência de contexto via payload síncrono, evitando perda de estado durante o processamento da IA
+4. **Auto-Auth Robusto:** Correção do fluxo de redirecionamento pós-cadastro com delay de 1.5s para sincronização de cookies JWT no Vercel
 
 ---
 
 ## 9. Critérios de Aceite (Definition of Done)
 
-O MVP será considerado **Done** quando:
+O MVP é considerado **Done** quando todos os critérios abaixo são atendidos:
+
+### Critérios Core (MVP)
 
 - [x] Grafo populado com ≥ 15 acadêmicos + ≥ 8 editais + arestas configuradas por agentes
-- [x] Agentes IA (NVIDIA Nemotron 3 via OpenRouter) criam e configuram o grafo (nós, arestas, pesos) antes do match
+- [x] Agentes de IA (NVIDIA Nemotron 3 via OpenRouter) criam e configuram o grafo (nós, arestas, pesos) antes do match
 - [x] Match instantâneo e robusto com endpoints de backend integrados com Frontend
-- [x] Execução nativa zero-config (A API e Grafo executam no Memory Database O(1))
+- [x] Execução zero-config (API e grafo executam no MemoryGraphStore O(1))
 - [x] Deploy Fullstack funcional em URL pública (Vercel)
 - [x] Gestão de Segredos (API Keys) via Environment Variables segura
 - [x] Frontend otimizado com dashboard, cadastro e visualizador de grafo interativo 100% dinâmicos
-- [x] CI/CD testado
-- [x] Design consistente com tema azul neon (Blue Neon Edition)
-- [x] Campos bio, currículo (upload PDF → texto extraído via PyMuPDF, PDF descartado), maturidade (IA) e o_que_busco (IA) funcionais (Sprint 4)
-- [x] Autenticação com cookies JWT + dual login (user + admin simultaneamente) (Sprint 4)
-- [x] Página CORETO com cadastro + match estratégico visível em tempo real (Sprint 4)
-- [x] Portal Usuário: Profile, Matchs O(1), Ecossistema em /user/* (Sprint 4)
-- [x] Portal Admin: todas páginas existentes sob /admin/* (Sprint 4)
-- [x] Graph-CoT Primitives (graph_tools.py) operacionais (Sprint 4)
-- [x] Comunidades de Pensamento com Graph-CoT iterativo funcional em /admin/comunidades (Sprint 4)
-- [x] Verificação final de UX/UI aprovada (10+ páginas, desktop + mobile) (Sprint 4)
-- [x] Auth routes unificadas e login popup non-intrusive (Sprint 5)
-- [x] Bugfixes de sessão e re-estilização global no tema Teal Neon (Sprint 5)
-- [ ] Renderização orgânica de CoTs (Minkowski Sum) e labels contidos via clipping em Canvas (Sprint 6)
-- [ ] Centralização inteligente de nodes com viewport real, zoom contextual e menu em cascata (Esc) (Sprint 6)
-- [ ] Navegação em-grafo via ligações do side panel + filtros dinâmicos de tipo e visibilidade (Sprint 6)
+- [x] CI/CD testado via GitHub Actions
+- [x] Design consistente com tema Teal Neon Edition
+
+### Critérios Sprint 4 (Inteligência & Portais)
+
+- [x] Campos `bio`, `curriculo_texto` (upload PDF → texto via PyMuPDF, PDF descartado), `maturidade` (IA) e `o_que_busco` (IA) funcionais
+- [x] Autenticação com cookies JWT + dual login (user + admin simultâneos)
+- [x] Página CORETO com cadastro + match estratégico visível em tempo real
+- [x] Portal Usuário: Profile, Matches O(1), Ecossistema em `/user/*`
+- [x] Portal Admin: todas páginas existentes sob `/admin/*`
+- [x] Graph-CoT Primitives (`graph_tools.py`) operacionais
+- [x] Comunidades de Pensamento com Graph-CoT iterativo funcional em `/admin/comunidades`
+- [x] Verificação final de UX/UI aprovada (10+ páginas, desktop + mobile)
+
+### Critérios Sprint 5 (Polimento & Estabilização)
+
+- [x] Auth routes unificadas e login popup non-intrusive
+- [x] Bugfixes de sessão e re-estilização global no tema Teal Neon
+
+### Critérios Sprint 6-8 (UX Avançada & IA Transparente)
+
+- [x] Pipeline multi-step de IA transparente e visível ao usuário
+- [x] Grafo dinâmico com dados reais da LLM durante cadastro
+- [x] Landing page Three.js com motor de grafos 3D
+
+### Em Roadmap (Backlog)
+
+- [ ] Renderização orgânica de CoTs (Minkowski Sum) e labels contidos via clipping em Canvas
+- [ ] Centralização inteligente de nodes com viewport real, zoom contextual e menu em cascata (Esc)
+- [ ] Navegação em-grafo via ligações do side panel + filtros dinâmicos de tipo e visibilidade
 
 ---
 
@@ -857,96 +917,113 @@ O MVP será considerado **Done** quando:
 
 ```text
 ProjetoARIANO/
-├── .github/workflows/ci.yml
-├── app/                               # ⚙️ BACKEND
-│   ├── main.py
-│   ├── agents/
-│   │   ├── __init__.py                # Registry de contextos (Graph-CoT config)
-│   │   ├── profile_analyzer.py        # Graph-CoT sequencial: bio+CV → scratchpad → maturidade, skills
-│   │   ├── edital_interpreter.py
-│   │   ├── eligibility_calculator.py  # Scoring contextual + node_degree
-│   │   ├── orchestrator.py            # 🆕 Orquestrador Graph-CoT aware
-│   │   └── contextual_analyzer.py     # 🆕 Graph-CoT iterativo: Thought→Action→Observation
-│   ├── api/
-│   │   ├── routes.py                  # CRUD (campos atualizados)
-│   │   ├── agent_routes.py
-│   │   └── auth_routes.py             # 🆕 Login/Register/Logout
-│   ├── core/
-│   │   ├── config.py
-│   │   ├── database.py
-│   │   ├── neo4j_driver.py            # Deep context queries
-│   │   └── graph_tools.py             # 🆕 Primitivas Graph-CoT: retrieve_node, node_feature, neighbour_check, node_degree
-│   ├── models/
-│   │   ├── graph.py                   # Neomodel (novos campos)
-│   │   └── schemas.py                 # Pydantic (novos campos)
-│   └── services/
-│       ├── crud.py
-│       ├── pdf_extractor.py               # 🆕 PyMuPDF (fitz) — PDF upload → texto extraído, PDF descartado
-│       ├── graph_visualizer.py            # 🆕 NetworkX: layout + comunidades → JSON para React SVG
-│       ├── match_engine.py                # Deadline filter: WHERE e.deadline > date()
-│       ├── seed_native.py
-│       └── seed_and_configure.py
+├── .github/
+│   └── workflows/
+│       └── ci.yml                     # CI/CD: lint, tests, deploy check
 ├── api/
-│   └── index.py                       # 🚀 Vercel serverless
-├── frontend/
+│   └── index.py                       # 🚀 Entry point Vercel serverless
+├── app/                               # ⚙️ BACKEND
+│   ├── agents/
+│   │   ├── __init__.py                # Registry de contextos Graph-CoT
+│   │   ├── profile_analyzer.py        # Graph-CoT sequencial: bio+CV → maturidade, skills, o_que_busco
+│   │   ├── edital_interpreter.py      # Interpretação de editais: requisitos e áreas
+│   │   ├── eligibility_calculator.py  # Scoring multi-dimensional + arestas ELIGIBLE_FOR
+│   │   ├── orchestrator.py            # Controle de fluxo e ordem de ativação dos agentes
+│   │   └── contextual_analyzer.py     # Graph-CoT iterativo: Thought→Action→Observation
+│   ├── api/
+│   │   ├── routes.py                  # Endpoints CRUD de entidades (acadêmicos, editais)
+│   │   ├── agent_routes.py            # Endpoints de pipeline de agentes (/v2/analyze, /v2/match)
+│   │   └── auth_routes.py             # Login / Register / Logout (JWT cookies)
+│   ├── core/
+│   │   ├── config.py                  # Configurações e variáveis de ambiente (Pydantic Settings)
+│   │   ├── database.py                # Inicialização do MemoryGraphStore
+│   │   ├── neo4j_driver.py            # Queries de contexto profundo (deep context, N-hop)
+│   │   └── graph_tools.py             # Primitivas Graph-CoT: retrieve_node, node_feature,
+│   │                                  #   neighbour_check, node_degree
+│   ├── models/
+│   │   ├── graph.py                   # Modelos Neomodel (nós e arestas com todos os campos)
+│   │   └── schemas.py                 # Schemas Pydantic (validação de entrada/saída da API)
+│   └── services/
+│       ├── crud.py                    # Operações CRUD sobre o grafo
+│       ├── pdf_extractor.py           # PyMuPDF (fitz): PDF upload → curriculo_texto, PDF descartado
+│       ├── graph_visualizer.py        # NetworkX: layout + comunidades Louvain → JSON para React
+│       ├── match_engine.py            # Consulta O(1) com filtro de deadline ativo
+│       ├── seed_native.py             # Seed com dados de exemplo (acadêmicos + editais)
+│       └── seed_and_configure.py      # Seed + pipeline completo de agentes
+├── frontend/                          # 🎨 FRONTEND
 │   ├── src/
-│   │   ├── App.tsx                    # Rotas /user/* + /admin/*
+│   │   ├── App.tsx                    # Rotas: /user/* e /admin/*
 │   │   ├── contexts/
-│   │   │   └── AuthContext.tsx         # 🆕 Auth dual
+│   │   │   └── AuthContext.tsx        # Auth global com dual profile (user + admin)
 │   │   ├── components/
 │   │   │   ├── layout/
-│   │   │   │   ├── UserSidebar.tsx     # 🆕 Menu usuário
-│   │   │   │   └── AdminSidebar.tsx    # 🆕 Menu admin
-│   │   │   ├── AuthPopup.tsx           # 🆕 Login popup
-│   │   │   ├── ProtectedRoute.tsx      # 🆕 Guard de rota
-│   │   │   ├── AgentProcessingTimeline.tsx
-│   │   │   ├── MiniGraph.tsx
-│   │   │   └── EmptyState.tsx
+│   │   │   │   ├── UserSidebar.tsx    # Navegação do Portal Usuário
+│   │   │   │   └── AdminSidebar.tsx   # Navegação do Portal Admin
+│   │   │   ├── AuthPopup.tsx          # Modal de login persistente
+│   │   │   ├── ProtectedRoute.tsx     # Guard de rota (redireciona se não autenticado)
+│   │   │   ├── AgentProcessingTimeline.tsx  # Timeline visual do pipeline de agentes
+│   │   │   ├── MiniGraph.tsx          # Visualizador de grafo em miniatura (Canvas)
+│   │   │   └── EmptyState.tsx         # Componente de estado vazio
 │   │   ├── hooks/
-│   │   │   ├── useAuth.ts             # 🆕
-│   │   │   └── useAgentPipeline.ts    # 🆕
+│   │   │   ├── useAuth.ts             # Hook de autenticação
+│   │   │   └── useAgentPipeline.ts    # Hook para polling do pipeline de IA
 │   │   ├── pages/
-│   │   │   ├── user/                  # 🆕 PORTAL USUÁRIO
-│   │   │   │   ├── CadastroPage.tsx   # CORETO registration
-│   │   │   │   ├── ProfilePage.tsx
-│   │   │   │   ├── MatchsPage.tsx     # O(1) queries
-│   │   │   │   └── EcossistemaPage.tsx # Grafo pessoal
-│   │   │   └── admin/                 # PORTAL ADMIN
-│   │   │       ├── DashboardPage.tsx
-│   │   │       ├── AcademicosPage.tsx
-│   │   │       ├── EditaisPage.tsx
-│   │   │       ├── MatchesPage.tsx
-│   │   │       ├── GrafoPage.tsx
-│   │   │       └── ComunidadesPage.tsx # 🆕
-│   │   ├── lib/api.ts
-│   │   └── types/index.ts
+│   │   │   ├── user/                  # Portal do Acadêmico (/user/*)
+│   │   │   │   ├── CadastroPage.tsx   # Cadastro CORETO + match estratégico em tempo real
+│   │   │   │   ├── ProfilePage.tsx    # Perfil do usuário (visualizar/editar)
+│   │   │   │   ├── MatchsPage.tsx     # Matches pessoais O(1)
+│   │   │   │   └── EcossistemaPage.tsx # Grafo pessoal (ego-network)
+│   │   │   └── admin/                 # Portal Administrador (/admin/*)
+│   │   │       ├── DashboardPage.tsx  # Visão geral do sistema
+│   │   │       ├── AcademicosPage.tsx # Gerenciar acadêmicos
+│   │   │       ├── EditaisPage.tsx    # Gerenciar editais
+│   │   │       ├── MatchesPage.tsx    # Ver todos os matches
+│   │   │       ├── GrafoPage.tsx      # Visualizador do grafo completo
+│   │   │       └── ComunidadesPage.tsx # Ciclo de enriquecimento + detecção Louvain
+│   │   ├── lib/
+│   │   │   └── api.ts                 # Cliente Axios configurado com interceptors
+│   │   └── types/
+│   │       └── index.ts               # Tipos TypeScript: Entity, Match, Skill, Area...
 │   └── package.json
 ├── Prototype v0/                      # 📋 DOCUMENTAÇÃO
-│   ├── Docs/01_DOCUMENTO_PROJETO_ARIANO.md
-│   └── implementation_plan.md
-├── vercel.json
-└── README.md
+│   └── Docs/
+│       ├── 01_DOCUMENTO_PROJETO_ARIANO.md   # Este arquivo — visão, arquitetura e roadmap
+│       └── 02_RELATORIO_FINAL_ACADEMICO.md  # Relatório formal para banca da UNINASSAU
+├── .env.example                       # Template de variáveis de ambiente
+├── .gitignore
+├── requirements.txt                   # Dependências Python
+├── vercel.json                        # Configuração de deploy Vercel (rotas e rewrites)
+└── README.md                          # Guia rápido de início
 ```
 
 ---
 
 ## 11. Ferramentas e Qualidade
 
-| Ferramenta | Propósito | Quando Executa |
-|------------|-----------|---------------|
-| **ESLint** | Linting JS/TS | A cada push/PR |
+| Ferramenta | Propósito | Quando executa |
+|-----------|-----------|----------------|
+| **ESLint** | Linting JavaScript/TypeScript | A cada push/PR |
 | **Prettier** | Formatação de código | Pre-commit (Husky) |
-| **Ruff** | Linting Python | A cada push/PR |
-| **Pytest** | Testes unitários/integração (backend) | A cada push/PR |
+| **Ruff** | Linting Python (substitui flake8 + isort + black) | A cada push/PR |
+| **Pytest** | Testes unitários e de integração (backend) | A cada push/PR |
 | **Vitest** | Testes unitários (frontend) | A cada push/PR |
-| **Commitlint** | Padronização de commits | Pre-commit |
+| **Commitlint** | Padronização de commits (Conventional Commits) | Pre-commit |
 
 ### Conventional Commits
 
-```
+O projeto adota o padrão **Conventional Commits** para histórico de git legível e changelogs automatizados:
+
+```bash
+# Formato
+<type>(<scope>): <description>
+
+# Exemplos
 feat(agent): adicionar ProfileAnalyzer para classificação de skills
 fix(graph): corrigir cálculo de pesos nas arestas ELIGIBLE_FOR
 docs(readme): atualizar instruções de setup
+refactor(api): extrair lógica de auth para módulo separado
+test(eligibility): adicionar testes unitários para score calculation
+chore(deps): atualizar NetworkX para 3.3.0
 ```
 
 ---
@@ -955,11 +1032,13 @@ docs(readme): atualizar instruções de setup
 
 | Risco | Probabilidade | Impacto | Mitigação |
 |-------|--------------|---------|-----------|
-| Latência na API do OpenRouter | Média | Médio | Cache de respostas, fallback rule-based, mock para dev |
-| Complexidade do ForceAtlas2 | Baixa | Alto | Configurações adaptativas por tamanho do grafo |
-| Neo4j Community sem features enterprise | Baixa | Baixo | Todas features necessárias estão na Community |
-| Latência no cálculo de layout NetworkX | Baixa | Baixo | spring_layout é O(n²) mas grafo ARIANO tem <200 nós — layout computa em <50ms. Cache de posições no backend. |
-| Tempo de desenvolvimento solo | Alta | Alto | MVP enxuto, priorização rigorosa |
+| Latência na API do OpenRouter | Média | Médio | Cache de respostas de agentes, fallback rule-based, modo mock para desenvolvimento |
+| Perda de estado em ambiente serverless Vercel | Baixa | Alto | Persistência atômica via Vercel KV (Redis) com sincronização em cada escrita |
+| Tempo limite de Serverless Functions (10s Vercel) | Média | Alto | Pipeline assíncrono via polling, chamadas `/v2/analyze` e `/v2/match` separadas |
+| Complexidade do layout ForceAtlas2 | Baixa | Alto | Configurações adaptativas por tamanho do grafo; fallback para `spring_layout` |
+| Latência no cálculo de layout NetworkX | Baixa | Baixo | `spring_layout` é O(n²) mas o grafo ARIANO tem <200 nós — compute <50ms; cache de posições por 5min no backend |
+| Expiração de chaves gratuitas do OpenRouter | Média | Alto | Configuração de API Key via variável de ambiente facilita rotação; tier gratuito do Nemotron tem quotas generosas |
+| Escalabilidade do MemoryGraphStore | Baixa (MVP) | Alto (Prod) | Para MVP, <500 nós é suficiente; para produção, migrar para Neo4j AuraDB mantendo a mesma interface Cypher |
 
 ---
 
@@ -967,63 +1046,79 @@ docs(readme): atualizar instruções de setup
 
 | Termo | Definição |
 |-------|-----------|
-| **ARIANO** | Arquitetura de Inteligência Artificial Naturalmente Ordenada |
-| **CORETO** | Conexões para Revolução Empreendedora e Tecnológica Online — Plataforma de matchmaking da Prefeitura do Recife |
+| **ARIANO** | Arquitetura de Inteligência Artificial Naturalmente Ordenada — motor de matchmaking inteligente |
+| **CORETO** | Conexões para Revolução Empreendedora e Tecnológica Online — plataforma de matchmaking da Prefeitura do Recife |
 | **Knowledge Graph** | Grafo de conhecimento — estrutura de dados com nós e arestas tipados. Formalmente: `G = (V, E, R)` |
-| **Adjacência livre de índice** | Propriedade de grafos onde navegar entre nós vizinhos é O(1) |
-| **Cypher** | Linguagem de consulta declarativa do Neo4j |
-| **ELIGIBLE_FOR** | Aresta de match no grafo — conecta acadêmico a edital com score |
-| **SIMILAR_TO** | Aresta de enriquecimento — conecta acadêmicos com perfis afins (Sprint 4) |
-| **RELATED_TO** | Aresta de enriquecimento — conecta skills complementares que co-ocorrem em perfis bem-sucedidos (Sprint 4) |
-| **maturidade** | Grau de 0 a 10 atribuído automaticamente pela IA ao perfil acadêmico, baseado em bio, currículo e contexto do grafo (Sprint 4) |
-| **o_que_busco** | Texto gerado pela IA descrevendo os objetivos inferidos do perfil acadêmico, usado como bônus no scoring (Sprint 4) |
-| **curriculo_texto** | Texto extraído automaticamente do PDF do currículo via PyMuPDF (fitz). O PDF é descartado após extração (Sprint 4) |
-| **Graph-CoT** | Graph Chain-of-Thought — paradigma de raciocínio iterativo sobre grafos onde o LLM decide dinamicamente quais nós visitar e quando parar (Sprint 4) |
-| **Cognitive RAG** | Retrieval-Augmented Generation com processos cognitivos bio-inspirados: atenção seletiva, memória de trabalho e raciocínio inferencial (Sprint 4) |
-| **Scratchpad** | Memória de trabalho do agente — rascunho progressivo de raciocínio visível em cada iteração do Graph-CoT (Sprint 4) |
-| **ReAct** | Paradigma Reasoning + Acting — loop `Thought → Action → Observation` usado pelos agentes Graph-CoT (Yao et al., 2023) |
-| **Primitivas do Grafo** | Funções de interação com o grafo: RetrieveNode, NodeFeature, NeighbourCheck, NodeDegree |
+| **Adjacência livre de índice** | Propriedade de grafos onde navegar entre nós vizinhos é O(1), independente do volume total de dados |
+| **Cypher** | Linguagem de consulta declarativa do Neo4j para grafos de propriedades |
+| **MemoryGraphStore** | Motor de grafo in-memory implementado em Python, usado no backend para processamento O(1) |
+| **ELIGIBLE_FOR** | Aresta de match no grafo — conecta acadêmico a edital com score e justificativa |
+| **SIMILAR_TO** | Aresta de enriquecimento — conecta acadêmicos com perfis afins (criada pelo ContextualAnalyzer) |
+| **RELATED_TO** | Aresta de enriquecimento — conecta skills complementares que co-ocorrem em perfis bem-sucedidos |
+| **OVERLAPS_WITH** | Aresta de enriquecimento — conecta áreas com sobreposição semântica |
+| **maturidade** | Grau de 0 a 10 atribuído automaticamente pela IA ao perfil acadêmico, baseado em bio, currículo e contexto do grafo |
+| **o_que_busco** | Texto gerado pela IA descrevendo os objetivos inferidos do perfil acadêmico, usado como bônus no scoring |
+| **curriculo_texto** | Texto extraído automaticamente do PDF do currículo via PyMuPDF (fitz). O PDF é descartado após extração |
+| **Graph-CoT** | Graph Chain-of-Thought — paradigma de raciocínio iterativo sobre grafos onde o LLM decide dinamicamente quais nós visitar e quando parar |
+| **Cognitive RAG** | Retrieval-Augmented Generation com processos cognitivos bio-inspirados: atenção seletiva, memória de trabalho e raciocínio inferencial |
+| **Scratchpad** | Memória de trabalho do agente — rascunho progressivo de raciocínio visível em cada iteração do Graph-CoT |
+| **ReAct** | Paradigma Reasoning + Acting — loop `Thought → Action → Observation` (Yao et al., 2023) |
+| **Primitivas do Grafo** | Funções de interação com o grafo usadas pelos agentes: `RetrieveNode`, `NodeFeature`, `NeighbourCheck`, `NodeDegree` |
 | **Halting Condition** | Critério de suficiência — o agente decide autonomamente quando tem informação suficiente para parar o loop cognitivo |
-| **Comunidades de Pensamento** | Clusters de afinidade no grafo criados pelo ContextualAnalyzer via Graph-CoT iterativo (Sprint 4) |
-| **Chain-of-Thought (CoT)** | Técnica de raciocínio em cadeia onde o agente IA processa informações passo a passo |
-| **Agente Orquestrador** | Agente que controla a ordem e ativação dos demais agentes baseado no fluxo e estado do grafo (Sprint 4) |
-| **Context Bonus** | Componente do score de match derivado do contexto expandido do grafo (vizinhos indiretos, comunidades) |
-| **Engenharia de Prompt** | Técnica de configurar instruções especializadas para LLMs atuarem com expertise em domínios específicos |
-| **Portal do Usuário** | Interface personalizada em /user/* onde o acadêmico vê seu perfil, matches e ecossistema individual (Sprint 4) |
-| **Portal Admin** | Interface administrativa em /admin/* com visão completa do sistema: dashboard, grafo, comunidades (Sprint 4) |
-| **Precomputed Relational Intelligence** | Filosofia central do ARIANO: IA configura o grafo offline, consultas são O(1) online |
-| **ForceAtlas2** | Algoritmo de layout force-directed para posicionar nós em grafos |
-| **NetworkX** | Biblioteca Python de análise de grafos (v3.x) — usada no backend para layout computation (`spring_layout`, `forceatlas2_layout`), detecção de comunidades (`louvain_communities`), e análise de centralidade. Frontend recebe posições pré-computadas via API |
-| **React SVG** | Renderização leve de grafos no frontend — posições pré-computadas pelo NetworkX, com interatividade (hover, click, zoom) via React + Framer Motion |
-| **SVG Filters** | Filtros SVG para efeitos visuais como glow neon nos nós do grafo |
-| **LangChain** | Framework para orquestração de LLMs e construção de agentes IA |
-| **PyMuPDF (fitz)** | Biblioteca Python para extração de texto de arquivos PDF em <100ms |
-| **MVP** | Minimum Viable Product — produto mínimo viável |
-| **SCRUM** | Framework ágil para gerenciamento de projetos |
-| **Sprint** | Ciclo de desenvolvimento iterativo (1-2 semanas) |
-| **DoD** | Definition of Done — critérios de aceite de uma entrega |
+| **Comunidades de Pensamento** | Clusters de afinidade no grafo criados pelo ContextualAnalyzer via Graph-CoT iterativo |
+| **Agente Orquestrador** | Agente que controla a ordem e ativação dos demais agentes baseado no fluxo e estado do grafo |
+| **Context Bonus** | Componente adicional do score de match derivado do contexto expandido do grafo (vizinhos indiretos, comunidades) |
+| **Precomputed Relational Intelligence** | Filosofia central do ARIANO: IA configura o grafo offline (custoso), consultas são O(1) online (instantâneas) |
+| **Quádrupla Hélice** | Modelo de inovação sistêmica com quatro pilares: Academia, Governo, Indústria e Sociedade Civil (Carayannis & Campbell, 2009) |
+| **NetworkX** | Biblioteca Python de análise de grafos (v3.x) — usada no backend para layout (`spring_layout`), detecção de comunidades (`louvain_communities`) e análise de centralidade |
+| **Louvain** | Algoritmo de detecção de comunidades em grafos que maximiza a modularidade da rede |
+| **ForceAtlas2** | Algoritmo de layout force-directed para posicionamento de nós em grafos com base em forças de atração/repulsão |
+| **LangChain** | Framework Python para orquestração de LLMs, agentes com ferramentas, memória e chains complexas |
+| **PyMuPDF (fitz)** | Biblioteca Python de alto desempenho para extração de texto de arquivos PDF (<100ms por documento) |
+| **JWT** | JSON Web Token — padrão para transmissão segura de informações de autenticação como cookies HttpOnly |
+| **MVP** | Minimum Viable Product — produto mínimo viável com as funcionalidades essenciais |
+| **SCRUM** | Framework ágil para gerenciamento de projetos com sprints iterativos |
+| **DoD** | Definition of Done — critérios objetivos que determinam quando uma entrega está completa |
+| **Hop-N** | Profundidade de traversal no grafo: Hop-0 = nó único, Hop-1 = vizinhos diretos, Hop-2 = vizinhos dos vizinhos |
+| **Vercel KV** | Serviço Redis gerenciado da Vercel, usado para persistência do grafo entre invocações serverless |
+| **OpenRouter** | Gateway unificado para APIs de LLM com compatibilidade OpenAI — usado para acessar o NVIDIA Nemotron |
+| **Neomodel** | OGM (Object Graph Mapper) Python para Neo4j — usado para modelagem declarativa dos nós e arestas |
 
 ---
 
 ## Referências
 
 1. **GitNexus** — Motor de inteligência de código com knowledge graphs. Disponível em: https://gitnexus.vercel.app/
+
 2. **Neo4j** — Banco de dados de grafos. Disponível em: https://neo4j.com/
-3. **NetworkX** — Biblioteca Python de análise e visualização de grafos. Layouts: spring_layout, forceatlas2_layout, kamada_kawai_layout. Comunidades: louvain_communities, girvan_newman. Disponível em: https://networkx.org/
+
+3. **NetworkX** — Biblioteca Python de análise e visualização de grafos. Layouts: `spring_layout`, `forceatlas2_layout`, `kamada_kawai_layout`. Comunidades: `louvain_communities`, `girvan_newman`. Disponível em: https://networkx.org/
+
 4. **Labcodes — Graph Databases com Python** — Referência visual para grafos acadêmicos. Disponível em: https://labcodes.com.br/blog/pt-br/development/graph-databases-discutindo-o-relacionamento-dos-seus-dados-com-python/
+
 5. **FastAPI** — Framework web moderno para Python. Disponível em: https://fastapi.tiangolo.com/
+
 6. **LangChain** — Framework de orquestração de LLMs. Disponível em: https://python.langchain.com/
+
 7. **NVIDIA Nemotron 3 Super** — Modelo LLM 120B MoE (12B ativo), arquitetura híbrida Mamba-Transformer, 1M context window. Disponível via OpenRouter em: https://openrouter.ai/nvidia/nemotron-3-super-120b-a12b:free
+
 8. **OpenRouter** — Gateway unificado para APIs de LLM com compatibilidade OpenAI. Disponível em: https://openrouter.ai/
-9. **Cognitive-RAG** (Reddy, N., 2024) — A RAG model using graph data for improved question answering through cognition. Implementação de referência do paradigma Graph Chain-of-Thought (Graph-CoT) com loop iterativo Thought-Action-Observation sobre grafos de conhecimento. Disponível em: https://github.com/Nikhilreddy024/Cognitive-RAG
-10. **ReAct: Synergizing Reasoning and Acting in Language Models** (Yao, S. et al., 2023) — Paradigma que combina raciocínio e ação em LLMs, base teórica para o loop Thought-Action-Observation usado no Graph-CoT. arXiv:2210.03629
-11. **Carayannis, E. G. & Campbell, D. F. J.** (2009) — "Mode 3 and Quadruple Helix: toward a 21st century fractal innovation ecosystem." International Journal of Technology Management, 46(3/4), 201–234. Fundamentação teórica do modelo de Quádrupla Hélice implementado no CORETO.
-12. **Etzkowitz, H. & Leydesdorff, L.** (1995) — "The Triple Helix: University-Industry-Government Relations." EASST Review, 14(1), 14–19. Modelo original de Tríplice Hélice expandido pelo CORETO.
-13. **Baddeley, A. D. & Hitch, G.** (1974) — "Working Memory." Psychology of Learning and Motivation, 8, 47–89. Analogia cognitiva para o scratchpad do Graph-CoT (memória de trabalho dos agentes).
-14. **Maynez, J. et al.** (2020) — "On Faithfulness and Factuality in Abstractive Summarization." ACL 2020. Referência sobre o problema de alucinação em LLMs que motiva o uso de Graph-CoT.
+
+9. **Cognitive-RAG** (Reddy, N., 2024) — A RAG model using graph data for improved question answering through cognition. Implementação de referência do paradigma Graph Chain-of-Thought (Graph-CoT) com loop iterativo Thought-Action-Observation. Disponível em: https://github.com/Nikhilreddy024/Cognitive-RAG
+
+10. **ReAct: Synergizing Reasoning and Acting in Language Models** (Yao, S. et al., 2023) — Paradigma que combina raciocínio e ação em LLMs, base teórica para o loop Thought-Action-Observation do Graph-CoT. arXiv:2210.03629
+
+11. **Carayannis, E. G. & Campbell, D. F. J.** (2009) — "Mode 3 and Quadruple Helix: toward a 21st century fractal innovation ecosystem." *International Journal of Technology Management*, 46(3/4), 201–234.
+
+12. **Etzkowitz, H. & Leydesdorff, L.** (1995) — "The Triple Helix: University-Industry-Government Relations." *EASST Review*, 14(1), 14–19.
+
+13. **Baddeley, A. D. & Hitch, G.** (1974) — "Working Memory." *Psychology of Learning and Motivation*, 8, 47–89.
+
+14. **Maynez, J. et al.** (2020) — "On Faithfulness and Factuality in Abstractive Summarization." *ACL 2020*.
+
 15. **PyMuPDF (fitz)** — Biblioteca Python de alto desempenho para extração de texto de PDFs (<100ms por documento). Disponível em: https://pymupdf.readthedocs.io/
 
 ---
 
-> **Este documento é um guia vivo atualizado a cada sprint.**  
-> **Última atualização:** 16/04/2026 — Sprint 4 (Graph-CoT Híbrido, Cognitive RAG, NetworkX Visualization, Autenticação, Portal Usuário/Admin, CORETO, Comunidades de Pensamento, Engenharia de Prompt Avançada)
+> **Este documento é um guia vivo atualizado a cada sprint.**
+> **Última atualização:** 04/06/2026 — v13.0.0 (Revisão geral de documentação, correções de formatação e complementação de seções)

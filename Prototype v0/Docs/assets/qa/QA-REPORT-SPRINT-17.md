@@ -34,5 +34,6 @@ Este QA validou a implementação do **Pipeline Asíncrono** e das **Otimizaçõ
 ## 🏆 Conclusão
 O sistema ARIANO atingiu um nível de maturidade arquitetural que permite escalabilidade sem degradar a experiência do usuário. A separação entre **Persistência Rápida** e **Processamento Cognitivo em Background** é agora o padrão ouro da plataforma.
 
-**Assinado:** Antigravity (IA Assistant)
+**Assinado:** Thiago José Falcão de Freitas (Scrum Master / QA)
+**Otimizações de Backend:** Pedro Miranda (DevOps / Back-End Developer)
 **Data:** 05/05/2026

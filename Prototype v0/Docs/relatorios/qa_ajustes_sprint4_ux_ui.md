@@ -1,6 +1,7 @@
 # 📑 Relatório de QA e Plano de Ajustes: UX/UI do Cadastro CORETO
 > **Localização:** `Prototype v0/Docs/relatorios/qa_ajustes_sprint4_ux_ui.md`
 > **Contexto:** Análise diferencial entre a página de Cadastro implementada (`CadastroPage.tsx` e `CognitionExperience.tsx`) e a documentação técnica (Documento de Projeto e Implementation Plan).
+> **Responsável:** Marcio Maycom (UX UI Designer / Front-End Developer)
 
 ---
 

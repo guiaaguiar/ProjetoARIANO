@@ -1,95 +1,130 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/status-MVP_v1_Online-green?style=for-the-badge" alt="Status: MVP v1 Online" />
-  <img src="https://img.shields.io/badge/versão-v1.0.0-informational?style=for-the-badge" alt="Versão: v1.0.0" />
-  <img src="https://img.shields.io/badge/UNINASSAU-Tópicos_Integradores-purple?style=for-the-badge" alt="UNINASSAU" />
+  <img src="https://img.shields.io/badge/status-MVP_v1_Online-22c55e?style=for-the-badge&labelColor=020810" alt="Status: MVP v1 Online" />
+  <img src="https://img.shields.io/badge/versão-v1.0.0-0ea5e9?style=for-the-badge&labelColor=020810" alt="Versão: v1.0.0" />
+  <img src="https://img.shields.io/badge/UNINASSAU-Tópicos_Integradores-8b5cf6?style=for-the-badge&labelColor=020810" alt="UNINASSAU" />
+  <img src="https://img.shields.io/badge/deploy-Vercel-black?style=for-the-badge&logo=vercel&labelColor=020810" alt="Deploy: Vercel" />
 </p>
 
 <h1 align="center">AR.I.A.N.O</h1>
 
 <p align="center">
   <strong><b>AR</b>quitetura de <b>I</b>nteligência <b>A</b>rtificial <b>N</b>aturalmente <b>O</b>rdenada</strong><br/>
-  O Core do Matchmaking Inteligente para a plataforma <strong>CORETO</strong>
+  O motor de Matchmaking Inteligente da plataforma <strong>CORETO</strong>
 </p>
 
 <p align="center">
-  <em>Conectando Academia e Governo através de grafos de conhecimento e agentes de IA</em>
+  <em>Conectando Academia e Governo através de grafos de conhecimento e agentes de IA cognitiva</em>
 </p>
 
 ---
 
 ## 📋 Sobre o Projeto
 
-O **ARIANO** é o módulo de **matchmaking inteligente** da plataforma **CORETO** — uma plataforma digital da Prefeitura do Recife que conecta os quatro pilares da **quádrupla hélice da inovação**: Academia, Governo, Indústria e Sociedade Civil.
+O **ARIANO** é o módulo de **matchmaking inteligente** da plataforma **CORETO** — uma iniciativa digital da Prefeitura do Recife (SECTI Recife) que conecta os quatro pilares da **quádrupla hélice da inovação**: Academia, Governo, Indústria e Sociedade Civil.
 
-Este repositório contém o **MVP (Minimum Viable Product)** do ARIANO, focado exclusivamente no matchmaking entre **Academia ↔ Governo**.
+Este repositório contém o **MVP (Minimum Viable Product)** do ARIANO, focado exclusivamente no matchmaking entre **Academia ↔ Governo**: perfis acadêmicos (estudantes, pesquisadores, professores) e editais de fomento governamentais.
 
-### 🎯 O que o ARIANO faz?
+> **Contexto acadêmico:** Projeto desenvolvido para a disciplina de Tópicos Integradores — 7º Período, UNINASSAU Graças — Recife/PE, Semestre 2026.1.
 
-1. **Recebe** perfis acadêmicos (alunos, pesquisadores, professores) e editais governamentais (FACEPE, CNPq, etc.)
-2. **Agentes de IA** interpretam, classificam e enriquecem esses dados
-3. **Configuram um grafo** de conhecimento (Neo4j) com relacionamentos ponderados
-4. **Matches instantâneos** via Cypher query O(1) sobre o grafo pré-configurado
+---
 
-> **Filosofia-chave:** Os agentes de IA **não fazem** o match diretamente. Eles **preparam o grafo** — o match é apenas uma query sobre adjacência livre de índice.
+## 🎯 O que o ARIANO faz?
 
+O ARIANO opera em **três fases distintas**:
 
-<div align="center">
-  <img src="https://img.shields.io/badge/STACK_ARIANO-v0-E91E63?style=for-the-badge&logo=rocket" alt="Stack Ariano v0">
-</div>
+| Fase | Nome | O que acontece |
+|------|------|----------------|
+| **1** | Cadastro + Match Estratégico | Agentes de IA leem o perfil do acadêmico (bio + currículo PDF), extraem skills e áreas automaticamente, calculam scores e criam arestas ponderadas no grafo — visível ao usuário em tempo real |
+| **2** | Enriquecimento Contínuo | O `ContextualAnalyzer` percorre o grafo completo, identifica clusters de afinidade e cria novas conexões (`SIMILAR_TO`, `RELATED_TO`), re-calibrando todos os scores |
+| **3** | Consulta O(1) | O usuário já cadastrado consulta seus matches via query Cypher direta — sem IA, sem custo, em milissegundos |
 
-<br />
+> **Filosofia central — Precomputed Relational Intelligence:** Os agentes de IA **não fazem o match diretamente**. Eles **preparam e configuram o grafo** — o match em si é apenas uma query sobre adjacência livre de índice, resultando em latência O(1) independente do volume de dados.
+
+---
+
+## 🏗️ Arquitetura em Alto Nível
+
+```
+┌─────────────────────────────────────────┐
+│          FRONTEND (Vite + React 18)     │
+│  /user/*  (Portal Acadêmico)            │
+│  /admin/* (Portal Administrador)        │
+│  Comunicação via REST + Axios           │
+└──────────────────┬──────────────────────┘
+                   │ REST API
+┌──────────────────▼──────────────────────┐
+│         BACKEND (Python + FastAPI)      │
+│  ┌─────────────────────────────────┐    │
+│  │   AGENTES DE IA (LangChain)     │    │
+│  │  ProfileAnalyzer                │    │
+│  │  EditalInterpreter              │    │
+│  │  EligibilityCalculator          │    │
+│  │  ContextualAnalyzer (Graph-CoT) │    │
+│  │  Orchestrator                   │    │
+│  └─────────────────────────────────┘    │
+│  Match Engine (Cypher O(1))             │
+│  Auth (JWT Cookies)                     │
+└──────────────────┬──────────────────────┘
+                   │ In-Memory + Vercel KV
+┌──────────────────▼──────────────────────┐
+│   DATA LAYER — "Cérebro" do ARIANO      │
+│   MemoryGraphStore (Python) + Redis KV  │
+│   Formato: JSON Serialized Graph        │
+└─────────────────────────────────────────┘
+```
+
+O grafo de conhecimento modela o ecossistema com os seguintes tipos de relacionamento:
+
+| Aresta | Descrição |
+|--------|-----------|
+| `HAS_SKILL` | Acadêmico possui competência |
+| `RESEARCHES_AREA` | Acadêmico pesquisa área |
+| `REQUIRES_SKILL` | Edital requer competência |
+| `TARGETS_AREA` | Edital foca em área |
+| `ELIGIBLE_FOR` | **Aresta de match** — acadêmico elegível para edital (com score e justificativa) |
+| `SIMILAR_TO` | Afinidade entre perfis acadêmicos (enriquecimento) |
+| `RELATED_TO` | Skills complementares que co-ocorrem (enriquecimento) |
+
+---
+
+## 🛠️ Stack Tecnológica
 
 <table width="100%">
   <tr>
     <td width="50%" valign="top">
       <h3>🎨 Frontend</h3>
-      <img src="https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white" />
+      <img src="https://img.shields.io/badge/Vite_5-646CFF?style=flat-square&logo=vite&logoColor=white" />
       <img src="https://img.shields.io/badge/React_18-61DAFB?style=flat-square&logo=react&logoColor=black" />
       <img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white" />
       <img src="https://img.shields.io/badge/Tailwind_v4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" />
       <br />
-      <img src="https://img.shields.io/badge/D3.js_v7-F9A03C?style=flat-square&logo=d3.js&logoColor=white" />
       <img src="https://img.shields.io/badge/Framer_Motion-0055FF?style=flat-square&logo=framer&logoColor=white" />
-      <img src="https://img.shields.io/badge/React_Router_7-CA4245?style=flat-square&logo=react-router&logoColor=white" />
+      <img src="https://img.shields.io/badge/Recharts-22B5BF?style=flat-square" />
+      <img src="https://img.shields.io/badge/react--force--graph-FFB13B?style=flat-square" />
       <ul>
-        <li><b>Visualização:</b> Grafo Interativo (SVG + Force Simulation)</li>
-        <li><b>UI:</b> SVG Filters (Neon Glow) & Curved Edges</li>
-        <li><b>Tipografia:</b> Outfit + JetBrains Mono</li>
-        <li><b>Forms:</b> React Hook Form + Zod</li>
+        <li><b>Visualização:</b> Grafo interativo (SVG + Force Graph / Canvas)</li>
+        <li><b>UI:</b> Animações com Framer Motion, gráficos com Recharts</li>
+        <li><b>Tipografia:</b> Outfit (sans) + JetBrains Mono (mono)</li>
+        <li><b>Tema:</b> Dark "Teal Neon" com glassmorphism</li>
+        <li><b>Experiência:</b> Cinematográfica — dark/light mode</li>
       </ul>
     </td>
     <td width="50%" valign="top">
-      <h3>⚙️ Backend</h3>
+      <h3>⚙️ Backend & Dados</h3>
       <img src="https://img.shields.io/badge/Python_3.12-3776AB?style=flat-square&logo=python&logoColor=white" />
       <img src="https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white" />
       <br />
       <img src="https://img.shields.io/badge/LangChain-1C3C3C?style=flat-square&logo=langchain&logoColor=white" />
-      <img src="https://img.shields.io/badge/NVIDIA_Nemotron-76B900?style=flat-square&logo=nvidia&logoColor=white" />
-      <img src="https://img.shields.io/badge/OpenRouter-6562F5?style=flat-square&logo=openrouter&logoColor=white" />
+      <img src="https://img.shields.io/badge/NVIDIA_Nemotron_3-76B900?style=flat-square&logo=nvidia&logoColor=white" />
+      <img src="https://img.shields.io/badge/NetworkX_3.x-orange?style=flat-square" />
+      <img src="https://img.shields.io/badge/Vercel_KV_(Redis)-000000?style=flat-square&logo=vercel&logoColor=white" />
       <ul>
-        <li><b>Orquestração:</b> LangGraph (Agentes IA)</li>
-        <li><b>LLM:</b> NVIDIA Nemotron 3 Super (via OpenRouter)</li>
-        <li><b>Integração:</b> FastAPI + Neomodel</li>
-        <li><b>Deploy:</b> Vercel Fullstack (Monorepo)</li>
-      </ul>
-    </td>
-  </tr>
-  <tr>
-    <td width="50%" valign="top">
-      <h3>🗄️ Banco de Dados</h3>
-      <img src="https://img.shields.io/badge/Neo4j_5.x-4581C3?style=flat-square&logo=neo4j&logoColor=white" />
-      <ul>
-        <li>Graph Database (Community)</li>
-        <li>Relacionamentos complexos em tempo real</li>
-      </ul>
-    </td>
-    <td width="50%" valign="top">
-      <h3>🔧 DevOps</h3>
-      <img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white" />
-      <img src="https://img.shields.io/badge/GitHub_Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white" />
-      <ul>
-        <li>Docker Compose (Orquestração local)</li>
-        <li>CI/CD Automatizado</li>
+        <li><b>LLM:</b> NVIDIA Nemotron 3 Super 120B via OpenRouter</li>
+        <li><b>Agentes:</b> LangChain com Graph-CoT (Thought→Action→Observation)</li>
+        <li><b>Grafo:</b> MemoryGraphStore + NetworkX (layout, comunidades)</li>
+        <li><b>Persistência:</b> Vercel KV (Redis) — resolvendo stateless serverless</li>
+        <li><b>PDF:</b> PyMuPDF (fitz) — extração de currículo em &lt;100ms</li>
+        <li><b>Deploy:</b> Vercel Fullstack (Backend Serverless + Frontend SPA)</li>
       </ul>
     </td>
   </tr>
@@ -97,75 +132,202 @@ Este repositório contém o **MVP (Minimum Viable Product)** do ARIANO, focado e
 
 ---
 
+## 🚀 Como Rodar o Projeto
 
+### Pré-requisitos
 
-### Fluxo de Dados
+| Ferramenta | Versão mínima | Observação |
+|-----------|---------------|------------|
+| Node.js | v18+ | Para o frontend |
+| Python | 3.12+ | Para o backend |
+| pip | — | Gerenciador de pacotes Python |
 
+### 1. Clonar o repositório
+
+```bash
+git clone https://github.com/<seu-usuario>/ProjetoARIANO.git
+cd ProjetoARIANO
 ```
-FASE 1 — Configuração (offline, assíncrono)
-  Cadastro → API → Agente IA → Interpreta/Classifica → Cria nós+arestas no Neo4j
 
-FASE 2 — Match (online, instantâneo)
-  Request → Cypher: MATCH (a)-[r:ELIGIBLE_FOR]->(e) WHERE r.score >= 0.7 → Resultado O(1)
+### 2. Configurar variáveis de ambiente
+
+Copie o arquivo de exemplo e preencha suas chaves:
+
+```bash
+cp .env.example app/.env
 ```
+
+Edite `app/.env` com os seguintes valores:
+
+```env
+# Chave de API do OpenRouter (acesso ao NVIDIA Nemotron 3)
+OPENROUTER_API_KEY=sk-or-...
+
+# Credenciais do Vercel KV (Redis) — para persistência do grafo
+KV_REST_API_URL=https://...
+KV_REST_API_TOKEN=...
+
+# Segredo para assinatura de cookies JWT
+JWT_SECRET=seu_segredo_aqui
+
+# Ambiente de execução
+ENVIRONMENT=development
+```
+
+> ⚠️ **Nunca commite o arquivo `.env`** — ele já está no `.gitignore`.
+
+### 3. Instalar e rodar o Backend
+
+```bash
+cd app
+python -m venv venv
+
+# Linux/macOS
+source venv/bin/activate
+
+# Windows
+venv\Scripts\activate
+
+pip install -r ../requirements.txt
+uvicorn api.index:app --reload --host 0.0.0.0 --port 8000
+```
+
+A API estará disponível em: `http://localhost:8000`  
+Documentação interativa (Swagger): `http://localhost:8000/docs`
+
+### 4. Instalar e rodar o Frontend
+
+Em um novo terminal:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+O frontend estará disponível em: `http://localhost:5173`
+
+### 5. Popular o grafo (seed inicial)
+
+Com o backend rodando, execute o seed para popular o grafo com dados de exemplo:
+
+```bash
+# No terminal do backend (com venv ativado)
+python -m app.services.seed_native
+```
+
+Isso cria ≥15 acadêmicos, ≥8 editais e executa o pipeline de agentes para configurar as arestas.
 
 ---
 
-## 🏗️ Status Atual
-
-| Fase | Status | Descrição |
-|------|--------|-----------|
-| 📐 Planejamento | ✅ Concluído | Visão do produto, arquitetura, stack, design system |
-| 📋 Levantamento de Requisitos | ✅ Concluído | User Stories, Product Backlog, DoD |
-| 🎨 Design Reference | ✅ Concluído | Referência de Design e paletas Blue Neon ajustadas |
-| 🛠️ Plano de Implementação | ✅ Concluído | Roadmap de 4 sprints construído, modelo MVC escalonado |
-| 💻 Sprint 0 — Fundação | ✅ Concluído | Setup do repo e de ecossistema local configurado |
-| 📊 Sprint 1 — UI & Web Grafo| ✅ Concluído | Frontend consolidado (D3.js), Data Mock de nós refinada |
-| 🤖 Sprint 2 — Data & Agentes | ✅ Concluído | Modelagem Neo4j, Agentes IA Python, APIs CRUD |
-| 🚀 Sprint 3 — Deploy & Prod | ✅ Concluído | Deploy Fullstack Vercel, Security Hardening, Refactor |
-| ✨ Sprint 4 — Expansão | ⬜ Pendente | Novos eixos (Indústria), animações fluidas, polimento |
-
----
-
-## 📂 Estrutura do Repositório
+## 📁 Estrutura do Repositório
 
 ```text
-├── app/                   # ⚙️ Código do Backend (IA Agents + Logic)
-├── api/                   # 🚀 Entrypoint Vercel (Production)
-├── frontend/              # 🎨 Código do Frontend (React)
-├── requirements.txt       # Dependências GLOBAIS
-├── vercel.json            # Configuração de Deploy Fullstack
-├── Prototype v0/          # 📋 Documentação e Histórico
-│   ├── Docs/              # Documentos Detalhados
-│   │   ├── assets/        # Análises e Screenshots (ex: QA Sprint 3)
-│   │   └── arquivos apresentacao/ 
-│   └── implementation_plan.md
-└── README.md              # 📖 Este arquivo
+ProjetoARIANO/
+├── .github/workflows/ci.yml        # CI/CD com GitHub Actions
+├── api/
+│   └── index.py                    # Entry point Vercel (serverless)
+├── app/                            # ⚙️ BACKEND
+│   ├── agents/
+│   │   ├── profile_analyzer.py     # Extrai skills/áreas via Graph-CoT sequencial
+│   │   ├── edital_interpreter.py   # Interpreta requisitos de editais
+│   │   ├── eligibility_calculator.py # Scoring multi-dimensional + arestas ELIGIBLE_FOR
+│   │   ├── contextual_analyzer.py  # Graph-CoT iterativo: clusters, SIMILAR_TO
+│   │   └── orchestrator.py         # Controla ordem e fluxo dos agentes
+│   ├── api/
+│   │   ├── routes.py               # Endpoints CRUD de entidades
+│   │   ├── agent_routes.py         # Endpoints de pipeline de agentes
+│   │   └── auth_routes.py          # Login / Register / Logout
+│   ├── core/
+│   │   ├── config.py               # Configurações e variáveis de ambiente
+│   │   ├── database.py             # Inicialização do grafo in-memory
+│   │   ├── neo4j_driver.py         # Queries de contexto profundo
+│   │   └── graph_tools.py          # Primitivas Graph-CoT (retrieve_node, etc.)
+│   ├── models/
+│   │   ├── graph.py                # Modelos Neomodel (nós e arestas)
+│   │   └── schemas.py              # Schemas Pydantic (validação de entrada/saída)
+│   └── services/
+│       ├── crud.py                 # Operações CRUD sobre o grafo
+│       ├── pdf_extractor.py        # PyMuPDF: PDF → texto (PDF descartado)
+│       ├── graph_visualizer.py     # NetworkX: layout + comunidades → JSON
+│       ├── match_engine.py         # Consulta O(1) com filtro de deadline
+│       ├── seed_native.py          # Seed de dados de exemplo
+│       └── seed_and_configure.py   # Seed + pipeline completo de agentes
+├── frontend/                       # 🎨 FRONTEND
+│   ├── src/
+│   │   ├── App.tsx                 # Rotas /user/* e /admin/*
+│   │   ├── contexts/
+│   │   │   └── AuthContext.tsx     # Auth global (dual profile)
+│   │   ├── components/
+│   │   │   ├── layout/
+│   │   │   │   ├── UserSidebar.tsx
+│   │   │   │   └── AdminSidebar.tsx
+│   │   │   ├── AuthPopup.tsx       # Modal de login
+│   │   │   ├── ProtectedRoute.tsx  # Guard de rota
+│   │   │   ├── AgentProcessingTimeline.tsx  # Timeline visual dos agentes
+│   │   │   ├── MiniGraph.tsx       # Visualizador de grafo em miniatura
+│   │   │   └── EmptyState.tsx
+│   │   ├── hooks/
+│   │   │   ├── useAuth.ts
+│   │   │   └── useAgentPipeline.ts
+│   │   ├── pages/
+│   │   │   ├── user/               # Portal do Acadêmico
+│   │   │   │   ├── CadastroPage.tsx    # Cadastro CORETO + match em tempo real
+│   │   │   │   ├── ProfilePage.tsx
+│   │   │   │   ├── MatchsPage.tsx      # Matches O(1)
+│   │   │   │   └── EcossistemaPage.tsx # Grafo pessoal
+│   │   │   └── admin/              # Portal Administrador
+│   │   │       ├── DashboardPage.tsx
+│   │   │       ├── AcademicosPage.tsx
+│   │   │       ├── EditaisPage.tsx
+│   │   │       ├── MatchesPage.tsx
+│   │   │       ├── GrafoPage.tsx
+│   │   │       └── ComunidadesPage.tsx # Ciclo de enriquecimento
+│   │   ├── lib/api.ts              # Cliente Axios configurado
+│   │   └── types/index.ts          # Tipos TypeScript (Entity, Match, Skill...)
+│   └── package.json
+├── Prototype v0/                   # 📋 DOCUMENTAÇÃO
+│   └── Docs/
+│       ├── 01_DOCUMENTO_PROJETO_ARIANO.md   # Visão, arquitetura e roadmap
+│       └── 02_RELATORIO_FINAL_ACADEMICO.md  # Relatório de entrega acadêmica
+├── requirements.txt                # Dependências Python
+├── vercel.json                     # Configuração de deploy Vercel
+└── README.md                       # Este arquivo
 ```
 
 ---
 
-## 🎨 Design — Blue Neon Edition
+## 🔌 Principais Endpoints da API
 
-O design do ARIANO explora a complexidade orgânica e viva de grafos densos através de customizações da infraestrutura provida pelo **D3.js**. Baseamos nossa elegância analítica e visual moderno no repositório de excelência [GitNexus](https://github.com/abhigyanpatwari/GitNexus), transportando os tons para um ambiente tipicamente tecnológico ("Azul Neon").
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| `POST` | `/api/auth/register` | Cadastrar novo usuário acadêmico |
+| `POST` | `/api/auth/login` | Login (retorna cookie JWT) |
+| `POST` | `/api/auth/logout` | Logout (invalida cookie) |
+| `GET` | `/api/academics` | Listar todos os acadêmicos |
+| `POST` | `/api/academics` | Criar acadêmico (com upload de currículo PDF) |
+| `GET` | `/api/editais` | Listar editais ativos (deadline > hoje) |
+| `POST` | `/api/editais` | Criar edital governamental |
+| `GET` | `/api/matches/{uid}` | Matches O(1) para um acadêmico |
+| `POST` | `/api/agents/analyze` | Executar pipeline de análise de perfil |
+| `POST` | `/api/agents/enrich` | Executar ciclo de enriquecimento do grafo |
+| `GET` | `/api/graph/layout` | Layout do grafo (posições NetworkX) |
+| `GET` | `/api/graph/communities` | Comunidades de Pensamento detectadas |
 
-| Token | Cor | Uso |
-|-------|-----|-----|
-| `--color-void` | `#020810` | Background principal |
-| `--color-surface` | `#0a1420` | Superfícies de painéis |
-| `--color-accent` | `#0ea5e9` | Accent azul neon (sky-500) |
-| `--color-accent-glow` | `#38bdf8` | Efeito glow (sky-400) |
+Documentação interativa completa disponível em `/docs` (Swagger UI) com o backend rodando.
 
-### Cores dos Nós do Grafo
+---
 
-| Entidade | Cor | Hex |
-|----------|-----|-----|
-| 🏛️ Edital | Azul Neon | `#0ea5e9` |
-| 🎓 Student | Cyan | `#06b6d4` |
-| 🔬 Researcher | Emerald | `#10b981` |
-| 👨‍🏫 Professor | Amber | `#f59e0b` |
-| 📚 Skill | Violet | `#8b5cf6` |
-| 🔬 Area | Indigo | `#6366f1` |
+## 🏃 Status Atual
+
+O MVP está **concluído** (Sprint Definitiva), operando com:
+
+- ✅ **UX Premium** — Dark "Teal Neon", animações Framer Motion, grafo interativo
+- ✅ **Deploy Fullstack na Vercel** — Backend serverless + Frontend SPA no mesmo monorepo
+- ✅ **Resiliência Serverless** — Vercel KV (Redis) elimina perda de estado entre invocações
+- ✅ **IA em Tempo Real** — Pipeline multi-agente visível ao usuário durante o cadastro
+- ✅ **Autenticação Dual** — Perfis simultâneos `user` e `admin` com cookies JWT HttpOnly
+- ✅ **Comunidades de Pensamento** — Graph-CoT iterativo + detecção via NetworkX Louvain
 
 ---
 
@@ -173,13 +335,35 @@ O design do ARIANO explora a complexidade orgânica e viva de grafos densos atra
 
 | Documento | Descrição | Link |
 |-----------|-----------|------|
-| **Documento do Projeto** | Histórico consolidado do MVP, arquitetura e design vision. | [`Docs/01_DOCUMENTO_PROJETO_ARIANO.md`](Prototype%20v0/Docs/01_DOCUMENTO_PROJETO_ARIANO.md) |
-| **Plano de Implementação** | Stack final e roadmap iteracional de entrega. | [`implementation_plan.md`](Prototype%20v0/implementation_plan.md) |
-| **Análise QA Sprint 3** | Relatório técnico de auditoria e performance. | [`Docs/assets/Analise QA Sprint 3.md`](Prototype%20v0/Docs/assets/Analise%20QA%20Sprint%203.md) |
+| **Documento do Projeto** | Visão, arquitetura detalhada, fundamentação teórica e roadmap de sprints | [`01_DOCUMENTO_PROJETO_ARIANO.md`](Prototype%20v0/Docs/01_DOCUMENTO_PROJETO_ARIANO.md) |
+| **Relatório Final Acadêmico** | Relatório formal de entrega para a banca da UNINASSAU | [`02_RELATORIO_FINAL_ACADEMICO.md`](Prototype%20v0/Docs/02_RELATORIO_FINAL_ACADEMICO.md) |
+
+---
+
+## 🔧 Ferramentas de Qualidade
+
+| Ferramenta | Propósito | Quando executa |
+|-----------|-----------|----------------|
+| **ESLint** | Linting TypeScript/JavaScript | A cada push/PR |
+| **Prettier** | Formatação de código | Pre-commit (Husky) |
+| **Ruff** | Linting Python | A cada push/PR |
+| **Pytest** | Testes do backend | A cada push/PR |
+| **Vitest** | Testes do frontend | A cada push/PR |
+| **Commitlint** | Padronização de commits (Conventional Commits) | Pre-commit |
+
+**Convenção de commits:**
+
+```
+feat(agent): adicionar ProfileAnalyzer para classificação de skills
+fix(graph): corrigir cálculo de pesos nas arestas ELIGIBLE_FOR
+docs(readme): atualizar instruções de setup
+```
 
 ---
 
 ## 👥 Equipe
+
+**Instituição:** UNINASSAU Graças — Recife/PE | Tópicos Integradores | 2026.1
 
 | Nome | Matrícula | Papel |
 |------|-----------|-------|
@@ -191,19 +375,6 @@ O design do ARIANO explora a complexidade orgânica e viva de grafos densos atra
 
 ---
 
-## 🎓 Informações Acadêmicas
-
-| Campo | Detalhe |
-|-------|---------|
-| **Instituição** | UNINASSAU Graças — Recife/PE |
-| **Disciplina** | Tópicos Integradores |
-| **Período** | 7º Período — 2026.1 |
-| **Metodologia** | SCRUM (adaptado para contexto acadêmico) |
-
----
-
 ## 📄 Licença
 
-Este projeto é desenvolvido no contexto acadêmico da UNINASSAU Graças.
-
----
+Este projeto é desenvolvido no contexto acadêmico da UNINASSAU Graças. Todos os direitos reservados à equipe e à instituição.

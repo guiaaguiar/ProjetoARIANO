@@ -42,5 +42,5 @@ O objetivo deste QA foi validar a transição para a arquitetura de **Persistên
 ## 🏁 Conclusão
 O ARIANO agora possui uma infraestrutura **Zero-Dependency** e **Não-Efêmera**. A estabilidade do backend e a fluidez do frontend confirmam que o sistema está pronto para uso real.
 
-**Assinado:** Antigravity (IA Assistant)
+**Assinado:** Thiago José Falcão de Freitas (Scrum Master / QA)
 **Data:** 05/05/2026

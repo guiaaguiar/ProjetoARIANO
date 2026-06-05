@@ -2,7 +2,7 @@
 
 ## Resumo do Teste
 **Data:** 07/05/2026
-**Responsável:** Agente QA (Browser Subagent)
+**Responsável:** Thiago José Falcão de Freitas (Scrum Master / QA)
 **Ambiente:** Produção (Vercel)
 **Objetivo:** Validar a estabilização do fluxo de registro e experiência de cognição após refatorações no backend e frontend.
 

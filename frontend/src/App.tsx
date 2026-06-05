@@ -33,7 +33,7 @@ export default function App() {
   }, [checkAuth]);
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+    <ThemeProvider attribute="class" defaultTheme="dark">
       <BrowserRouter>
         <AppBackground />
         <Toaster theme="dark" position="top-right" />

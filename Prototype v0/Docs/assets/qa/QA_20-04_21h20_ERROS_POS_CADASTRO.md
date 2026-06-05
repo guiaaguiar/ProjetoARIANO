@@ -44,5 +44,5 @@
 ### Conclusão do Analista
 A UX de cadastro foi estabilizada visualmente, mas há uma quebra na entrega de valor subsequente. O usuário é atraído por uma animação de alta qualidade, mas encontra placeholders ao tentar explorar os resultados.
 
-**QA Responsável:** Antigravity (AI Assistant)
+**QA Responsável:** Marcio Maycom (UX UI Designer / Front-End Developer)
 **Referência:** Sprint 4 — Finalização de Ecossistema

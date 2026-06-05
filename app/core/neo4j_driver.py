@@ -22,8 +22,8 @@ _driver = None
 # ═══════════════════════════════════════════
 
 @retry(
-    stop=stop_after_attempt(3),
-    wait=wait_exponential(multiplier=1, min=1, max=5),
+    stop=stop_after_attempt(2),
+    wait=wait_exponential(multiplier=0.5, min=0.5, max=2),
     retry=retry_if_exception_type(Exception),
     reraise=True,
 )
@@ -35,8 +35,10 @@ def _connect() -> Any:
     driver = GraphDatabase.driver(
         settings.neo4j_uri,
         auth=(settings.neo4j_user, settings.neo4j_password),
-        connection_timeout=10.0,
-        max_connection_lifetime=300,
+        keep_alive=True,
+        max_connection_lifetime=200,
+        max_connection_pool_size=50,
+        connection_acquisition_timeout=10.0,
     )
     with driver.session() as session:
         session.run("RETURN 1").single()
@@ -48,24 +50,65 @@ def get_driver() -> Any:
     """Return the Neo4j driver singleton.
 
     Raises:
-        HTTPException 500 — if the Neo4j Aura connection cannot be established.
+        HTTPException 503 — if NEO4J_URI is not configured (missing env var).
+        HTTPException 503 — if the Neo4j Aura connection cannot be established.
     """
     global _driver
     if _driver is not None:
-        return _driver
+        try:
+            _driver.verify_connectivity()
+            return _driver
+        except Exception as e:
+            logger.warning(f"Neo4j connection lost in warm start ({e}). Reconnecting silenciosamente...")
+            try:
+                _driver.close()
+            except Exception:
+                pass
+            _driver = None
+
+    from app.core.config import settings
+
+    if not settings.neo4j_configured:
+        logger.error(
+            "[MISSING_ENV_VARS] get_driver() chamado mas NEO4J_URI não está configurado. "
+            "Defina NEO4J_URI, NEO4J_USER e NEO4J_PASSWORD nas variáveis de ambiente da Vercel."
+        )
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "[MISSING_ENV_VARS] Conexão com Neo4j Aura não configurada. "
+                "As variáveis NEO4J_URI, NEO4J_USER e NEO4J_PASSWORD devem ser definidas "
+                "nas variáveis de ambiente da Vercel (Settings → Environment Variables)."
+            ),
+        )
+
     try:
         _driver = _connect()
         return _driver
     except Exception as exc:
+        try:
+            from neo4j.exceptions import AuthError
+            is_auth_error = isinstance(exc, AuthError) or "authentication failure" in str(exc).lower()
+        except ImportError:
+            is_auth_error = "authentication failure" in str(exc).lower()
+
+        if is_auth_error:
+            logger.error(f"❌ Falha de credenciais no Neo4j: {exc}")
+            raise HTTPException(
+                status_code=503,
+                detail="Banco de dados temporariamente inacessível por falha de credenciais. Contate o suporte."
+            )
+
         logger.error(f"❌ Neo4j Aura unreachable after retries: {exc}")
         raise HTTPException(
-            status_code=500,
+            status_code=503,
             detail=(
                 "Neo4j Aura está inacessível. "
                 "Verifique as variáveis NEO4J_URI / NEO4J_USER / NEO4J_PASSWORD "
                 f"e a conectividade de rede. Detalhe: {exc}"
             ),
         )
+
 
 
 def close_driver() -> None:
@@ -95,6 +138,19 @@ def run_cypher(query: str, params: dict | None = None) -> list[dict]:
     except HTTPException:
         raise
     except Exception as exc:
+        try:
+            from neo4j.exceptions import AuthError
+            is_auth_error = isinstance(exc, AuthError) or "authentication failure" in str(exc).lower()
+        except ImportError:
+            is_auth_error = "authentication failure" in str(exc).lower()
+            
+        if is_auth_error:
+            logger.error(f"❌ Falha de credenciais no Neo4j durante query: {exc}")
+            raise HTTPException(
+                status_code=503,
+                detail="Banco de dados temporariamente inacessível por falha de credenciais. Contate o suporte."
+            )
+
         logger.error(f"Cypher query failed: {exc}\nQuery: {query[:200]}")
         raise HTTPException(status_code=500, detail=f"Cypher query failed: {exc}")
 

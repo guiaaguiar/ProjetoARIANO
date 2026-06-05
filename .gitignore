@@ -48,3 +48,13 @@ lovable_temp/
 
 .env.production.local
 .env.vercel
+
+# Custom Exclusions
+.antigravity/
+.antigravitycli/
+.agent/
+doc_env/
+generate_docx.py
+*.docx
+tree.txt
+vercel-deploy.log

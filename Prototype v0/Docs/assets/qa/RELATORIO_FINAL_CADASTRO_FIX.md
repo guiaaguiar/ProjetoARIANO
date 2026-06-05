@@ -1,5 +1,7 @@
 # 🏆 Relatório Final de QA e Entrega: Cadastro CORETO v2.0
-**Data:** 18/04/2026 às 20h35
+**Data:** 18/04/2026 às 20h35  
+**Responsável Frontend/UX:** Marcio Maycom (UX UI Designer / Front-End Developer)  
+**Responsável Backend:** Pedro Miranda (DevOps / Back-End Developer)  
 **Status:** ✅ Homologado para Produção (Vercel)
 
 Este documento resume as correções técnicas de alto impacto realizadas para sanar os problemas de UX e performance identificados na rodada anterior de testes na Vercel.
