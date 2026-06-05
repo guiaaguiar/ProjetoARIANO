@@ -61,4 +61,4 @@ Análise baseada no `implementation_plan.md` e `01_DOCUMENTO_PROJETO_ARIANO.md`:
 3. **Validar Experiência de Cognição:** Após correção, testar se os componentes de visualização da IA (MiniGraph/Timeline) estão recebendo os dados corretamente.
 
 ---
-**Assinado:** Antigravity QA Agent
+**Assinado:** Thiago José Falcão de Freitas (Scrum Master / QA)

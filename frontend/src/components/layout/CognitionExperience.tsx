@@ -849,28 +849,6 @@ export const CognitionExperience: React.FC<CognitionExperienceProps> = ({
         </motion.div>
       )}
 
-      {/* ── SKIP button (always visible after 8s) ── */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 8 }}
-        className="fixed bottom-6 right-6 z-[70]"
-      >
-        <button
-          onClick={handleExploreProfile}
-          className="px-5 py-2 rounded-full text-[11px] font-bold uppercase tracking-widest transition-all"
-          style={{
-            background: 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            color: 'rgba(255,255,255,0.25)',
-            backdropFilter: 'blur(12px)',
-          }}
-          onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.6)')}
-          onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.25)')}
-        >
-          Pular Animação
-        </button>
-      </motion.div>
     </div>
   );
 };

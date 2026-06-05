@@ -51,5 +51,5 @@
 ### Conclusão do Analista
 A Sprint 4 entregou uma interface que não apenas funciona, mas **emociona**. O sistema está pronto para demonstração de alto nível.
 
-**QA Responsável:** Antigravity (AI Assistant)
+**QA Responsável:** Marcio Maycom (UX UI Designer / Front-End Developer)
 **Assinatura Digital:** `84a3-2d88-5971-d47c`
